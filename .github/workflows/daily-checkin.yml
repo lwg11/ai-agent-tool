@@ -1,0 +1,97 @@
+name: daily-checkin
+
+# 每日定时签到（ikuuu + 稀土掘金）
+# 触发策略：北京时间 6:00 / 7:00 / 8:00 各抽签一次（40% 概率执行），
+#          9:00 兜底必跑 —— 实际执行时间随机落在 6:00-9:59 之间，且保证不漏签。
+# 时区说明：GitHub Actions cron 只支持 UTC（北京 = UTC+8）。
+# 注意：GitHub 定时任务可能有 0~30 分钟的触发延迟，属正常现象。
+
+on:
+  schedule:
+    - cron: '0 22 * * *' # 北京 6:00 抽签
+    - cron: '0 23 * * *' # 北京 7:00 抽签
+    - cron: '0 0 * * *'  # 北京 8:00 抽签
+    - cron: '0 1 * * *'  # 北京 9:00 兜底必跑
+  workflow_dispatch: # 支持在 Actions 页面手动触发（用于测试，必跑）
+
+concurrency:
+  group: daily-checkin
+  cancel-in-progress: false
+
+jobs:
+  checkin:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 随机抽签
+        id: dice
+        run: |
+          H=$(date -u +%H)
+          if [ "$H" = "01" ]; then
+            echo "北京时间 9:00 兜底时段，必跑"
+            echo "go=true" >> "$GITHUB_OUTPUT"
+          elif [ $(( RANDOM % 100 )) -lt 40 ]; then
+            echo "抽中（40% 概率），本次执行"
+            echo "go=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "未抽中，本次跳过，等下个时段"
+            echo "go=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 安装 Node.js
+        if: steps.dice.outputs.go == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: 写入 ikuuu 配置（来自 Secret）
+        if: steps.dice.outputs.go == 'true'
+        env:
+          IKUUU_CONFIG: ${{ secrets.IKUUU_CONFIG_JSON }}
+        run: |
+          if [ -z "$IKUUU_CONFIG" ]; then
+            echo "::error::Secret IKUUU_CONFIG_JSON 未配置，请在仓库 Settings > Secrets and variables > Actions 中添加"
+            exit 1
+          fi
+          printf '%s' "$IKUUU_CONFIG" > ikuuu-checkin/config.json
+
+      - name: 写入掘金配置（来自 Secret）
+        if: steps.dice.outputs.go == 'true'
+        env:
+          JUEJIN_CONFIG: ${{ secrets.JUEJIN_CONFIG_JSON }}
+        run: |
+          if [ -z "$JUEJIN_CONFIG" ]; then
+            echo "::error::Secret JUEJIN_CONFIG_JSON 未配置，请在仓库 Settings > Secrets and variables > Actions 中添加"
+            exit 1
+          fi
+          printf '%s' "$JUEJIN_CONFIG" > juejin-checkin/config.json
+
+      - name: 执行签到
+        if: steps.dice.outputs.go == 'true'
+        run: |
+          set -o pipefail
+          node run-all.js 2>&1 | tee checkin.log
+          exit ${PIPESTATUS[0]}
+
+      - name: 生成运行摘要（显示在 Summary 页）
+        if: always() && steps.dice.outputs.go == 'true'
+        run: |
+          {
+            echo "## 📋 每日签到结果"
+            echo ""
+            if [ -f checkin.log ]; then
+              echo '```text'
+              cat checkin.log
+              echo '```'
+            else
+              echo "⚠️ 未找到签到日志（执行签到步骤未运行或提前失败）"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 清理凭证文件
+        if: always()
+        run: rm -f ikuuu-checkin/config.json juejin-checkin/config.json checkin.log

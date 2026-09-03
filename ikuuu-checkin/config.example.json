@@ -1,0 +1,6 @@
+{
+  "_comment": "本工具的凭证配置。baseUrl 域名会变（.foo/.one/...），cookie 失效重新登录后整段替换即可，代码零写死。",
+  "baseUrl": "https://ikuuu.foo",
+  "cookie": "在此粘贴登录后的完整 Cookie",
+  "timeoutMs": 20000
+}

@@ -1,0 +1,11 @@
+{
+  "_comment": "本工具的凭证配置，代码零写死。cookie / msToken / aBogus 失效后按 README 步骤从浏览器重新抓取替换即可。",
+  "apiBase": "https://api.juejin.cn",
+  "aid": "2608",
+  "uuid": "",
+  "userId": "",
+  "cookie": "",
+  "msToken": "",
+  "aBogus": "",
+  "timeoutMs": 20000
+}
