@@ -4,14 +4,14 @@
  * 接口（掘金官方 checkin_api）:
  *   1) GET  {apiBase}/checkin_api/v1/get_today_status?aid={aid}&uuid={uuid}&spider=0  查询今日是否已签
  *   2) POST {apiBase}/checkin_api/v1/checkin?aid={aid}&uuid={uuid}&spider=0           签到
- * Cookie / aid / uuid / antiContent 全部读取 config.json 的 juejin 节点，代码中不写死。
+ * Cookie / aid / uuid / antiContent 全部读取同目录 config.json，代码中不写死。
  *
- * 用法: node tools/juejin-checkin.js
+ * 用法: node juejin-checkin/juejin-checkin.js
  *
  * 获取 uuid：登录 juejin.cn 后，浏览器 DevTools → Network 里随便找一条
  * api.juejin.cn 请求，query 中的 uuid 参数即所需值。
  * 若返回 err_no 非 0 且提示风控（如校验失败），可在 config.json 的
- * juejin.antiContent 填入浏览器请求头中的 anti-content 值再试。
+ * antiContent 填入浏览器请求头中的 anti-content 值再试。
  */
 'use strict';
 
@@ -25,16 +25,15 @@ function fail(msg, extra) {
 }
 
 (async () => {
-  const cfgPath = path.join(__dirname, '..', 'config.json');
+  const cfgPath = path.join(__dirname, 'config.json');
   if (!fs.existsSync(cfgPath)) fail('找不到配置文件 ' + cfgPath);
-  const cfgAll = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
-  const cfg = cfgAll.juejin || {};
+  const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
 
-  if (!cfg.apiBase) fail('config.json 中缺少 juejin.apiBase');
+  if (!cfg.apiBase) fail('config.json 中缺少 apiBase');
   if (!cfg.cookie || !cfg.cookie.trim())
-    fail('config.json 中缺少 juejin.cookie。请登录 juejin.cn 后，把包含 sessionid 的 Cookie 填入');
+    fail('config.json 中缺少 cookie。请登录 juejin.cn 后，把包含 sessionid 的 Cookie 填入');
   if (!cfg.uuid || !cfg.uuid.trim())
-    fail('config.json 中缺少 juejin.uuid。登录 juejin.cn 后在 Network 面板 api.juejin.cn 请求的 query 参数里取 uuid');
+    fail('config.json 中缺少 uuid。登录 juejin.cn 后在 Network 面板 api.juejin.cn 请求的 query 参数里取 uuid');
 
   const aid = cfg.aid || '2608';
   const qs = `aid=${encodeURIComponent(aid)}&uuid=${encodeURIComponent(cfg.uuid.trim())}&spider=0`;

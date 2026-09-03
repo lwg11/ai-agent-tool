@@ -2,9 +2,9 @@
 /**
  * ikuuu 签到工具
  * 接口: POST {baseUrl}/user/checkin
- * 凭证全部读取 config.json 的 ikuuu 节点，代码中不写死。
+ * 凭证（baseUrl / cookie）全部读取同目录 config.json，代码中不写死。
  *
- * 用法: node tools/ikuuu-checkin.js
+ * 用法: node ikuuu-checkin/ikuuu-checkin.js
  */
 'use strict';
 
@@ -18,13 +18,12 @@ function fail(msg, extra) {
 }
 
 (async () => {
-  const cfgPath = path.join(__dirname, '..', 'config.json');
+  const cfgPath = path.join(__dirname, 'config.json');
   if (!fs.existsSync(cfgPath)) fail('找不到配置文件 ' + cfgPath);
-  const cfgAll = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
-  const cfg = cfgAll.ikuuu || {};
+  const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
 
-  if (!cfg.baseUrl) fail('config.json 中缺少 ikuuu.baseUrl');
-  if (!cfg.cookie || !cfg.cookie.trim()) fail('config.json 中缺少 ikuuu.cookie，请填入登录后的 Cookie');
+  if (!cfg.baseUrl) fail('config.json 中缺少 baseUrl');
+  if (!cfg.cookie || !cfg.cookie.trim()) fail('config.json 中缺少 cookie，请填入登录后的 Cookie');
 
   const url = cfg.baseUrl.replace(/\/+$/, '') + '/user/checkin';
   const headers = {

@@ -1,6 +1,0 @@
-# 真实凭证配置不入库（安全）
-config.json
-
-node_modules/
-*.log
-.DS_Store

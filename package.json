@@ -1,0 +1,11 @@
+{
+  "name": "ai-agent-tool",
+  "version": "1.1.0",
+  "private": true,
+  "description": "AI Agent 小工具集合。每个工具独立文件夹、独立 config.json，凭证零写死。",
+  "scripts": {
+    "ikuuu": "node ikuuu-checkin/ikuuu-checkin.js",
+    "juejin": "node juejin-checkin/juejin-checkin.js",
+    "all": "node run-all.js"
+  }
+}

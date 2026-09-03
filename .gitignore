@@ -1,6 +1,7 @@
-# 真实凭证配置不入库（安全）
-config.json
+# 真实凭证配置不入库（安全）——覆盖所有工具目录下的 config.json
+**/config.json
 
 node_modules/
+__pycache__/
 *.log
 .DS_Store
