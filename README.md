@@ -44,7 +44,7 @@ node run-all.js                         # 一键全部（npm run all 等价）
 
 ## 定时执行方案 A：GitHub Actions（推荐，云端跑，本机关机也照跑）
 
-工作流：`.github/workflows/daily-checkin.yml`，每天**北京时间约 10:00** 自动执行 `run-all.js`（cron 为 UTC 01:00，GitHub 可能有 0~30 分钟触发延迟）。
+工作流：`.github/workflows/daily-checkin.yml`，每天**北京时间 6:00–10:00 之间随机时间**执行 `run-all.js`：6:00 / 7:00 / 8:00 各抽签一次（40% 概率），9:00 兜底必跑，保证不漏签。GitHub 可能有 0~30 分钟触发延迟。
 
 首次配置只需两步：
 
