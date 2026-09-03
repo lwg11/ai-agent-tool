@@ -48,8 +48,26 @@ jobs:
           printf '%s' "$JUEJIN_CONFIG" > juejin-checkin/config.json
 
       - name: 执行签到
-        run: node run-all.js
+        run: |
+          set -o pipefail
+          node run-all.js 2>&1 | tee checkin.log
+          exit ${PIPESTATUS[0]}
+
+      - name: 生成运行摘要（显示在 Summary 页）
+        if: always()
+        run: |
+          {
+            echo "## 📋 每日签到结果"
+            echo ""
+            if [ -f checkin.log ]; then
+              echo '```text'
+              cat checkin.log
+              echo '```'
+            else
+              echo "⚠️ 未找到签到日志（执行签到步骤未运行或提前失败）"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: 清理凭证文件
         if: always()
-        run: rm -f ikuuu-checkin/config.json juejin-checkin/config.json
+        run: rm -f ikuuu-checkin/config.json juejin-checkin/config.json checkin.log
