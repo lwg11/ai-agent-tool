@@ -1,9 +1,11 @@
 {
-  "_comment": "本工具的凭证配置。cookie 需含 sessionid；uuid 在 DevTools→Network 里 api.juejin.cn 请求的 query 参数中取；触发风控时填 antiContent。代码零写死。",
+  "_comment": "本工具的凭证配置，代码零写死。cookie / msToken / aBogus 失效后按 README 步骤从浏览器重新抓取替换即可。",
   "apiBase": "https://api.juejin.cn",
   "aid": "2608",
   "uuid": "",
+  "userId": "",
   "cookie": "",
-  "antiContent": "",
+  "msToken": "",
+  "aBogus": "",
   "timeoutMs": 20000
 }
