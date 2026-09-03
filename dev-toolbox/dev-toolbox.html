@@ -159,7 +159,7 @@ details summary:hover{color:var(--primary)}
 <body>
 
 <header>
-  <div class="brand">🇨🇭 前端瑞士军刀 <span class="ver">v1.3 · 单文件离线版</span></div>
+  <div class="brand">🇨🇭 前端瑞士军刀 <span class="ver">v1.4 · 单文件离线版</span></div>
   <div class="header-right">
     <span id="liveClock">--</span>
     <button class="icon-btn" id="helpToggle" title="快捷键速查（按 ? 呼出）">⌨ 快捷键</button>
@@ -636,10 +636,251 @@ details summary:hover{color:var(--primary)}
   </div>
 </section>
 
+<!-- ============ 14. 国密 SM2 / SM3 / SM4 ============ -->
+<section class="module" id="mod-gm">
+  <div class="mod-head">
+    <h2>🔏 国密 SM2 / SM3 / SM4</h2>
+    <p class="mod-desc">纯 JS 实现的国密算法套件，零依赖、可浏览器离线运行：SM3 杂凑、SM4 分组密码（ECB/CBC）、SM2 椭圆曲线（签名/验签、公钥加密/私钥解密）。已用 Node 原生 crypto 与 sm-crypto 交叉验证（SM3/SM4 全量一致；SM2 与 sm-crypto 互相验签/解密通过）。</p>
+  </div>
+  <div class="panel-tabs">
+    <button class="panel-tab active" data-p="sm3">SM3 哈希</button>
+    <button class="panel-tab" data-p="sm4">SM4 加解密</button>
+    <button class="panel-tab" data-p="sm2">SM2 签名/加密</button>
+  </div>
+
+  <div class="api-panel active" id="panel-sm3">
+    <div class="grid2">
+      <div class="card">
+        <h3>📥 输入</h3>
+        <label class="field"><span>输入编码</span>
+          <select id="gmSm3Enc"><option>Text</option><option>Hex</option><option>Base64</option></select>
+        </label>
+        <label class="field"><span>待哈希内容</span>
+          <textarea id="gmSm3In" rows="6" placeholder="hello world 或十六进制 / Base64"></textarea>
+        </label>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="gmSm3Btn">🧮 计算 SM3</button>
+          <button class="btn btn-sm" id="gmSm3CopyBtn">复制摘要</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>📤 摘要（256-bit Hex）</h3>
+        <pre class="out empty" id="gmSm3Out">结果将显示在这里…</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="api-panel" id="panel-sm4">
+    <div class="grid2">
+      <div class="card">
+        <h3>⚙️ 配置</h3>
+        <label class="field"><span>模式</span>
+          <select id="gmSm4Mode"><option>ECB</option><option>CBC</option></select>
+        </label>
+        <label class="field"><span>密钥 Key（16 字节 / 128 位）</span>
+          <input type="text" id="gmSm4Key" placeholder="1234567890abcdef" spellcheck="false">
+        </label>
+        <label class="field"><span>密钥编码</span>
+          <select id="gmSm4KeyEnc"><option>Text</option><option>Hex</option><option>Base64</option></select>
+        </label>
+        <label class="field" id="gmSm4IvField"><span>IV（仅 CBC，16 字节）</span>
+          <input type="text" id="gmSm4Iv" placeholder="0102030405060708" spellcheck="false">
+        </label>
+        <label class="field" id="gmSm4IvEncField"><span>IV 编码</span>
+          <select id="gmSm4IvEnc"><option>Hex</option><option>Text</option><option>Base64</option></select>
+        </label>
+      </div>
+      <div class="card">
+        <h3>🔁 加密 / 解密</h3>
+        <label class="field"><span>明文编码</span>
+          <select id="gmSm4PlainEnc"><option>Text</option><option>Hex</option></select>
+        </label>
+        <label class="field"><span>明文</span>
+          <textarea id="gmSm4Plain" rows="3" placeholder="要加密的内容"></textarea>
+        </label>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="gmSm4EncBtn">🔒 加密</button>
+          <button class="btn" id="gmSm4DecBtn">🔓 解密</button>
+        </div>
+        <label class="field"><span>密文</span>
+          <textarea id="gmSm4Cipher" rows="3" placeholder="Hex 或 Base64 密文"></textarea>
+        </label>
+        <div class="check-row">
+          <span class="muted" style="font-size:12px">密文编码：</span>
+          <label><input type="radio" name="gmSm4OutEnc" value="hex" checked> Hex</label>
+          <label><input type="radio" name="gmSm4OutEnc" value="b64"> Base64</label>
+        </div>
+        <div class="btn-row"><button class="btn btn-sm" id="gmSm4CopyBtn">复制密文</button></div>
+      </div>
+    </div>
+    <div class="card" id="gmSm4OutCard" style="display:none"><pre class="out" id="gmSm4Out"></pre></div>
+  </div>
+
+  <div class="api-panel" id="panel-sm2">
+    <div class="card">
+      <h3>🔑 密钥对</h3>
+      <div class="btn-row" style="margin-top:0">
+        <button class="btn btn-primary btn-sm" id="gmSm2GenBtn">🎲 生成 SM2 密钥对</button>
+        <span class="muted" style="font-size:12px">曲线：sm2p256v1（素数域 256 位）</span>
+      </div>
+      <div class="grid2">
+        <label class="field"><span>私钥 d（32 字节 Hex）</span>
+          <input type="text" id="gmSm2Priv" placeholder="3945208f7b2144b1..." spellcheck="false">
+        </label>
+        <label class="field"><span>公钥（65 字节，以 04 开头）</span>
+          <input type="text" id="gmSm2Pub" placeholder="04 + x(32) + y(32)" spellcheck="false">
+        </label>
+      </div>
+      <label class="field"><span>UserId（SM2 标识，默认 1234567812345678，UTF-8）</span>
+        <input type="text" id="gmSm2UserId" value="1234567812345678" spellcheck="false">
+      </label>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <h3>✍️ 签名 / 验签</h3>
+        <label class="field"><span>明文编码</span>
+          <select id="gmSm2MsgEnc"><option>Text</option><option>Hex</option></select>
+        </label>
+        <label class="field"><span>待签名 / 验签明文</span>
+          <textarea id="gmSm2Msg" rows="4" placeholder="message digest"></textarea>
+        </label>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="gmSm2SignBtn">✍️ 签名</button>
+          <button class="btn" id="gmSm2VerifyBtn">✔️ 验签</button>
+        </div>
+        <label class="field"><span>签名（r‖s，64 字节 Hex）</span>
+          <textarea id="gmSm2Sig" rows="3" placeholder="签名值"></textarea>
+        </label>
+      </div>
+      <div class="card">
+        <h3>🔐 加密 / 解密（C1C3C2）</h3>
+        <div class="check-row" style="margin-bottom:10px">
+          <label><input type="checkbox" id="gmSm2C104" checked> 加密输出带 0x04 前缀（取消则省略；两种格式均可解密）</label>
+        </div>
+        <label class="field"><span>密文（Hex，可带 / 不带 04 前缀）</span>
+          <textarea id="gmSm2Cipher" rows="4" placeholder="04 + C1(32) + C3(32) + C2"></textarea>
+        </label>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="gmSm2EncBtn">🔒 公钥加密</button>
+          <button class="btn" id="gmSm2DecBtn">🔓 私钥解密</button>
+        </div>
+      </div>
+    </div>
+    <div class="card" id="gmSm2OutCard" style="display:none"><pre class="out" id="gmSm2Out"></pre></div>
+  </div>
+</section>
+
+<!-- ============ 15. 请求集合 ============ -->
+<section class="module" id="mod-coll">
+  <div class="mod-head">
+    <h2>📚 请求集合</h2>
+    <p class="mod-desc">把常用接口保存成「请求集合」，按项目分组，支持一键重放、复制 cURL、导入当前 API 调试台配置。数据仅存浏览器 localStorage。</p>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <h3>🗂️ 已保存（按项目）</h3>
+      <div class="btn-row" style="margin-top:0">
+        <button class="btn btn-sm" id="collNewBtn">＋ 新建</button>
+        <button class="btn btn-sm" id="collImportApiBtn">从 API 调试台导入</button>
+        <button class="btn btn-sm" id="collClearBtn">清空全部</button>
+      </div>
+      <div id="collList" style="margin-top:6px"></div>
+    </div>
+    <div class="card">
+      <h3>✏️ 编辑</h3>
+      <div class="grid2" style="gap:10px">
+        <label class="field"><span>名称</span><input type="text" id="collName" placeholder="如：获取订单详情"></label>
+        <label class="field"><span>项目分组</span><input type="text" id="collProject" placeholder="如：上海联通家政"></label>
+      </div>
+      <label class="field"><span>方法 / URL（URL 支持 {{变量}}）</span>
+        <div class="req-line">
+          <select id="collMethod"><option>GET</option><option>POST</option><option>PUT</option><option>DELETE</option><option>PATCH</option></select>
+          <input type="text" id="collUrl" placeholder="https://{{baseUrl}}/api/order/{{id}}" spellcheck="false">
+        </div>
+      </label>
+      <label class="field"><span>Headers（每行 Key: Value）</span>
+        <textarea id="collHeaders" rows="4" placeholder="accept: application/json&#10;authorization: Bearer {{token}}"></textarea>
+      </label>
+      <label class="field"><span>Body（JSON）</span>
+        <textarea id="collBody" rows="4" placeholder='{"a":1}'></textarea>
+      </label>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="collSaveBtn">💾 保存</button>
+        <button class="btn" id="collSendBtn">🚀 重放</button>
+        <button class="btn btn-sm" id="collCurlBtn">复制 cURL</button>
+        <button class="btn btn-sm" id="collDelBtn">删除</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>📥 响应</h3>
+    <pre class="out empty" id="collResult">重放结果将显示在这里…</pre>
+  </div>
+</section>
+
+<!-- ============ 16. SSE 调试台 ============ -->
+<section class="module" id="mod-sse">
+  <div class="mod-head">
+    <h2>🌊 SSE 调试台</h2>
+    <p class="mod-desc">调试 Server-Sent Events 流：EventSource 模式（GET，浏览器自动重连）或 fetch 流模式（可带自定义头 / 请求体 / 任意方法）。自动按 SSE 协议解析 data / event / id / retry，JSON 自动美化。</p>
+  </div>
+  <div class="card">
+    <h3>🔗 连接</h3>
+    <div class="req-line">
+      <input type="text" id="sseUrl" placeholder="https://{{baseUrl}}/api/sse/stream" spellcheck="false">
+      <select id="sseMode"><option value="es">EventSource (GET)</option><option value="fetch">fetch 流（任意方法/带头）</option></select>
+      <button class="btn btn-primary" id="sseConnBtn" style="flex:none">🌊 连接</button>
+      <button class="btn" id="sseDiscBtn" style="flex:none">断开</button>
+    </div>
+    <div class="grid2" style="gap:10px;margin-top:10px">
+      <label class="field"><span>方法（fetch 模式）</span><select id="sseMethod"><option>GET</option><option>POST</option><option>PUT</option></select></label>
+      <label class="field"><span>自动重连（fetch 模式）</span>
+        <div class="check-row" style="padding-top:6px"><label><input type="checkbox" id="sseAuto"> 断线 3 秒后自动重连</label></div>
+      </label>
+    </div>
+    <label class="field"><span>Headers（fetch 模式，每行 Key: Value）</span>
+      <textarea id="sseHeader" rows="3" placeholder="authorization: Bearer {{token}}"></textarea>
+    </label>
+    <label class="field"><span>Body（fetch 模式，POST 等）</span>
+      <textarea id="sseBody" rows="3" placeholder='{"topic":"order"}'></textarea>
+    </label>
+    <div class="check-row">
+      <span class="tag" id="sseStatus">未连接</span>
+      <span class="muted" style="font-size:12px">已接收事件：<b id="sseCount" style="font-variant-numeric:tabular-nums">0</b></span>
+    </div>
+  </div>
+  <div class="card">
+    <h3>📜 事件日志 <span class="muted" style="font-weight:400;font-size:12px">（最新在上）</span></h3>
+    <div class="btn-row" style="margin-top:0"><button class="btn btn-sm" id="sseClearBtn">清空日志</button></div>
+    <div id="sseLog"></div>
+  </div>
+</section>
+
+<!-- ============ 17. 凭证泄露扫描 ============ -->
+<section class="module" id="mod-secret">
+  <div class="mod-head">
+    <h2>🕵️ 凭证泄露扫描</h2>
+    <p class="mod-desc">把代码、配置文件或日志粘贴进来，扫描可能的密钥 / 凭证泄露：AWS AK/SK、GitHub/Slack/Stripe/Google Token、私钥、JWT、URL 中的密码，以及高熵疑似密钥。命中项自动脱敏展示。</p>
+  </div>
+  <div class="card">
+    <h3>📥 待扫描文本</h3>
+    <textarea id="secIn" rows="10" placeholder="粘贴代码、.env、curl 历史或日志…"></textarea>
+    <div class="btn-row" style="margin-top:10px">
+      <button class="btn btn-primary" id="secScanBtn">🔍 开始扫描</button>
+      <button class="btn btn-sm" id="secClearBtn">清空</button>
+      <label class="check-row" style="margin-left:auto"><input type="checkbox" id="secEntropy" checked> 启用高熵检测</label>
+    </div>
+  </div>
+  <div class="card" id="secOutCard">
+    <h3>🎯 扫描结果</h3>
+    <div id="secOut"><div class="hint" style="margin:0">点击「开始扫描」查看结果。</div></div>
+  </div>
+</section>
+
 </main>
 </div>
 
-<footer>🇨🇭 前端瑞士军刀 —— 单文件、零依赖、纯本地运行，数据不出浏览器（API/WS 调试台发出的请求除外）。快捷键：<span class="kbd">?</span> 速查面板，<span class="kbd">Alt</span>+<span class="kbd">1~0</span> 模块，<span class="kbd">Alt</span>+<span class="kbd">Q</span> API 台，<span class="kbd">Alt</span>+<span class="kbd">A</span> AES，<span class="kbd">Alt</span>+<span class="kbd">W</span> WebSocket</footer>
+<footer>🇨🇭 前端瑞士军刀 —— 单文件、零依赖、纯本地运行，数据不出浏览器（API/WS 调试台发出的请求除外）。快捷键：<span class="kbd">?</span> 速查面板，<span class="kbd">Alt</span>+<span class="kbd">1~0</span> 模块，<span class="kbd">Alt</span>+<span class="kbd">Q</span> API 台，<span class="kbd">Alt</span>+<span class="kbd">A</span> AES，<span class="kbd">Alt</span>+<span class="kbd">W</span> WebSocket · Alt+G 国密 · Alt+C 请求集合 · Alt+E SSE · Alt+X 凭证</footer>
 <div id="toast"></div>
 
 <script>
@@ -698,6 +939,10 @@ const MODULES = [
   {id:'mod-api',   icon:'📡', name:'API 调试台',    desc:'本地 mini Postman：cURL 导入 / 直发 / Node 脚本'},
   {id:'mod-aes',   icon:'🛡️', name:'AES 加解密',    desc:'ECB/CBC · PKCS7 · 128/192/256，本地零依赖'},
   {id:'mod-ws',    icon:'🔌', name:'WebSocket 台',  desc:'连接/收发/心跳保活/断线重连'},
+  {id:'mod-gm',    icon:'🔏', name:'国密 SM2/SM3/SM4', desc:'纯 JS 国密算法：SM3 哈希 / SM4 加解密 / SM2 签名验签与加解密'},
+  {id:'mod-coll',  icon:'📚', name:'请求集合',        desc:'保存/收藏接口，按项目分组，一键重放与导出 cURL'},
+  {id:'mod-sse',   icon:'🌊', name:'SSE 调试台',      desc:'Server-Sent Events 流式调试：EventSource / fetch 流，自动解析事件'},
+  {id:'mod-secret',icon:'🕵️', name:'凭证泄露扫描',    desc:'代码/日志扫描：AK/SK、token、私钥、JWT、高熵密钥'},
 ];
 const sidebar = $('#sidebar');
 MODULES.forEach((m, i) => {
@@ -728,6 +973,10 @@ document.addEventListener('keydown', e => {
   if(e.altKey && (e.key === 'q' || e.key === 'Q')) switchTo('mod-api');
   if(e.altKey && (e.key === 'a' || e.key === 'A')) switchTo('mod-aes');
   if(e.altKey && (e.key === 'w' || e.key === 'W')) switchTo('mod-ws');
+  if(e.altKey && (e.key === 'g' || e.key === 'G')) switchTo('mod-gm');
+  if(e.altKey && (e.key === 'c' || e.key === 'C')) switchTo('mod-coll');
+  if(e.altKey && (e.key === 'e' || e.key === 'E')) switchTo('mod-sse');
+  if(e.altKey && (e.key === 'x' || e.key === 'X')) switchTo('mod-secret');
   if(e.key === 'Escape'){
     ['#dskHelpModal','#dskNodeModal','#dskMockModal','#dskAxiosModal'].forEach(sel => {
       const el = document.querySelector(sel);
@@ -753,6 +1002,10 @@ function buildHelpModal(){
     + '<tr><td><span class="kbd">Alt</span>+<span class="kbd">Q</span></td><td>API 调试台</td></tr>'
     + '<tr><td><span class="kbd">Alt</span>+<span class="kbd">A</span></td><td>AES 加解密</td></tr>'
     + '<tr><td><span class="kbd">Alt</span>+<span class="kbd">W</span></td><td>WebSocket 调试台</td></tr>'
+    + '<tr><td><span class="kbd">Alt</span>+<span class="kbd">G</span></td><td>国密 SM2/SM3/SM4</td></tr>'
+    + '<tr><td><span class="kbd">Alt</span>+<span class="kbd">C</span></td><td>请求集合</td></tr>'
+    + '<tr><td><span class="kbd">Alt</span>+<span class="kbd">E</span></td><td>SSE 调试台</td></tr>'
+    + '<tr><td><span class="kbd">Alt</span>+<span class="kbd">X</span></td><td>凭证泄露扫描</td></tr>'
     + '<tr><td><span class="kbd">Enter</span>（URL 框内）</td><td>API 调试台直接发送</td></tr>'
     + '</table>'
     + '<div class="btn-row"><button class="btn btn-sm" id="helpCloseBtn">关闭</button></div></div>';
@@ -2393,6 +2646,705 @@ $('#wsLog').addEventListener('click', () => {
   wsAutoScroll = !wsAutoScroll;
   $('#wsAutoScrollState').textContent = wsAutoScroll ? '开启' : '暂停';
 });
+// ============ 国密 SM3 / SM4 纯 JS 实现（待校验后嵌入 HTML） ============
+
+/* ---------- SM4 专用 S 盒（非 AES S 盒；取值 GB/T 32907 / IETF draft-ribose-cfrg-sm4-03 §4.1） ---------- */
+const SM4_S = new Uint8Array([
+  0xD6,0x90,0xE9,0xFE,0xCC,0xE1,0x3D,0xB7,0x16,0xB6,0x14,0xC2,0x28,0xFB,0x2C,0x05,
+  0x2B,0x67,0x9A,0x76,0x2A,0xBE,0x04,0xC3,0xAA,0x44,0x13,0x26,0x49,0x86,0x06,0x99,
+  0x9C,0x42,0x50,0xF4,0x91,0xEF,0x98,0x7A,0x33,0x54,0x0B,0x43,0xED,0xCF,0xAC,0x62,
+  0xE4,0xB3,0x1C,0xA9,0xC9,0x08,0xE8,0x95,0x80,0xDF,0x94,0xFA,0x75,0x8F,0x3F,0xA6,
+  0x47,0x07,0xA7,0xFC,0xF3,0x73,0x17,0xBA,0x83,0x59,0x3C,0x19,0xE6,0x85,0x4F,0xA8,
+  0x68,0x6B,0x81,0xB2,0x71,0x64,0xDA,0x8B,0xF8,0xEB,0x0F,0x4B,0x70,0x56,0x9D,0x35,
+  0x1E,0x24,0x0E,0x5E,0x63,0x58,0xD1,0xA2,0x25,0x22,0x7C,0x3B,0x01,0x21,0x78,0x87,
+  0xD4,0x00,0x46,0x57,0x9F,0xD3,0x27,0x52,0x4C,0x36,0x02,0xE7,0xA0,0xC4,0xC8,0x9E,
+  0xEA,0xBF,0x8A,0xD2,0x40,0xC7,0x38,0xB5,0xA3,0xF7,0xF2,0xCE,0xF9,0x61,0x15,0xA1,
+  0xE0,0xAE,0x5D,0xA4,0x9B,0x34,0x1A,0x55,0xAD,0x93,0x32,0x30,0xF5,0x8C,0xB1,0xE3,
+  0x1D,0xF6,0xE2,0x2E,0x82,0x66,0xCA,0x60,0xC0,0x29,0x23,0xAB,0x0D,0x53,0x4E,0x6F,
+  0xD5,0xDB,0x37,0x45,0xDE,0xFD,0x8E,0x2F,0x03,0xFF,0x6A,0x72,0x6D,0x6C,0x5B,0x51,
+  0x8D,0x1B,0xAF,0x92,0xBB,0xDD,0xBC,0x7F,0x11,0xD9,0x5C,0x41,0x1F,0x10,0x5A,0xD8,
+  0x0A,0xC1,0x31,0x88,0xA5,0xCD,0x7B,0xBD,0x2D,0x74,0xD0,0x12,0xB8,0xE5,0xB4,0xB0,
+  0x89,0x69,0x97,0x4A,0x0C,0x96,0x77,0x7E,0x65,0xB9,0xF1,0x09,0xC5,0x6E,0xC6,0x84,
+  0x18,0xF0,0x7D,0xEC,0x3A,0xDC,0x4D,0x20,0x79,0xEE,0x5F,0x3E,0xD7,0xCB,0x39,0x48
+]);
+
+/* ===================== SM3 ===================== */
+const SM3_IV = [0x7380166f,0x4914b2b9,0x172442d7,0xda8a0600,0xa96f30bc,0x163138aa,0xe38dee4d,0xb0fb0e4e];
+function rotl32(x, n){ n &= 31; return ((x << n) | (x >>> (32 - n))) >>> 0; }
+function sm3FF(x, y, z, j){ return j < 16 ? (x ^ y ^ z) : ((x & y) | (x & z) | (y & z)); }
+function sm3GG(x, y, z, j){ return j < 16 ? (x ^ y ^ z) : ((x & y) | ((~x >>> 0) & z)); }
+function sm3P0(x){ return (x ^ rotl32(x, 9) ^ rotl32(x, 17)) >>> 0; }
+function sm3P1(x){ return (x ^ rotl32(x, 15) ^ rotl32(x, 23)) >>> 0; }
+function sm3Compress(V, B){
+  const W = new Array(68), W1 = new Array(64);
+  for(let i = 0; i < 16; i++) W[i] = B[i];
+  for(let i = 16; i < 68; i++) W[i] = sm3P1(W[i-16] ^ W[i-9] ^ rotl32(W[i-3], 15)) ^ rotl32(W[i-13], 7) ^ W[i-6];
+  for(let i = 0; i < 64; i++) W1[i] = (W[i] ^ W[i+4]) >>> 0;
+  let A = V[0], Bb = V[1], C = V[2], D = V[3], E = V[4], F = V[5], G = V[6], H = V[7];
+  for(let j = 0; j < 64; j++){
+    const Tj = (j < 16) ? 0x79cc4519 : 0x7a879d8a;
+    const SS1 = rotl32((rotl32(A, 12) + E + rotl32(Tj, j)) >>> 0, 7);
+    const SS2 = (SS1 ^ rotl32(A, 12)) >>> 0;
+    const TT1 = (sm3FF(A, Bb, C, j) + D + SS2 + W1[j]) >>> 0;
+    const TT2 = (sm3GG(E, F, G, j) + H + SS1 + W[j]) >>> 0;
+    D = C; C = rotl32(Bb, 9); Bb = A; A = TT1;
+    H = G; G = rotl32(F, 19); F = E; E = sm3P0(TT2);
+  }
+  return [ (V[0]^A)>>>0,(V[1]^Bb)>>>0,(V[2]^C)>>>0,(V[3]^D)>>>0,(V[4]^E)>>>0,(V[5]^F)>>>0,(V[6]^G)>>>0,(V[7]^H)>>>0 ];
+}
+function sm3Bytes(msg){
+  let V = SM3_IV.slice();
+  const l = msg.length;
+  const bitlen = l * 8;
+  const k = (56 - ((l + 1) % 64) + 64) % 64;
+  const total = l + 1 + k + 8;
+  const buf = new Uint8Array(total);
+  buf.set(msg);
+  buf[l] = 0x80;
+  const hi = Math.floor(bitlen / 0x100000000);
+  const lo = bitlen >>> 0;
+  buf[total-8] = (hi >>> 24) & 0xff; buf[total-7] = (hi >>> 16) & 0xff; buf[total-6] = (hi >>> 8) & 0xff; buf[total-5] = hi & 0xff;
+  buf[total-4] = (lo >>> 24) & 0xff; buf[total-3] = (lo >>> 16) & 0xff; buf[total-2] = (lo >>> 8) & 0xff; buf[total-1] = lo & 0xff;
+  for(let off = 0; off < total; off += 64){
+    const B = new Array(16);
+    for(let i = 0; i < 16; i++){
+      B[i] = (((buf[off+i*4] << 24) | (buf[off+i*4+1] << 16) | (buf[off+i*4+2] << 8) | buf[off+i*4+3]) >>> 0);
+    }
+    V = sm3Compress(V, B);
+  }
+  return V;
+}
+function sm3Hex(msgBytes){ return sm3Bytes(msgBytes).map(w => ('00000000' + (w >>> 0).toString(16)).slice(-8)).join(''); }
+const SM3 = { hashBytes: sm3Bytes, hex: sm3Hex };
+
+/* ===================== SM4 ===================== */
+const SM4_FK = [0xa3b1bac6, 0x56aa3350, 0x677d9197, 0xb27022dc];
+function sm4CK(){
+  const a = new Array(32);
+  for(let i = 0; i < 32; i++){
+    let w = 0;
+    for(let j = 0; j < 4; j++) w = (w << 8) | (((4 * i + j) * 7) % 256);
+    a[i] = w >>> 0;
+  }
+  return a;
+}
+const SM4_CK = sm4CK();
+function sm4Tau(x){
+  return ((SM4_S[(x >>> 24) & 0xff] << 24) | (SM4_S[(x >>> 16) & 0xff] << 16) |
+          (SM4_S[(x >>> 8) & 0xff] << 8) | SM4_S[x & 0xff]) >>> 0;
+}
+function sm4L(x){ return (x ^ rotl32(x, 2) ^ rotl32(x, 10) ^ rotl32(x, 18) ^ rotl32(x, 24)) >>> 0; }
+function sm4Lp(x){ return (x ^ rotl32(x, 13) ^ rotl32(x, 23)) >>> 0; }
+function sm4KeySchedule(mk){
+  const K = new Array(36);
+  for(let i = 0; i < 4; i++) K[i] = (mk[i] ^ SM4_FK[i]) >>> 0;
+  for(let i = 0; i < 32; i++){
+    const t = sm4Lp(sm4Tau(K[i+1] ^ K[i+2] ^ K[i+3] ^ SM4_CK[i]));
+    K[i+4] = (K[i] ^ t) >>> 0;
+  }
+  return K.slice(4, 36); // rk[0..31]
+}
+function sm4OneRound(rk, X){
+  const Xo = new Array(36);
+  for(let i = 0; i < 4; i++) Xo[i] = X[i] >>> 0;
+  for(let i = 0; i < 32; i++){
+    const t = sm4L(sm4Tau(Xo[i+1] ^ Xo[i+2] ^ Xo[i+3] ^ rk[i]));
+    Xo[i+4] = (Xo[i] ^ t) >>> 0;
+  }
+  return [Xo[35], Xo[34], Xo[33], Xo[32]];
+}
+function sm4EncBlock(mk, block){
+  const rk = sm4KeySchedule(mk);
+  return sm4OneRound(rk, block);
+}
+function sm4DecBlock(mk, block){
+  const rk = sm4KeySchedule(mk).reverse();
+  return sm4OneRound(rk, block);
+}
+function b2u32(buf){ const a = []; for(let i = 0; i < buf.length; i += 4){ a.push(((buf[i] << 24) | (buf[i+1] << 16) | (buf[i+2] << 8) | buf[i+3]) >>> 0); } return a; }
+function u32ToBytes(w){ return [(w >>> 24) & 0xff, (w >>> 16) & 0xff, (w >>> 8) & 0xff, w & 0xff]; }
+function bufXor(a, b){ const r = new Uint8Array(a.length); for(let i = 0; i < a.length; i++) r[i] = a[i] ^ b[i]; return r; }
+
+// ECB
+function sm4Ecb(mk, data, decrypt){
+  const out = new Uint8Array(data.length);
+  for(let off = 0; off < data.length; off += 16){
+    const blk = decrypt ? sm4DecBlock(mk, b2u32(data.subarray(off, off+16))) : sm4EncBlock(mk, b2u32(data.subarray(off, off+16)));
+    const b = blk.flatMap(u32ToBytes);
+    out.set(b, off);
+  }
+  return out;
+}
+// CBC
+function sm4Cbc(mk, iv, data, decrypt){
+  const out = new Uint8Array(data.length);
+  if(!decrypt){
+    let prev = iv.slice();
+    for(let off = 0; off < data.length; off += 16){
+      const inBlk = bufXor(data.subarray(off, off+16), prev);
+      const enc = sm4EncBlock(mk, b2u32(inBlk));
+      const b = enc.flatMap(u32ToBytes);
+      out.set(b, off); prev = b;
+    }
+  } else {
+    let prev = iv.slice();
+    for(let off = 0; off < data.length; off += 16){
+      const dec = sm4DecBlock(mk, b2u32(data.subarray(off, off+16)));
+      const b = dec.flatMap(u32ToBytes);
+      out.set(bufXor(b, prev), off); prev = data.subarray(off, off+16);
+    }
+  }
+  return out;
+}
+const SM4 = { ecb: sm4Ecb, cbc: sm4Cbc };
+
+/* ===================== SM2 ===================== */
+const SM2_P  = 0xFFFFFFFEFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000FFFFFFFFFFFFFFFFn;
+const SM2_A  = 0xFFFFFFFEFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000FFFFFFFFFFFFFFFCn;
+const SM2_B  = 0x28E9FA9E9D9F5E344D5A9E4BCF6509A7F39789F515AB8F92DDBCBD414D940E93n;
+const SM2_GX = 0x32C4AE2C1F1981195F9904466A39C9948FE30BBFF2660BE1715A4589334C74C7n;
+const SM2_GY = 0xBC3736A2F4F6779C59BDCEE36B692153D0A9877CC62A474002DF32E52139F0A0n;
+const SM2_N  = 0xFFFFFFFEFFFFFFFFFFFFFFFFFFFFFFFF7203DF6B21C6052B53BBF40939D54123n;
+function mod2(a, m){ a %= m; if(a < 0n) a += m; return a; }
+function modpow(a, e, m){ a %= m; let r = 1n; while(e > 0n){ if(e & 1n) r = (r * a) % m; a = (a * a) % m; e >>= 1n; } return r; }
+function invMod(a, m){ return modpow(mod2(a, m), m - 2n, m); }
+function i2b(v, len){ const u = new Uint8Array(len); let x = mod2(v, SM2_P); for(let i = len - 1; i >= 0; i--){ u[i] = Number(x & 0xffn); x >>= 8n; } return u; }
+function bytesToBigInt(u){ let x = 0n; for(let i = 0; i < u.length; i++) x = (x << 8n) | BigInt(u[i]); return x; }
+function concatArr(arrs){ let n = 0; arrs.forEach(a => n += a.length); const o = new Uint8Array(n); let p = 0; arrs.forEach(a => { o.set(a, p); p += a.length; }); return o; }
+function wordsToBytes(w){ const u = new Uint8Array(w.length * 4); for(let i = 0; i < w.length; i++){ u[i*4] = (w[i] >>> 24) & 0xff; u[i*4+1] = (w[i] >>> 16) & 0xff; u[i*4+2] = (w[i] >>> 8) & 0xff; u[i*4+3] = w[i] & 0xff; } return u; }
+function ecAdd(P, Q){
+  if(!P) return Q; if(!Q) return P;
+  if(P.x === Q.x && mod2(P.y + Q.y, SM2_P) === 0n) return null;
+  let lam;
+  if(P.x === Q.x && P.y === Q.y) lam = mod2((3n*P.x*P.x + SM2_A) * invMod(2n*P.y, SM2_P), SM2_P);
+  else lam = mod2((Q.y - P.y) * invMod(Q.x - P.x, SM2_P), SM2_P);
+  const x3 = mod2(lam*lam - P.x - Q.x, SM2_P);
+  const y3 = mod2(lam*(P.x - x3) - P.y, SM2_P);
+  return { x: x3, y: y3 };
+}
+function ecMul(k, P){
+  k = mod2(k, SM2_N);
+  if(k === 0n) return null;
+  let R = null, Q = P;
+  while(k > 0n){ if(k & 1n) R = ecAdd(R, Q); Q = ecAdd(Q, Q); k >>= 1n; }
+  return R;
+}
+function sm2ZA(idBytes, Px, Py){
+  const entl = idBytes.length * 8;
+  const head = new Uint8Array([(entl >>> 8) & 0xff, entl & 0xff]);
+  return sm3Bytes(concatArr([head, idBytes, i2b(SM2_A,32), i2b(SM2_B,32), i2b(SM2_GX,32), i2b(SM2_GY,32), i2b(Px,32), i2b(Py,32)]));
+}
+function sm2E(ZAwords, Mbytes){ return sm3Bytes(concatArr([wordsToBytes(ZAwords), Mbytes])); }
+function rand256(){ const u = new Uint8Array(32); (globalThis.crypto || globalThis.msCrypto).getRandomValues(u); return bytesToBigInt(u); }
+function sm2KDF(z, klenBits){
+  const klBytes = Math.ceil(klenBits / 8); const out = []; let ct = 1;
+  while(out.length < klBytes){
+    const buf = new Uint8Array(z.length + 4); buf.set(z);
+    buf[z.length] = (ct >>> 24) & 0xff; buf[z.length+1] = (ct >>> 16) & 0xff; buf[z.length+2] = (ct >>> 8) & 0xff; buf[z.length+3] = ct & 0xff;
+    out.push(...wordsToBytes(sm3Bytes(buf))); ct++;
+  }
+  return out.slice(0, klBytes);
+}
+function sm2Sign(d, idBytes, Mbytes, fixedK){
+  const PA = ecMul(d, { x: SM2_GX, y: SM2_GY });
+  const ZA = sm2ZA(idBytes, PA.x, PA.y);
+  const eBar = bytesToBigInt(wordsToBytes(sm2E(ZA, Mbytes)));
+  let k, r, s, C1;
+  while(true){
+    k = (fixedK != null) ? fixedK : (rand256() % SM2_N);
+    if(k <= 0n || k >= SM2_N) continue;
+    C1 = ecMul(k, { x: SM2_GX, y: SM2_GY });
+    r = mod2(eBar + C1.x, SM2_N);
+    if(r === 0n || r + k === SM2_N) continue;
+    s = mod2(invMod(1n + d, SM2_N) * mod2(k - r*d, SM2_N), SM2_N);
+    if(s === 0n) continue;
+    return { r, s };
+  }
+}
+function sm2Verify(Px, Py, idBytes, Mbytes, r, s){
+  if(r < 1n || r >= SM2_N || s < 1n || s >= SM2_N) return false;
+  const ZA = sm2ZA(idBytes, Px, Py);
+  const eBar = bytesToBigInt(wordsToBytes(sm2E(ZA, Mbytes)));
+  const t = mod2(r + s, SM2_N);
+  if(t === 0n) return false;
+  const R = ecAdd(ecMul(s, { x: SM2_GX, y: SM2_GY }), ecMul(t, { x: Px, y: Py }));
+  if(!R) return false;
+  return mod2(eBar + R.x, SM2_N) === r;
+}
+function sm2Encrypt(Px, Py, Mbytes){
+  const klen = Mbytes.length * 8;
+  while(true){
+    const k = rand256() % SM2_N; if(k <= 0n || k >= SM2_N) continue;
+    const C1 = ecMul(k, { x: SM2_GX, y: SM2_GY });
+    const S = ecMul(k, { x: Px, y: Py });
+    const t = sm2KDF(concatArr([i2b(S.x,32), i2b(S.y,32)]), klen);
+    if(t.every(b => b === 0)) continue;
+    const C2 = Mbytes.map((b, i) => b ^ t[i]);
+    const C3 = sm3Bytes(concatArr([i2b(S.x,32), Mbytes, i2b(S.y,32)]));
+    return concatArr([new Uint8Array([0x04]), i2b(C1.x,32), i2b(C1.y,32), wordsToBytes(C3), new Uint8Array(C2)]);
+  }
+}
+function sm2Decrypt(d, cipher){
+  const off = (cipher[0] === 0x04) ? 1 : 0; // 兼容带/不带 0x04 前缀两种密文格式
+  const C1 = { x: bytesToBigInt(cipher.slice(off, off+32)), y: bytesToBigInt(cipher.slice(off+32, off+64)) };
+  const C3 = cipher.slice(off+64, off+96);
+  const C2 = cipher.slice(off+96);
+  const S = ecMul(d, C1);
+  const t = sm2KDF(concatArr([i2b(S.x,32), i2b(S.y,32)]), C2.length * 8);
+  const M = C2.map((b, i) => b ^ t[i]);
+  const C3chk = wordsToBytes(sm3Bytes(concatArr([i2b(S.x,32), M, i2b(S.y,32)])));
+  for(let i = 0; i < 32; i++) if(C3chk[i] !== C3[i]) return null;
+  return M;
+}
+const SM2 = { sign: sm2Sign, verify: sm2Verify, encrypt: sm2Encrypt, decrypt: sm2Decrypt, mul: ecMul, params: { P: SM2_P, A: SM2_A, B: SM2_B, GX: SM2_GX, GY: SM2_GY, N: SM2_N } };
+
+
+
+
+/* ============================================================
+   前端瑞士军刀 v1.4 —— 新增模块 UI 逻辑
+   依赖：crypto.mjs 转换后的国密库（SM3 / SM4 / SM2）
+   及既有工具：$, $$, escapeHtml, toast, copyText, bytesToHex,
+   hexToBytes, pkcs7Pad, pkcs7Unpad, envResolve, fmtDate, q1,
+   kvCollect, headerEditor, FORBIDDEN_HEADERS
+   ============================================================ */
+
+/* ---------------- 通用小工具 ---------------- */
+function bytesToB64(u){
+  let s = '';
+  for(let i = 0; i < u.length; i += 0x8000){
+    s += btoa(String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)));
+  }
+  return s;
+}
+function gmInputBytes(str, enc){
+  if(enc === 'Hex') return hexToBytes(str);
+  if(enc === 'Base64'){ const bin = atob(str.replace(/\s+/g, '')); return Uint8Array.from(bin, c => c.charCodeAt(0)); }
+  return new TextEncoder().encode(str);
+}
+
+/* ================= 14. 国密 SM2 / SM3 / SM4 ================= */
+/* 子标签切换 */
+$$('#mod-gm .panel-tab').forEach(t => t.addEventListener('click', () => {
+  $$('#mod-gm .panel-tab').forEach(x => x.classList.remove('active'));
+  t.classList.add('active');
+  $$('#mod-gm .api-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + t.dataset.p));
+}));
+
+/* SM3 */
+$('#gmSm3Btn').addEventListener('click', () => {
+  const out = $('#gmSm3Out'); out.classList.remove('empty', 'err-box');
+  try{
+    const enc = $('#gmSm3Enc').value;
+    let bytes;
+    if(enc === 'Hex') bytes = hexToBytes($('#gmSm3In').value);
+    else if(enc === 'Base64'){ const bin = atob($('#gmSm3In').value.replace(/\s+/g, '')); bytes = Uint8Array.from(bin, c => c.charCodeAt(0)); }
+    else bytes = new TextEncoder().encode($('#gmSm3In').value);
+    out.textContent = SM3.hex(bytes);
+  }catch(e){ out.textContent = '❌ ' + e.message; out.classList.add('err-box'); }
+});
+$('#gmSm3CopyBtn').addEventListener('click', function(){ copyText($('#gmSm3Out').textContent, this); });
+
+/* SM4 */
+$('#gmSm4Mode').addEventListener('change', () => {
+  const cbc = $('#gmSm4Mode').value === 'CBC';
+  $('#gmSm4IvField').style.display = cbc ? '' : 'none';
+  $('#gmSm4IvEncField').style.display = cbc ? '' : 'none';
+});
+function gmSm4Run(isEnc){
+  const out = $('#gmSm4Out'); const card = $('#gmSm4OutCard'); card.style.display = ''; out.classList.remove('err-box');
+  try{
+    const mode = $('#gmSm4Mode').value;
+    const key = gmInputBytes($('#gmSm4Key').value, $('#gmSm4KeyEnc').value);
+    if(key.length !== 16) throw new Error('SM4 密钥必须为 16 字节（128 位），当前 ' + key.length + ' 字节');
+    let iv = null;
+    if(mode === 'CBC'){
+      iv = gmInputBytes($('#gmSm4Iv').value, $('#gmSm4IvEnc').value);
+      if(iv.length !== 16) throw new Error('SM4 IV 必须为 16 字节，当前 ' + iv.length + ' 字节');
+    }
+    const outEnc = document.querySelector('input[name=gmSm4OutEnc]:checked').value;
+    if(isEnc){
+      const plain = gmInputBytes($('#gmSm4Plain').value, $('#gmSm4PlainEnc').value);
+      const data = pkcs7Pad(plain);
+      const enc = mode === 'CBC' ? SM4.cbc(key, iv, data, false) : SM4.ecb(key, data, false);
+      const text = outEnc === 'b64' ? bytesToB64(enc) : bytesToHex(enc);
+      $('#gmSm4Cipher').value = text;
+      out.textContent = '🔒 SM4-' + mode + ' 加密成功（' + (outEnc === 'b64' ? 'Base64' : 'Hex') + '）\n' + text;
+    } else {
+      const cipherEnc = /^[0-9a-fA-F\s]+$/.test($('#gmSm4Cipher').value.trim()) && $('#gmSm4Cipher').value.trim().length % 2 === 0 ? 'Hex' : 'Base64';
+      const data = gmInputBytes($('#gmSm4Cipher').value, cipherEnc);
+      if(data.length % 16) throw new Error('密文长度必须是 16 字节的整数倍');
+      const dec = mode === 'CBC' ? SM4.cbc(key, iv, data, true) : SM4.ecb(key, data, true);
+      const plain = pkcs7Unpad(dec);
+      const text = new TextDecoder().decode(plain);
+      $('#gmSm4Plain').value = text;
+      out.textContent = '🔓 SM4-' + mode + ' 解密成功\n' + text;
+    }
+  }catch(e){ out.textContent = '❌ ' + e.message; out.classList.add('err-box'); }
+}
+$('#gmSm4EncBtn').addEventListener('click', () => gmSm4Run(true));
+$('#gmSm4DecBtn').addEventListener('click', () => gmSm4Run(false));
+$('#gmSm4CopyBtn').addEventListener('click', function(){ copyText($('#gmSm4Cipher').value, this); });
+$('#gmSm4Mode').dispatchEvent(new Event('change'));
+
+/* SM2 辅助 */
+function gmHexToBN(hex){
+  const h = hex.replace(/[^0-9a-fA-F]/g, '');
+  let x = 0n;
+  for(let i = 0; i < h.length; i += 2) x = (x << 8n) | BigInt(parseInt(h.substr(i, 2), 16));
+  return x;
+}
+function gmBNToHex64(bn){ return bytesToHex(i2b(bn, 32)); }
+function gmPtToPubHex(P, with04){ return (with04 ? '04' : '') + bytesToHex(i2b(P.x, 32)) + bytesToHex(i2b(P.y, 32)); }
+function gmPubHexToPt(hex){
+  let h = hex.replace(/[^0-9a-fA-F]/g, '');
+  if(h.length === 128) h = '04' + h;
+  if(h.length !== 130) throw new Error('公钥应为 64 字节(无04)或 65 字节(含04)，当前 ' + (h.length / 2) + ' 字节');
+  if(h.substr(0, 2).toLowerCase() !== '04') throw new Error('公钥须以 04 开头（非压缩点）');
+  return { x: gmHexToBN(h.substr(2, 64)), y: gmHexToBN(h.substr(66, 64)) };
+}
+function gmSm2UserIdBytes(){ return new TextEncoder().encode($('#gmSm2UserId').value || '1234567812345678'); }
+function gmSm2MsgBytes(){
+  const enc = $('#gmSm2MsgEnc').value;
+  return enc === 'Hex' ? hexToBytes($('#gmSm2Msg').value) : new TextEncoder().encode($('#gmSm2Msg').value);
+}
+$('#gmSm2GenBtn').addEventListener('click', () => {
+  let d; do { d = rand256() % SM2_N; } while(d <= 0n || d >= SM2_N);
+  const P = ecMul(d, { x: SM2_GX, y: SM2_GY });
+  $('#gmSm2Priv').value = gmBNToHex64(d);
+  $('#gmSm2Pub').value = gmPtToPubHex(P, true);
+  toast('已生成 SM2 密钥对');
+});
+$('#gmSm2SignBtn').addEventListener('click', () => {
+  const out = $('#gmSm2Out'); const card = $('#gmSm2OutCard'); card.style.display = ''; out.classList.remove('err-box');
+  try{
+    const d = gmHexToBN($('#gmSm2Priv').value);
+    if(d <= 0n || d >= SM2_N) throw new Error('私钥超出范围 [1, n-1]');
+    const sig = SM2.sign(d, gmSm2UserIdBytes(), gmSm2MsgBytes());
+    const hex = gmBNToHex64(sig.r) + gmBNToHex64(sig.s);
+    $('#gmSm2Sig').value = hex;
+    out.textContent = '✅ 签名成功（r‖s，64 字节 Hex）\n' + hex;
+  }catch(e){ out.textContent = '❌ ' + e.message; out.classList.add('err-box'); }
+});
+$('#gmSm2VerifyBtn').addEventListener('click', () => {
+  const out = $('#gmSm2Out'); const card = $('#gmSm2OutCard'); card.style.display = ''; out.classList.remove('err-box');
+  try{
+    const P = gmPubHexToPt($('#gmSm2Pub').value);
+    const sigHex = $('#gmSm2Sig').value.replace(/[^0-9a-fA-F]/g, '');
+    if(sigHex.length !== 128) throw new Error('签名应为 64 字节(128 hex)');
+    const r = gmHexToBN(sigHex.substr(0, 64)), s = gmHexToBN(sigHex.substr(64, 64));
+    const ok = SM2.verify(P.x, P.y, gmSm2UserIdBytes(), gmSm2MsgBytes(), r, s);
+    out.textContent = ok ? '✅ 验签通过' : '❌ 验签失败（签名/公钥/明文/UserId 不匹配）';
+    out.classList.toggle('err-box', !ok);
+  }catch(e){ out.textContent = '❌ ' + e.message; out.classList.add('err-box'); }
+});
+$('#gmSm2EncBtn').addEventListener('click', () => {
+  const out = $('#gmSm2Out'); const card = $('#gmSm2OutCard'); card.style.display = ''; out.classList.remove('err-box');
+  try{
+    const P = gmPubHexToPt($('#gmSm2Pub').value);
+    const ct = SM2.encrypt(P.x, P.y, gmSm2MsgBytes());
+    const hex = bytesToHex($('#gmSm2C104').checked ? ct : ct.slice(1));
+    $('#gmSm2Cipher').value = hex;
+    out.textContent = '🔒 加密成功（C1C3C2' + ($('#gmSm2C104').checked ? '，含 04 前缀' : '，无 04 前缀') + '）\n' + hex;
+  }catch(e){ out.textContent = '❌ ' + e.message; out.classList.add('err-box'); }
+});
+$('#gmSm2DecBtn').addEventListener('click', () => {
+  const out = $('#gmSm2Out'); const card = $('#gmSm2OutCard'); card.style.display = ''; out.classList.remove('err-box');
+  try{
+    const d = gmHexToBN($('#gmSm2Priv').value);
+    if(d <= 0n || d >= SM2_N) throw new Error('私钥超出范围 [1, n-1]');
+    const ct = hexToBytes($('#gmSm2Cipher').value);
+    const dec = SM2.decrypt(d, ct);
+    if(!dec) throw new Error('解密失败：C3 校验不通过（密钥或密文不正确）');
+    const enc = $('#gmSm2MsgEnc').value;
+    const text = enc === 'Hex' ? bytesToHex(dec) : new TextDecoder().decode(dec);
+    $('#gmSm2Msg').value = text;
+    out.textContent = '🔓 解密成功\n' + text;
+  }catch(e){ out.textContent = '❌ ' + e.message; out.classList.add('err-box'); }
+});
+
+/* ================= 15. 请求集合 ================= */
+const COLL_KEY = 'dsk-coll';
+function collLoad(){ try{ return JSON.parse(localStorage.getItem(COLL_KEY)) || []; }catch(e){ return []; } }
+function collSave(l){ try{ localStorage.setItem(COLL_KEY, JSON.stringify(l)); }catch(e){} }
+function collParseHeaders(text){
+  return text.split('\n').map(l => l.trim()).filter(Boolean).map(l => {
+    const i = l.indexOf(':'); if(i < 0) return null;
+    return { k: l.slice(0, i).trim(), v: l.slice(i + 1).trim() };
+  }).filter(Boolean);
+}
+function collRender(){
+  const list = collLoad();
+  const el = $('#collList');
+  if(!list.length){ el.innerHTML = '<div class="muted" style="font-size:12.5px">暂无保存的请求。点「＋ 新建」或从 API 调试台导入。</div>'; return; }
+  const groups = {};
+  list.forEach((r, i) => { (groups[r.project || '默认'] = groups[r.project || '默认'] || []).push([r, i]); });
+  let html = '';
+  Object.keys(groups).forEach(g => {
+    html += '<div class="muted" style="font-size:12px;margin:8px 0 4px;font-weight:600">📁 ' + escapeHtml(g) + ' (' + groups[g].length + ')</div>';
+    groups[g].forEach(([r, i]) => {
+      html += '<div class="hist-item" style="cursor:pointer" data-i="' + i + '">'
+        + '<span class="m ' + (r.method === 'GET' ? 'stat-ok' : r.method === 'POST' ? 'stat-warn' : 'stat-err') + '">' + escapeHtml(r.method) + '</span>'
+        + '<span class="u" title="' + escapeHtml(r.url) + '">' + escapeHtml(r.name || r.url) + '</span></div>';
+    });
+  });
+  el.innerHTML = html;
+  el.querySelectorAll('.hist-item').forEach(it => it.addEventListener('click', () => collLoadInto(+it.dataset.i)));
+}
+let collCurIdx = -1;
+function collLoadInto(i){
+  const r = collLoad()[i]; if(!r) return;
+  collCurIdx = i;
+  $('#collName').value = r.name || '';
+  $('#collProject').value = r.project || '';
+  $('#collMethod').value = r.method || 'GET';
+  $('#collUrl').value = r.url || '';
+  $('#collHeaders').value = (r.headers || []).map(h => h.k + ': ' + h.v).join('\n');
+  $('#collBody').value = r.body || '';
+  toast('已载入：' + (r.name || r.url));
+}
+$('#collNewBtn').addEventListener('click', () => {
+  collCurIdx = -1;
+  ['collName', 'collProject', 'collUrl', 'collHeaders', 'collBody'].forEach(id => $('#' + id).value = '');
+  $('#collMethod').value = 'GET';
+  toast('已清空编辑区，填好后点「保存」');
+});
+$('#collImportApiBtn').addEventListener('click', () => {
+  $('#collUrl').value = envResolve($('#apiUrl').value);
+  $('#collMethod').value = $('#apiMethod').value;
+  $('#collBody').value = $('#apiBody').value;
+  $('#collHeaders').value = kvCollect(headerEditor.wrap).map(h => h.k + ': ' + envResolve(h.v)).join('\n');
+  toast('已从 API 调试台导入（保存前请填名称/项目）');
+});
+$('#collSaveBtn').addEventListener('click', () => {
+  const url = $('#collUrl').value.trim();
+  if(!url){ toast('请填写 URL'); return; }
+  const list = collLoad();
+  const rec = {
+    id: Date.now(),
+    name: $('#collName').value.trim() || url,
+    project: $('#collProject').value.trim() || '默认',
+    method: $('#collMethod').value,
+    url,
+    headers: collParseHeaders($('#collHeaders').value),
+    body: $('#collBody').value,
+    ts: Date.now()
+  };
+  if(collCurIdx >= 0 && list[collCurIdx]){ list[collCurIdx] = Object.assign(list[collCurIdx], rec); }
+  else { list.push(rec); collCurIdx = list.length - 1; }
+  collSave(list); collRender();
+  toast('已保存：' + rec.name);
+});
+$('#collDelBtn').addEventListener('click', () => {
+  if(collCurIdx < 0){ toast('请先选择一个请求'); return; }
+  const list = collLoad(); list.splice(collCurIdx, 1); collSave(list); collCurIdx = -1; collRender();
+  toast('已删除');
+});
+$('#collClearBtn').addEventListener('click', () => {
+  if(!confirm('确定清空全部请求集合？此操作不可恢复。')) return;
+  collSave([]); collCurIdx = -1; collRender(); toast('已清空');
+});
+$('#collCurlBtn').addEventListener('click', function(){
+  const r = collCurIdx >= 0 ? collLoad()[collCurIdx] : null;
+  if(!r){ toast('请先保存/载入一个请求'); return; }
+  copyText(collToCurl(r), this);
+});
+function collToCurl(r){
+  let s = 'curl -X ' + r.method + ' ' + q1(envResolve(r.url));
+  (r.headers || []).forEach(h => s += ' \\\n  -H ' + q1(h.k + ': ' + envResolve(h.v)));
+  if(r.body && r.method !== 'GET' && r.method !== 'HEAD') s += ' \\\n  -d ' + q1(envResolve(r.body));
+  return s;
+}
+$('#collSendBtn').addEventListener('click', async () => {
+  const url = envResolve($('#collUrl').value.trim());
+  if(!/^https?:\/\//i.test(url)){ toast('❌ 请输入完整 http(s) URL'); return; }
+  const headers = {};
+  collParseHeaders($('#collHeaders').value).forEach(h => headers[h.k] = envResolve(h.v));
+  const method = $('#collMethod').value;
+  const be = (method === 'GET' || method === 'HEAD') ? false : $('#collBody').value.trim().length > 0;
+  const opts = { method, headers };
+  if(be) opts.body = envResolve($('#collBody').value);
+  const out = $('#collResult'); out.classList.remove('empty', 'err-box');
+  const t0 = performance.now();
+  out.textContent = '请求中…';
+  try{
+    const res = await fetch(url, opts);
+    const ms = Math.round(performance.now() - t0);
+    let text = await res.text(); let pretty = text;
+    try{ pretty = JSON.stringify(JSON.parse(text), null, 2); }catch(e){}
+    out.textContent = (res.ok ? '✅ ' : '⚠️ ') + res.status + ' · ' + ms + 'ms · ' + (text.length / 1024).toFixed(1) + 'KB\n\n' + pretty;
+  }catch(e){
+    out.textContent = '❌ ' + e.message + '\n\n（浏览器 CORS 拦截时请用 API 调试台生成 Node 脚本重放）';
+    out.classList.add('err-box');
+  }
+});
+collRender();
+
+/* ================= 16. SSE 调试台 ================= */
+let sseState = { es: null, reader: null, abort: null, count: 0 };
+function sseLog(kind, text, tag){
+  const log = $('#sseLog');
+  const div = document.createElement('div');
+  div.className = 'ws-entry';
+  div.innerHTML = '<div class="ws-meta"><span class="ws-dir ' + (kind === 'sent' ? 'sent' : 'recv') + '">'
+    + (kind === 'sent' ? '↑ ' + (tag || '发送') : '↓ ' + (tag || 'event')) + '</span><span>' + fmtDate(new Date()) + '</span></div>'
+    + '<div class="ws-body">' + escapeHtml(text.length > 8192 ? text.slice(0, 8192) + '\n…（截断，全量 ' + text.length + ' 字符）' : text) + '</div>';
+  log.insertBefore(div, log.firstChild);
+  while(log.children.length > 300) log.removeChild(log.lastChild);
+}
+function sseSetStatus(text, cls){
+  const el = $('#sseStatus');
+  el.textContent = text; el.className = 'tag ' + (cls || '');
+}
+function sseDisconnect(){
+  if(sseState.es){ try{ sseState.es.close(); }catch(e){} sseState.es = null; }
+  if(sseState.reader){ try{ sseState.reader.cancel(); }catch(e){} sseState.reader = null; }
+  if(sseState.abort){ try{ sseState.abort.abort(); }catch(e){} sseState.abort = null; }
+}
+function sseDispatchChunk(chunk){
+  const lines = chunk.split('\n');
+  let event = 'message', id = null, retry = null; const data = [];
+  for(const line of lines){
+    if(line === '') continue;
+    if(line.startsWith(':')) continue;
+    let k = 'data', v = line;
+    const i = line.indexOf(':');
+    if(i >= 0){ k = line.slice(0, i); v = line.slice(i + 1); if(v.startsWith(' ')) v = v.slice(1); }
+    if(k === 'data') data.push(v);
+    else if(k === 'event') event = v;
+    else if(k === 'id') id = v;
+    else if(k === 'retry') retry = v;
+  }
+  const payload = data.join('\n');
+  if(payload === '' && !id && !retry) return;
+  sseState.count++; $('#sseCount').textContent = sseState.count;
+  let pretty = payload;
+  try{ pretty = JSON.stringify(JSON.parse(payload), null, 2); }catch(e){}
+  sseLog('recv', pretty, event + (id ? (' #' + id) : ''));
+}
+async function sseFetchStream(url){
+  sseDisconnect();
+  const ctrl = new AbortController();
+  sseState.abort = ctrl;
+  const headers = {};
+  collParseHeaders($('#sseHeader').value).forEach(h => headers[h.k] = h.v);
+  const method = $('#sseMethod').value;
+  const opts = { method, headers, signal: ctrl.signal };
+  if(method !== 'GET' && method !== 'HEAD' && $('#sseBody').value.trim()) opts.body = $('#sseBody').value;
+  sseSetStatus('连接中…', 'tag-warn');
+  sseLog('evt', '→ 连接(fetch) ' + method + ' ' + url);
+  try{
+    const res = await fetch(url, opts);
+    sseSetStatus('已连接 ' + res.status, 'tag-ok');
+    sseLog('evt', '← HTTP ' + res.status + (res.headers.get('content-type') ? ' · ' + res.headers.get('content-type') : ''));
+    const reader = res.body.getReader();
+    sseState.reader = reader;
+    const dec = new TextDecoder();
+    let buf = '';
+    while(true){
+      const { done, value } = await reader.read();
+      if(done) break;
+      buf += dec.decode(value, { stream: true });
+      let idx;
+      while((idx = buf.indexOf('\n\n')) >= 0){
+        const chunk = buf.slice(0, idx);
+        buf = buf.slice(idx + 2);
+        sseDispatchChunk(chunk);
+      }
+    }
+    sseLog('evt', '✓ 流结束');
+    sseSetStatus('已结束', '');
+  }catch(e){
+    if(e.name === 'AbortError'){ sseLog('evt', '✕ 已断开'); return; }
+    sseLog('evt', '✗ 错误：' + e.message);
+    sseSetStatus('错误', 'tag-err');
+    if($('#sseAuto').checked){ sseLog('evt', '… 3 秒后自动重连'); setTimeout(() => { if(sseState.abort === ctrl) sseFetchStream(url); }, 3000); }
+  }finally{
+    sseState.reader = null; sseState.abort = null;
+  }
+}
+function sseConnect(){
+  const rawUrl = $('#sseUrl').value.trim();
+  if(!rawUrl){ toast('请输入 SSE URL'); return; }
+  const url = envResolve(rawUrl);
+  sseState.count = 0; $('#sseCount').textContent = '0';
+  if($('#sseMode').value === 'es'){
+    if(!/^https?:/i.test(url)){ toast('EventSource 需要 http(s) URL'); return; }
+    if($('#sseHeader').value.trim() || ($('#sseBody').value.trim() && $('#sseMethod').value !== 'GET')){ toast('⚠️ EventSource 仅支持 GET 且不能带自定义头/请求体，已忽略（用「fetch 流」模式可携带）'); }
+    sseDisconnect();
+    sseLog('evt', '→ 连接(EventSource) ' + url);
+    const es = new EventSource(url);
+    sseState.es = es;
+    es.onopen = () => { sseSetStatus('已连接', 'tag-ok'); sseLog('evt', '✓ EventSource 已连接'); };
+    es.onmessage = ev => { sseState.count++; $('#sseCount').textContent = sseState.count; sseLog('recv', ev.data, 'message'); };
+    es.onerror = () => { sseSetStatus('重连中', 'tag-warn'); sseLog('evt', '✗ EventSource 错误（浏览器按协议自动重连）'); };
+  } else {
+    sseFetchStream(url);
+  }
+}
+$('#sseConnBtn').addEventListener('click', sseConnect);
+$('#sseDiscBtn').addEventListener('click', () => { sseDisconnect(); sseSetStatus('未连接', ''); sseLog('evt', '✕ 已断开'); });
+$('#sseClearBtn').addEventListener('click', () => { $('#sseLog').innerHTML = ''; sseState.count = 0; $('#sseCount').textContent = '0'; });
+
+/* ================= 17. 凭证泄露扫描 ================= */
+const SEC_RULES = [
+  { name: 'AWS Access Key ID', sev: 'High', re: /\bAKIA[0-9A-Z]{16}\b/g },
+  { name: 'AWS Secret Access Key', sev: 'High', re: /(?:aws_secret_access_key|awsSecretKey|aws_access_secret)\s*[:=]\s*["']?([A-Za-z0-9/+]{40})["']?/gi, grp: 1 },
+  { name: 'GitHub Token', sev: 'High', re: /\b(?:gh[pousr]_[0-9A-Za-z]{36}|github_pat_[0-9A-Za-z_]{22,})\b/g },
+  { name: 'Private Key Block', sev: 'High', re: /-----BEGIN (?:RSA |EC |OPENSSH |DSA |PGP )?PRIVATE KEY-----/g },
+  { name: 'JSON Web Token (JWT)', sev: 'High', re: /\beyJ[A-Za-z0-9_-]+\.eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g },
+  { name: 'Google API Key', sev: 'High', re: /\bAIza[0-9A-Za-z_-]{35}\b/g },
+  { name: 'Slack Token', sev: 'High', re: /\bxox[baprs]-[0-9A-Za-z-]{10,}\b/g },
+  { name: 'Stripe Live Key', sev: 'High', re: /\b(?:sk_live|rk_live|pk_live)_[0-9a-zA-Z]{16,}\b/g },
+  { name: 'Twilio API Key (SK)', sev: 'Medium', re: /\bSK[0-9a-fA-F]{32}\b/g },
+  { name: 'URL 中嵌入的密码', sev: 'Medium', re: /[a-zA-Z][a-zA-Z0-9+.\-]*:\/\/[^:\/\s]+:[^@\s]+@/g },
+  { name: 'Session Cookie', sev: 'Medium', re: /(?:sessionid|PHPSESSID|JSESSIONID)\s*=\s*[0-9A-Za-z]{16,}/gi },
+  { name: '疑似密钥赋值 (key/secret/token/password)', sev: 'Medium', re: /(?:api[_-]?key|secret|token|passwd|password)\s*[:=]\s*["']([A-Za-z0-9_\-]{12,})["']/gi, grp: 1 },
+];
+function secLineOf(text, idx){ let n = 1, i = text.indexOf('\n'); while(i >= 0 && i < idx){ n++; i = text.indexOf('\n', i + 1); } return n; }
+function secEntropy(s){ const f = {}; for(const c of s) f[c] = (f[c] || 0) + 1; let e = 0; for(const k in f){ const p = f[k] / s.length; e -= p * Math.log2(p); } return e; }
+function maskHit(s){ if(s.length <= 8) return s.slice(0, 2) + '••••' + s.slice(-2); return s.slice(0, 4) + '••••••' + s.slice(-4); }
+function secScan(){
+  const text = $('#secIn').value;
+  const out = $('#secOut'); out.classList.remove('err-box');
+  if(!text.trim()){ toast('请粘贴待扫描文本'); return; }
+  const findings = [];
+  const ranges = [];
+  for(const rule of SEC_RULES){
+    rule.re.lastIndex = 0; let m;
+    while((m = rule.re.exec(text))){
+      const val = m[rule.grp != null ? rule.grp : 0] || m[0];
+      findings.push({ line: secLineOf(text, m.index), name: rule.name, sev: rule.sev, hit: val });
+      ranges.push([m.index, m.index + m[0].length]);
+      if(m.index === rule.re.lastIndex) rule.re.lastIndex++;
+    }
+  }
+  if($('#secEntropy').checked){
+    const tokRe = /[A-Za-z0-9+/=]{32,}|[0-9a-fA-F]{32,}/g; let t;
+    while((t = tokRe.exec(text))){
+      const tok = t[0]; if(ranges.some(r => t.index < r[1] && t.index + tok.length > r[0])) continue;
+      const isHex = /^[0-9a-fA-F]+$/.test(tok);
+      const e = secEntropy(tok); const thr = isHex ? 3.8 : 4.2;
+      if(e >= thr) findings.push({ line: secLineOf(text, t.index), name: '高熵字符串' + (isHex ? '（Hex）' : '（Base64/文本）'), sev: 'Medium', hit: tok });
+    }
+  }
+  const seen = new Set(); const uniq = [];
+  findings.forEach(f => { const k = f.name + '|' + f.hit; if(!seen.has(k)){ seen.add(k); uniq.push(f); } });
+  if(!uniq.length){ out.innerHTML = '<div class="hint" style="margin:0">✅ 未发现明显凭证 / 密钥泄露风险。</div>'; return; }
+  const sc = { High: 'tag-err', Medium: 'tag-warn', Low: 'tag-blue' };
+  let html = '<div style="margin-bottom:8px">共发现 <b>' + uniq.length + '</b> 处可疑项（高 ' + uniq.filter(f => f.sev === 'High').length + ' / 中 ' + uniq.filter(f => f.sev === 'Medium').length + '）</div>';
+  html += '<table class="data"><tr><th>行</th><th>类型</th><th>严重</th><th>命中（已脱敏）</th></tr>';
+  uniq.forEach(f => {
+    html += '<tr><td class="mono">' + f.line + '</td><td>' + escapeHtml(f.name) + '</td>'
+      + '<td><span class="tag ' + (sc[f.sev] || 'tag-blue') + '">' + f.sev + '</span></td>'
+      + '<td class="mono">' + escapeHtml(maskHit(f.hit)) + '</td></tr>';
+  });
+  html += '</table>';
+  out.innerHTML = html;
+}
+$('#secScanBtn').addEventListener('click', secScan);
+$('#secClearBtn').addEventListener('click', () => { $('#secIn').value = ''; $('#secOut').innerHTML = '<div class="hint" style="margin:0">点击「开始扫描」查看结果。</div>'; });
+
 </script>
 </body>
 </html>
