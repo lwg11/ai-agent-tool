@@ -1,0 +1,7 @@
+# 忽略 WorkBuddy 工作区数据
+.workbuddy/
+
+# 系统文件
+Thumbs.db
+Desktop.ini
+.DS_Store
