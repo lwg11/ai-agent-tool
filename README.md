@@ -20,6 +20,9 @@ ai-agent-tool/
 ├── hr-toolbox/          # 人事百宝箱：7 模块单文件离线 HR 工具集（HTML）
 │   ├── hr-toolbox.html  # 双击即用：薪资个税推演 / 年终奖对比 / 考勤统计 / 简历筛选 / 试用期合规 / 年假折算 / 花名册到期提醒
 │   └── README.md
+├── ssc-toolbox/         # SSC 百宝箱：SSC 岗位专用 4 模块单文件离线工具集（HTML）
+│   ├── ssc-toolbox.html # 双击即用：社保公积金计算（6 城市可切换）/ 生育·病假·工伤待遇 / 员工福利台账 / 员工咨询问答库
+│   └── README.md
 ├── run-all.js           # 可选：一键跑全部签到并汇总
 ├── package.json
 └── 人寿团单下载工具/ 等既有工具目录
@@ -35,7 +38,7 @@ node juejin-checkin/juejin-checkin.js   # 单独跑掘金
 node run-all.js                         # 一键全部（npm run all 等价）
 ```
 
-各工具用法与凭证获取方式见各自目录下的 README.md。`dev-toolbox`、`hr-toolbox` 为纯前端单文件工具，双击 HTML 即用，无需 Node。
+各工具用法与凭证获取方式见各自目录下的 README.md。`dev-toolbox`、`hr-toolbox`、`ssc-toolbox` 为纯前端单文件工具，双击 HTML 即用，无需 Node。
 
 ## 新增一个工具的规范
 
