@@ -2,9 +2,9 @@
 
 一个**单文件、零依赖、纯本地**运行的前端开发工具集 —— 双击 `dev-toolbox.html` 即用，数据不出浏览器。
 
-专为前端日常联调场景设计：cURL 转代码、接口日志解析、JSON 对比、API 调试、Mock 生成、AES 加解密……
+专为前端日常联调场景设计：cURL 转代码、接口日志解析、JSON 对比、API 调试、Mock 生成、AES / 国密加解密、请求集合收藏、SSE 流式调试、凭证泄露扫描……
 
-## ✨ 功能模块（13 个）
+## ✨ 功能模块（17 个）
 
 | # | 模块 | 功能 |
 |---|------|------|
@@ -21,6 +21,10 @@
 | 11 | 📡 API 调试台 | 本地 mini Postman：cURL 一键导入、浏览器直发请求、CORS 被拦时生成 Node 脚本绕过、环境变量 `{{token}}` 全局替换、请求历史（最近 50 条）、响应一键转 Mock / TS 接口 / JSON 对比 / **axios 拦截器** |
 | 12 | 🛡️ AES 加解密 | AES-128/192/256 · ECB/CBC · PKCS7，纯本地实现（已用 Node crypto 交叉验证），密钥/IV 支持 Text/Hex/Base64 |
 | 13 | 🔌 WebSocket 调试台 | 连接 / 收发日志（JSON 自动美化）/ ping 心跳保活 / 断线自动重连 / 消息计数 / http(s)→ws(s) 自动转换 |
+| 14 | 🔏 国密 SM2/SM3/SM4 | 纯 JS 国密套件：SM3 哈希、SM4 ECB/CBC 加解密、SM2 签名验签与公钥加密/私钥解密（已用 Node crypto + sm-crypto 交叉验证） |
+| 15 | 📚 请求集合 | 接口收藏：按项目分组、localStorage 持久化、一键重放、复制 cURL、从 API 调试台导入 |
+| 16 | 🌊 SSE 调试台 | Server-Sent Events 流式调试：EventSource(GET) 与 fetch 流双模式，自动解析 data/event/id/retry，JSON 自动美化 |
+| 17 | 🕵️ 凭证泄露扫描 | 代码/日志扫描 AWS/GitHub/Slack/Stripe/Google Token、私钥、JWT、URL 密码与高熵疑似密钥，命中自动脱敏 |
 
 ## 🚀 使用
 
@@ -40,6 +44,10 @@ npx serve .
 - `Alt + Q`：API 调试台
 - `Alt + A`：AES 加解密
 - `Alt + W`：WebSocket 调试台
+- `Alt + G`：国密 SM2/SM3/SM4
+- `Alt + C`：请求集合
+- `Alt + E`：SSE 调试台
+- `Alt + X`：凭证泄露扫描
 - `Esc`：关闭所有弹窗
 - `Enter`（URL 框内）：API 调试台直接发送
 
@@ -52,3 +60,13 @@ npx serve .
 ## 🧪 AES 实现说明
 
 AES 模块为纯 JS 手写实现（无 SubtleCrypto 依赖，保证 file:// 直接打开可用），已与 Node.js `crypto` 模块交叉验证：6 种配置（128/192/256 × ECB/CBC）× 6 组文本（含中文、emoji、非对齐长度）= **36/36 全部通过**。
+
+## 🔐 国密实现说明
+
+国密（SM2/SM3/SM4）模块为纯 JS 手写实现（零依赖，file:// 直接打开可用），与 Node.js `crypto`（SM3/SM4）及 `sm-crypto`（SM2 权威参考实现）交叉验证：
+
+- **SM3**：`abc` / 空 / 中文长文本的哈希与 Node `crypto` 逐字节一致
+- **SM4**：ECB/CBC 已知标准向量与随机密钥/明文全量一致（含 PKCS7 填充）
+- **SM2**：与 `sm-crypto` 互相验签、互相解密均通过（C1C3C2 格式，兼容带 / 不带 `04` 前缀两种密文）
+
+曲线参数采用 sm2p256v1（GB/T 32918 / RFC 8998），基点 G 已验证在曲线上；密文格式支持 `04` 前缀开关，方便与主流国密库对接。
