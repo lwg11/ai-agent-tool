@@ -14,6 +14,9 @@ ai-agent-tool/
 │   ├── config.json      # 凭证（不入库）
 │   ├── config.example.json
 │   └── README.md
+├── dev-toolbox/         # 前端瑞士军刀：12 模块单文件离线工具集（HTML）
+│   ├── dev-toolbox.html # 双击即用：cURL 转代码 / API 调试台 / Mock 生成 / AES 等
+│   └── README.md
 ├── run-all.js           # 可选：一键跑全部签到并汇总
 ├── package.json
 └── 人寿团单下载工具/ 等既有工具目录

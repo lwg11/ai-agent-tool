@@ -1,7 +1,14 @@
-# 忽略 WorkBuddy 工作区数据
+# 真实凭证配置不入库（安全）——覆盖所有工具目录下的 config.json
+**/config.json
+
+node_modules/
+__pycache__/
+*.log
+
+# WorkBuddy 工作区数据
 .workbuddy/
 
 # 系统文件
+.DS_Store
 Thumbs.db
 Desktop.ini
-.DS_Store
