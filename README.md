@@ -42,7 +42,25 @@ node run-all.js                         # 一键全部（npm run all 等价）
 
 真实接口响应以 `[api:<工具>-<接口>]` 形式打印，便于联调追溯。
 
-## 定时执行（Windows 任务计划程序）
+## 定时执行方案 A：GitHub Actions（推荐，云端跑，本机关机也照跑）
+
+工作流：`.github/workflows/daily-checkin.yml`，每天**北京时间约 10:00** 自动执行 `run-all.js`（cron 为 UTC 01:00，GitHub 可能有 0~30 分钟触发延迟）。
+
+首次配置只需两步：
+
+1. 打开仓库 GitHub 页面 → `Settings` → `Secrets and variables` → `Actions` → `New repository secret`
+2. 添加两个 Secret（Name 必须一字不差）：
+
+   | Secret 名称 | 值 |
+   |---|---|
+   | `IKUUU_CONFIG_JSON` | 本地 `ikuuu-checkin/config.json` 的**完整内容**（整个 JSON 原样粘贴） |
+   | `JUEJIN_CONFIG_JSON` | 本地 `juejin-checkin/config.json` 的**完整内容**（整个 JSON 原样粘贴） |
+
+Secret 安全性：GitHub 会加密存储，日志中自动打码，不会出现在代码里。凭证失效后更新 Secret 里的 JSON 内容即可。
+
+手动测试：仓库页面 → `Actions` → `daily-checkin` → `Run workflow`。运行结果与日志在 Actions 列表查看。
+
+## 定时执行方案 B：Windows 任务计划程序（本地跑）
 
 ```powershell
 $action  = New-ScheduledTaskAction -Execute "node.exe" -Argument "run-all.js" -WorkingDirectory "<本仓库路径>"

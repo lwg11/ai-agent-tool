@@ -1,0 +1,55 @@
+name: daily-checkin
+
+# 每日定时签到（ikuuu + 稀土掘金）
+# 时区说明：GitHub Actions cron 只支持 UTC，北京时间 10:00 = UTC 01:00。
+# 注意：GitHub 定时任务可能有 0~30 分钟的触发延迟，属正常现象。
+
+on:
+  schedule:
+    - cron: '0 1 * * *' # 每天北京时间上午 10 点左右
+  workflow_dispatch: # 支持在 Actions 页面手动触发（用于测试）
+
+concurrency:
+  group: daily-checkin
+  cancel-in-progress: false
+
+jobs:
+  checkin:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 写入 ikuuu 配置（来自 Secret）
+        env:
+          IKUUU_CONFIG: ${{ secrets.IKUUU_CONFIG_JSON }}
+        run: |
+          if [ -z "$IKUUU_CONFIG" ]; then
+            echo "::error::Secret IKUUU_CONFIG_JSON 未配置，请在仓库 Settings > Secrets and variables > Actions 中添加"
+            exit 1
+          fi
+          printf '%s' "$IKUUU_CONFIG" > ikuuu-checkin/config.json
+
+      - name: 写入掘金配置（来自 Secret）
+        env:
+          JUEJIN_CONFIG: ${{ secrets.JUEJIN_CONFIG_JSON }}
+        run: |
+          if [ -z "$JUEJIN_CONFIG" ]; then
+            echo "::error::Secret JUEJIN_CONFIG_JSON 未配置，请在仓库 Settings > Secrets and variables > Actions 中添加"
+            exit 1
+          fi
+          printf '%s' "$JUEJIN_CONFIG" > juejin-checkin/config.json
+
+      - name: 执行签到
+        run: node run-all.js
+
+      - name: 清理凭证文件
+        if: always()
+        run: rm -f ikuuu-checkin/config.json juejin-checkin/config.json
