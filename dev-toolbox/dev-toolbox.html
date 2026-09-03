@@ -159,7 +159,7 @@ details summary:hover{color:var(--primary)}
 <body>
 
 <header>
-  <div class="brand">🇨🇭 前端瑞士军刀 <span class="ver">v1.4 · 单文件离线版</span></div>
+  <div class="brand">🇨🇭 前端瑞士军刀 <span class="ver">v1.5 · 单文件离线版</span></div>
   <div class="header-right">
     <span id="liveClock">--</span>
     <button class="icon-btn" id="helpToggle" title="快捷键速查（按 ? 呼出）">⌨ 快捷键</button>
@@ -425,12 +425,15 @@ details summary:hover{color:var(--primary)}
       <pre class="out empty" id="pwOut">--</pre>
     </div>
     <div class="card">
-      <h3>px ⇄ rem</h3>
-      <label class="field"><span>根字号 (root font-size, px)</span><input type="number" id="rootFs" value="16"></label>
+      <h3>px / rem / vw 换算</h3>
+      <label class="field"><span>根字号 root font-size (px)</span><input type="number" id="rootFs" value="16"></label>
+      <label class="field"><span>视口宽度 (px，用于 vw)</span><input type="number" id="vwWidth" value="375"></label>
       <label class="field"><span>px</span><input type="number" id="pxIn" value="24"></label>
       <div class="arrow">⇅</div>
       <label class="field"><span>rem</span><input type="number" id="remIn" step="0.0001"></label>
-      <div class="hint">双向换算，改任意一边自动同步。</div>
+      <div class="arrow">⇅</div>
+      <label class="field"><span>vw</span><input type="number" id="vwIn" step="0.0001"></label>
+      <div class="hint">三向联动：px = rem×根字号 = vw×视口宽度÷100。改任意一边自动同步。</div>
     </div>
   </div>
 </section>
@@ -877,10 +880,64 @@ details summary:hover{color:var(--primary)}
   </div>
 </section>
 
+<section class="module" id="mod-b64">
+  <div class="mod-head">
+    <h2>📎 文件 Base64 & multipart</h2>
+    <p class="mod-desc">图片/文件 ⇄ Base64 互转（本地，不上传），并构造 multipart/form-data 请求体。</p>
+  </div>
+  <div class="grid3">
+    <div class="card">
+      <h3>① 文件 → Base64</h3>
+      <div id="b64Drop" style="border:1.5px dashed var(--border);border-radius:8px;padding:16px;text-align:center;cursor:pointer;color:var(--muted);font-size:13px">拖拽文件到此处，或 <label class="btn btn-sm" style="display:inline-block;margin:0 4px">选择文件<input type="file" id="b64File" hidden></label></div>
+      <div id="b64FileMeta" class="muted" style="font-size:12px;margin:8px 0"></div>
+      <div id="b64PrevWrap" style="display:none;margin:8px 0"><img id="b64Prev" style="max-width:160px;max-height:120px;border-radius:6px;border:1px solid var(--border)"></div>
+      <label class="field"><span>Data URL（完整，含前缀）</span><textarea id="b64Out" rows="5" readonly placeholder="选择文件后自动生成"></textarea></label>
+      <div class="btn-row"><button class="btn btn-sm" id="b64CopyBtn">复制 Data URL</button><button class="btn btn-sm" id="b64DownloadBtn">下载原文件</button></div>
+    </div>
+    <div class="card">
+      <h3>② Base64 → 文件</h3>
+      <label class="field"><span>Data URL 或纯 Base64</span><textarea id="b64In" rows="5" placeholder="data:image/png;base64,iVBOR... 或仅 base64 文本"></textarea></label>
+      <label class="field"><span>文件名（含扩展名，可选）</span><input type="text" id="b64FileName" placeholder="e.g. image.png"></label>
+      <div class="btn-row"><button class="btn btn-primary" id="b64ToFileBtn">生成并下载</button><button class="btn btn-sm" id="b64InClear">清空</button></div>
+      <div class="hint" style="margin:0">纯 Base64 文本需手动填文件名与扩展名；Data URL 自动识别 mime。</div>
+    </div>
+    <div class="card">
+      <h3>③ multipart/form-data 构造</h3>
+      <div id="mpRows"></div>
+      <div class="btn-row"><button class="btn btn-sm" id="mpAddText">＋ 文本字段</button><button class="btn btn-sm" id="mpAddFile">＋ 文件字段</button></div>
+      <label class="field"><span>生成的请求体（文本结构，文件以占位标记）</span><pre class="out empty" id="mpOut">--</pre></label>
+      <div class="btn-row"><button class="btn btn-sm" id="mpCopyBtn">复制请求体</button><button class="btn btn-sm" id="mpCodeBtn">生成 fetch / cURL</button></div>
+      <div id="mpCodeWrap" style="display:none;margin-top:8px"><label class="field"><span>代码</span><pre class="out empty" id="mpCode"></pre></label></div>
+    </div>
+  </div>
+</section>
+
+<section class="module" id="mod-hdrs">
+  <div class="mod-head">
+    <h2>🍪 Cookie / 请求头解析</h2>
+    <p class="mod-desc">粘贴 Cookie 串或 DevTools「Copy request headers」dump，解析为结构化 KV，自动展开 Cookie，支持多格式导出。</p>
+  </div>
+  <div class="card">
+    <label class="field"><span>粘贴内容（Cookie 串 / 请求头块 / 含 Cookie: 的行）</span><textarea id="hdrsIn" rows="9" placeholder="Cookie: a=1; b=2&#10;authorization: Bearer xxx&#10;x-xsrf-token: abc&#10;（或直接粘贴 a=1; b=2）"></textarea></label>
+    <div class="btn-row"><button class="btn btn-primary" id="hdrsParseBtn">解析</button><button class="btn btn-sm" id="hdrsClearBtn">清空</button></div>
+    <div id="hdrsOut" class="hint" style="margin-top:8px">点击「解析」查看结果。</div>
+  </div>
+  <div class="card" id="hdrsExportCard" style="display:none">
+    <h3>导出</h3>
+    <div class="btn-row">
+      <button class="btn btn-sm" data-hdrs-exp="table">表格</button>
+      <button class="btn btn-sm" data-hdrs-exp="json">JSON</button>
+      <button class="btn btn-sm" data-hdrs-exp="js">JS 对象</button>
+      <button class="btn btn-sm" data-hdrs-exp="curl">cURL -H</button>
+      <button class="btn btn-sm" data-hdrs-exp="env">环境变量</button>
+    </div>
+    <pre class="out empty" id="hdrsExport"></pre>
+  </div>
+</section>
 </main>
 </div>
 
-<footer>🇨🇭 前端瑞士军刀 —— 单文件、零依赖、纯本地运行，数据不出浏览器（API/WS 调试台发出的请求除外）。快捷键：<span class="kbd">?</span> 速查面板，<span class="kbd">Alt</span>+<span class="kbd">1~0</span> 模块，<span class="kbd">Alt</span>+<span class="kbd">Q</span> API 台，<span class="kbd">Alt</span>+<span class="kbd">A</span> AES，<span class="kbd">Alt</span>+<span class="kbd">W</span> WebSocket · Alt+G 国密 · Alt+C 请求集合 · Alt+E SSE · Alt+X 凭证</footer>
+<footer>🇨🇭 前端瑞士军刀 —— 单文件、零依赖、纯本地运行，数据不出浏览器（API/WS 调试台发出的请求除外）。快捷键：<span class="kbd">?</span> 速查面板，<span class="kbd">Alt</span>+<span class="kbd">1~0</span> 模块，<span class="kbd">Alt</span>+<span class="kbd">Q</span> API 台，<span class="kbd">Alt</span>+<span class="kbd">A</span> AES，<span class="kbd">Alt</span>+<span class="kbd">W</span> WebSocket · Alt+G 国密 · Alt+C 请求集合 · Alt+E SSE · Alt+X 凭证 · Alt+B 文件Base64 · Alt+H 请求头解析</footer>
 <div id="toast"></div>
 
 <script>
@@ -943,13 +1000,21 @@ const MODULES = [
   {id:'mod-coll',  icon:'📚', name:'请求集合',        desc:'保存/收藏接口，按项目分组，一键重放与导出 cURL'},
   {id:'mod-sse',   icon:'🌊', name:'SSE 调试台',      desc:'Server-Sent Events 流式调试：EventSource / fetch 流，自动解析事件'},
   {id:'mod-secret',icon:'🕵️', name:'凭证泄露扫描',    desc:'代码/日志扫描：AK/SK、token、私钥、JWT、高熵密钥'},
+  {id:'mod-b64',   icon:'📎', name:'文件 Base64',     desc:'图片/文件 ⇄ Base64 互转，构造 multipart/form-data 请求体'},
+  {id:'mod-hdrs',  icon:'🍪', name:'请求头解析',      desc:'Cookie 串 / DevTools 请求头 dump 解析为结构化 KV，多格式导出'},
 ];
+/* 额外模块的 Alt 字母快捷键（前 10 个用 Alt+1~0） */
+const MOD_SHORTCUT = {
+  'mod-api':'Q','mod-aes':'A','mod-ws':'W','mod-gm':'G','mod-coll':'C',
+  'mod-sse':'E','mod-secret':'X','mod-b64':'B','mod-hdrs':'H'
+};
 const sidebar = $('#sidebar');
 MODULES.forEach((m, i) => {
   const b = document.createElement('button');
   b.className = 'nav-item'; b.dataset.mod = m.id;
-  const key = (i + 1) % 10;
-  b.innerHTML = '<span>' + m.icon + '</span><span>' + m.name + '</span><span class="nav-key">Alt+' + key + '</span>';
+  const sk = MOD_SHORTCUT[m.id];
+  const navKey = sk ? sk : (i < 10 ? String((i + 1) % 10) : '');
+  b.innerHTML = '<span>' + m.icon + '</span><span>' + m.name + '</span><span class="nav-key">' + (navKey ? 'Alt+' + navKey : '') + '</span>';
   b.title = m.desc;
   sidebar.appendChild(b);
 });
@@ -970,13 +1035,12 @@ document.addEventListener('keydown', e => {
     const idx = e.key === '0' ? 9 : (+e.key - 1);
     if(MODULES[idx]) switchTo(MODULES[idx].id);
   }
-  if(e.altKey && (e.key === 'q' || e.key === 'Q')) switchTo('mod-api');
-  if(e.altKey && (e.key === 'a' || e.key === 'A')) switchTo('mod-aes');
-  if(e.altKey && (e.key === 'w' || e.key === 'W')) switchTo('mod-ws');
-  if(e.altKey && (e.key === 'g' || e.key === 'G')) switchTo('mod-gm');
-  if(e.altKey && (e.key === 'c' || e.key === 'C')) switchTo('mod-coll');
-  if(e.altKey && (e.key === 'e' || e.key === 'E')) switchTo('mod-sse');
-  if(e.altKey && (e.key === 'x' || e.key === 'X')) switchTo('mod-secret');
+  if(e.altKey){
+    for(const id in MOD_SHORTCUT){
+      const k = MOD_SHORTCUT[id];
+      if(e.key === k || e.key === k.toLowerCase()) { switchTo(id); break; }
+    }
+  }
   if(e.key === 'Escape'){
     ['#dskHelpModal','#dskNodeModal','#dskMockModal','#dskAxiosModal'].forEach(sel => {
       const el = document.querySelector(sel);
@@ -1006,6 +1070,8 @@ function buildHelpModal(){
     + '<tr><td><span class="kbd">Alt</span>+<span class="kbd">C</span></td><td>请求集合</td></tr>'
     + '<tr><td><span class="kbd">Alt</span>+<span class="kbd">E</span></td><td>SSE 调试台</td></tr>'
     + '<tr><td><span class="kbd">Alt</span>+<span class="kbd">X</span></td><td>凭证泄露扫描</td></tr>'
+    + '<tr><td><span class="kbd">Alt</span>+<span class="kbd">B</span></td><td>文件 Base64 & multipart</td></tr>'
+    + '<tr><td><span class="kbd">Alt</span>+<span class="kbd">H</span></td><td>Cookie / 请求头解析</td></tr>'
     + '<tr><td><span class="kbd">Enter</span>（URL 框内）</td><td>API 调试台直接发送</td></tr>'
     + '</table>'
     + '<div class="btn-row"><button class="btn btn-sm" id="helpCloseBtn">关闭</button></div></div>';
@@ -1737,20 +1803,46 @@ $('#pwBtn').addEventListener('click', () => {
   const out = $('#pwOut'); out.classList.remove('empty');
   out.textContent = list.join('\n');
 });
-let pxLock = false;
+let uLock = false;
+function uSyncFromPx(){
+  const px = parseFloat($('#pxIn').value);
+  const root = parseFloat($('#rootFs').value) || 16;
+  const vwW = parseFloat($('#vwWidth').value) || 100;
+  if(isNaN(px)){ $('#remIn').value = ''; $('#vwIn').value = ''; return; }
+  $('#remIn').value = +(px / root).toFixed(4);
+  $('#vwIn').value = +(px / vwW * 100).toFixed(4);
+}
 $('#pxIn').addEventListener('input', () => {
-  if(pxLock) return; pxLock = true;
-  const px = parseFloat($('#pxIn').value); const root = parseFloat($('#rootFs').value) || 16;
-  $('#remIn').value = isNaN(px) ? '' : +(px / root).toFixed(4);
-  pxLock = false;
+  if(uLock) return; uLock = true;
+  uSyncFromPx();
+  uLock = false;
 });
 $('#remIn').addEventListener('input', () => {
-  if(pxLock) return; pxLock = true;
+  if(uLock) return; uLock = true;
   const rem = parseFloat($('#remIn').value); const root = parseFloat($('#rootFs').value) || 16;
-  $('#pxIn').value = isNaN(rem) ? '' : +(rem * root).toFixed(2);
-  pxLock = false;
+  if(isNaN(rem)){ $('#pxIn').value = ''; $('#vwIn').value = ''; }
+  else {
+    const px = rem * root;
+    $('#pxIn').value = +px.toFixed(2);
+    const vwW = parseFloat($('#vwWidth').value) || 100;
+    $('#vwIn').value = +(px / vwW * 100).toFixed(4);
+  }
+  uLock = false;
 });
-$('#rootFs').addEventListener('input', () => $('#pxIn').dispatchEvent(new Event('input')));
+$('#vwIn').addEventListener('input', () => {
+  if(uLock) return; uLock = true;
+  const vw = parseFloat($('#vwIn').value); const vwW = parseFloat($('#vwWidth').value) || 100;
+  if(isNaN(vw)){ $('#pxIn').value = ''; $('#remIn').value = ''; }
+  else {
+    const px = vw * vwW / 100;
+    $('#pxIn').value = +px.toFixed(2);
+    const root = parseFloat($('#rootFs').value) || 16;
+    $('#remIn').value = +(px / root).toFixed(4);
+  }
+  uLock = false;
+});
+$('#rootFs').addEventListener('input', () => { if(!uLock){ uLock = true; uSyncFromPx(); uLock = false; } });
+$('#vwWidth').addEventListener('input', () => { if(!uLock){ uLock = true; uSyncFromPx(); uLock = false; } });
 $('#pxIn').dispatchEvent(new Event('input'));
 
 /* ================= 11. API 调试台 ================= */
@@ -2902,11 +2994,10 @@ const SM2 = { sign: sm2Sign, verify: sm2Verify, encrypt: sm2Encrypt, decrypt: sm
 
 
 /* ============================================================
-   前端瑞士军刀 v1.4 —— 新增模块 UI 逻辑
-   依赖：crypto.mjs 转换后的国密库（SM3 / SM4 / SM2）
-   及既有工具：$, $$, escapeHtml, toast, copyText, bytesToHex,
-   hexToBytes, pkcs7Pad, pkcs7Unpad, envResolve, fmtDate, q1,
-   kvCollect, headerEditor, FORBIDDEN_HEADERS
+   前端瑞士军刀 v1.5 —— 新增模块 UI 逻辑
+   v1.4：国密库（SM3 / SM4 / SM2）+ 请求集合 / SSE / 凭证扫描
+   v1.5：文件 Base64 & multipart 构造（mod-b64）、Cookie/请求头解析（mod-hdrs）、px/rem/vw
+   复用工具：$, $$, escapeHtml, toast, copyText, q1 等
    ============================================================ */
 
 /* ---------------- 通用小工具 ---------------- */
@@ -3344,6 +3435,199 @@ function secScan(){
 }
 $('#secScanBtn').addEventListener('click', secScan);
 $('#secClearBtn').addEventListener('click', () => { $('#secIn').value = ''; $('#secOut').innerHTML = '<div class="hint" style="margin:0">点击「开始扫描」查看结果。</div>'; });
+
+/* ================= 18. 文件 Base64 & multipart ================= */
+let b64Cur = null; // {name, mime, dataUrl}
+function b64MimeFromDataUrl(d){ const m = /^data:([^;,]+)/.exec(d); return m ? m[1] : ''; }
+function b64ReadFile(file){
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = () => rej(r.error);
+    r.readAsDataURL(file);
+  });
+}
+async function b64HandleFile(file){
+  if(!file) return;
+  const dataUrl = await b64ReadFile(file);
+  b64Cur = { name: file.name, mime: file.type || b64MimeFromDataUrl(dataUrl), dataUrl };
+  $('#b64FileMeta').textContent = file.name + ' · ' + (file.type || '未知类型') + ' · ' + (file.size / 1024).toFixed(1) + ' KB';
+  $('#b64Out').value = dataUrl; $('#b64Out').classList.remove('empty');
+  if(/^image\//.test(file.type || '')){ $('#b64PrevWrap').style.display = ''; $('#b64Prev').src = dataUrl; }
+  else { $('#b64PrevWrap').style.display = 'none'; }
+  toast('已生成 Data URL');
+}
+const b64Drop = $('#b64Drop');
+b64Drop.addEventListener('dragover', e => { e.preventDefault(); b64Drop.style.borderColor = 'var(--primary)'; });
+b64Drop.addEventListener('dragleave', () => { b64Drop.style.borderColor = 'var(--border)'; });
+b64Drop.addEventListener('drop', e => { e.preventDefault(); b64Drop.style.borderColor = 'var(--border)'; b64HandleFile(e.dataTransfer.files[0]); });
+$('#b64File').addEventListener('change', e => b64HandleFile(e.target.files[0]));
+$('#b64CopyBtn').addEventListener('click', function(){ copyText($('#b64Out').value, this); });
+$('#b64DownloadBtn').addEventListener('click', () => {
+  if(!b64Cur){ toast('请先选择文件'); return; }
+  const a = document.createElement('a'); a.href = b64Cur.dataUrl; a.download = b64Cur.name; a.click();
+});
+$('#b64ToFileBtn').addEventListener('click', () => {
+  const raw = $('#b64In').value.trim();
+  if(!raw){ toast('请粘贴 Base64 内容'); return; }
+  let dataUrl = raw, fname = $('#b64FileName').value.trim();
+  if(!/^data:/.test(raw)){ dataUrl = 'data:application/octet-stream;base64,' + raw; }
+  const mime = b64MimeFromDataUrl(dataUrl) || 'application/octet-stream';
+  if(!fname){ const ext = mime.includes('/') ? mime.split('/')[1] : 'bin'; fname = 'file.' + ext; }
+  const a = document.createElement('a'); a.href = dataUrl; a.download = fname; a.click();
+  toast('已下载：' + fname);
+});
+$('#b64InClear').addEventListener('click', () => { $('#b64In').value = ''; $('#b64FileName').value = ''; });
+
+/* multipart 构造 */
+let mpRowsData = [];
+function mpRender(){
+  const wrap = $('#mpRows'); wrap.innerHTML = '';
+  if(!mpRowsData.length){ wrap.innerHTML = '<div class="hint" style="margin:0">还没有字段，点下方「＋ 文本字段 / ＋ 文件字段」添加。</div>'; return; }
+  mpRowsData.forEach((r, i) => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;gap:6px;align-items:center;margin:6px 0;flex-wrap:wrap';
+    if(r.type === 'text'){
+      row.innerHTML = '<select class="mp-type" data-i="' + i + '" style="flex:0 0 auto"><option value="text" selected>文本</option><option value="file">文件</option></select>'
+        + '<input class="mp-name" data-i="' + i + '" placeholder="字段名" value="' + escapeHtml(r.name) + '" style="flex:1 1 80px;min-width:70px">'
+        + '<input class="mp-val" data-i="' + i + '" placeholder="值" value="' + escapeHtml(r.val) + '" style="flex:2 1 120px;min-width:90px">'
+        + '<button class="mp-del del" data-i="' + i + '" title="删除">×</button>';
+    } else {
+      row.innerHTML = '<select class="mp-type" data-i="' + i + '" style="flex:0 0 auto"><option value="text">文本</option><option value="file" selected>文件</option></select>'
+        + '<input class="mp-name" data-i="' + i + '" placeholder="字段名" value="' + escapeHtml(r.name) + '" style="flex:1 1 80px;min-width:70px">'
+        + '<label class="btn btn-sm" style="flex:0 0 auto;margin:0">选择文件<input class="mp-file" data-i="' + i + '" type="file" hidden>' + (r.fileName ? escapeHtml(r.fileName) : '未选') + '</label>'
+        + '<button class="mp-del del" data-i="' + i + '" title="删除">×</button>';
+    }
+    wrap.appendChild(row);
+  });
+  wrap.querySelectorAll('.mp-type').forEach(s => s.addEventListener('change', function(){ mpRowsData[+this.dataset.i].type = this.value; mpRender(); mpBuild(); }));
+  wrap.querySelectorAll('.mp-name').forEach(s => s.addEventListener('input', function(){ mpRowsData[+this.dataset.i].name = this.value; mpBuild(); }));
+  wrap.querySelectorAll('.mp-val').forEach(s => s.addEventListener('input', function(){ mpRowsData[+this.dataset.i].val = this.value; mpBuild(); }));
+  wrap.querySelectorAll('.mp-file').forEach(s => s.addEventListener('change', function(){
+    const f = this.files[0]; if(!f) return;
+    mpRowsData[+this.dataset.i].file = f; mpRowsData[+this.dataset.i].fileName = f.name; mpRowsData[+this.dataset.i].mime = f.type;
+    mpRender(); mpBuild();
+  }));
+  wrap.querySelectorAll('.mp-del').forEach(s => s.addEventListener('click', function(){ mpRowsData.splice(+this.dataset.i, 1); mpRender(); mpBuild(); }));
+}
+$('#mpAddText').addEventListener('click', () => { mpRowsData.push({ type: 'text', name: '', val: '' }); mpRender(); mpBuild(); });
+$('#mpAddFile').addEventListener('click', () => { mpRowsData.push({ type: 'file', name: 'file', fileName: '', mime: '' }); mpRender(); mpBuild(); });
+function mpBoundary(){ return '----DSKBoundary' + Math.random().toString(36).slice(2, 12); }
+function mpBuild(){
+  if(!mpRowsData.length){ $('#mpOut').textContent = '--'; $('#mpOut').classList.add('empty'); return; }
+  const bd = mpBoundary();
+  let body = '';
+  mpRowsData.forEach(r => {
+    const name = r.name || 'field';
+    if(r.type === 'file' && r.file){
+      body += '--' + bd + '\r\nContent-Disposition: form-data; name="' + name + '"; filename="' + r.fileName + '"\r\nContent-Type: ' + (r.mime || 'application/octet-stream') + '\r\n\r\n<二进制数据 ' + r.fileName + '，' + r.file.size + ' 字节>\r\n';
+    } else if(r.type === 'file'){
+      body += '--' + bd + '\r\nContent-Disposition: form-data; name="' + name + '"; filename=""\r\nContent-Type: application/octet-stream\r\n\r\n<未选择文件>\r\n';
+    } else {
+      body += '--' + bd + '\r\nContent-Disposition: form-data; name="' + name + '"\r\n\r\n' + (r.val || '') + '\r\n';
+    }
+  });
+  body += '--' + bd + '--\r\n';
+  $('#mpOut').textContent = body; $('#mpOut').classList.remove('empty');
+}
+function mpFetchCode(){
+  let code = "const fd = new FormData();\n";
+  mpRowsData.forEach(r => {
+    const name = r.name || 'field';
+    if(r.type === 'file' && r.file){ code += "fd.append(" + q1(name) + ", fileInput.files[0], " + q1(r.fileName) + "); // 文件字段：把 fileInput 换成你的 <input type=file>\n"; }
+    else if(r.type === 'file'){ code += "fd.append(" + q1(name) + ", fileBlob, " + q1(r.fileName || 'file') + "); // 文件字段\n"; }
+    else { code += "fd.append(" + q1(name) + ", " + q1(r.val || '') + ");\n"; }
+  });
+  code += "fetch('https://your-api.example/upload', { method: 'POST', body: fd })\n  .then(r => r.text()).then(console.log);";
+  return code;
+}
+function mpCurlCode(){
+  let s = "curl -X POST 'https://your-api.example/upload'";
+  mpRowsData.forEach(r => {
+    const name = r.name || 'field';
+    if(r.type === 'file'){ s += " \\\n  -F " + q1(name + "=@/path/to/" + (r.fileName || 'file')); }
+    else { s += " \\\n  -F " + q1(name + "=" + (r.val || '')); }
+  });
+  return s;
+}
+$('#mpCopyBtn').addEventListener('click', function(){ copyText($('#mpOut').textContent, this); });
+$('#mpCodeBtn').addEventListener('click', () => {
+  $('#mpCodeWrap').style.display = '';
+  $('#mpCode').textContent = '/* fetch（用 FormData，浏览器自动加 boundary） */\n' + mpFetchCode() + '\n\n/* cURL */\n' + mpCurlCode();
+  $('#mpCode').classList.remove('empty');
+});
+mpRender();
+
+/* ================= 19. Cookie / 请求头解析 ================= */
+function hdrsParse(text){
+  const raw = String(text).trim();
+  if(!raw) return [];
+  const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  if(lines.length === 1 && /^[^\s:]+=/.test(raw) && raw.includes(';')){
+    const out = [];
+    raw.split(';').forEach(p => {
+      const i = p.indexOf('='); if(i < 0) return;
+      out.push({ k: p.slice(0, i).trim(), v: p.slice(i + 1).trim(), kind: 'cookie' });
+    });
+    return out;
+  }
+  const out = [];
+  lines.forEach(l => {
+    const i = l.indexOf(':'); if(i < 0) return;
+    const k = l.slice(0, i).trim(); const v = l.slice(i + 1).trim();
+    if(/^cookie$/i.test(k)){
+      v.split(';').forEach(p => {
+        const j = p.indexOf('='); if(j < 0) return;
+        out.push({ k: p.slice(0, j).trim(), v: p.slice(j + 1).trim(), kind: 'cookie' });
+      });
+    } else {
+      out.push({ k, v, kind: 'header' });
+    }
+  });
+  return out;
+}
+let hdrsData = [];
+function hdrsRender(){
+  if(!hdrsData.length){ $('#hdrsOut').innerHTML = '<div class="hint" style="margin:0">未解析到内容。</div>'; $('#hdrsExportCard').style.display = 'none'; return; }
+  let html = '<div style="margin-bottom:6px">共 <b>' + hdrsData.length + '</b> 项（Cookie ' + hdrsData.filter(d => d.kind === 'cookie').length + ' / 其他请求头 ' + hdrsData.filter(d => d.kind === 'header').length + '）</div>';
+  html += '<table class="data"><tr><th>类型</th><th>名称</th><th>值</th></tr>';
+  hdrsData.forEach(d => {
+    html += '<tr><td><span class="tag ' + (d.kind === 'cookie' ? 'tag-warn' : 'tag-blue') + '">' + (d.kind === 'cookie' ? 'Cookie' : 'Header') + '</span></td>'
+      + '<td class="mono">' + escapeHtml(d.k) + '</td><td class="mono">' + escapeHtml(d.v) + '</td></tr>';
+  });
+  html += '</table>';
+  $('#hdrsOut').innerHTML = html;
+  $('#hdrsExportCard').style.display = '';
+}
+$('#hdrsParseBtn').addEventListener('click', () => {
+  hdrsData = hdrsParse($('#hdrsIn').value);
+  hdrsRender();
+  if(hdrsData.length) toast('已解析 ' + hdrsData.length + ' 项');
+});
+$('#hdrsClearBtn').addEventListener('click', () => { $('#hdrsIn').value = ''; hdrsData = []; hdrsRender(); $('#hdrsExport').innerHTML = '<div class="hint" style="margin:0">点击「解析」查看结果。</div>'; });
+function hdrsExport(fmt){
+  if(!hdrsData.length){ toast('请先解析'); return ''; }
+  if(fmt === 'table'){
+    let h = '<table class="data"><tr><th>类型</th><th>名称</th><th>值</th></tr>';
+    hdrsData.forEach(d => h += '<tr><td>' + (d.kind === 'cookie' ? 'Cookie' : 'Header') + '</td><td>' + escapeHtml(d.k) + '</td><td>' + escapeHtml(d.v) + '</td></tr>');
+    return h + '</table>';
+  }
+  const obj = {}; hdrsData.forEach(d => obj[d.k] = d.v);
+  if(fmt === 'json') return JSON.stringify(obj, null, 2);
+  if(fmt === 'js') return 'const headers = ' + JSON.stringify(obj, null, 2) + ';';
+  if(fmt === 'curl') return hdrsData.map(d => '-H ' + q1(d.k + ': ' + d.v)).join(' \\\n  ');
+  if(fmt === 'env'){
+    const e = {}; hdrsData.forEach(d => { e[d.k.replace(/[^A-Za-z0-9]/g, '_').toUpperCase()] = d.v; });
+    return JSON.stringify(e, null, 2);
+  }
+  return '';
+}
+$$('[data-hdrs-exp]').forEach(btn => btn.addEventListener('click', function(){
+  const fmt = this.dataset.hdrsExp;
+  const res = hdrsExport(fmt);
+  if(fmt === 'table'){ $('#hdrsExport').innerHTML = res; }
+  else { $('#hdrsExport').textContent = res; $('#hdrsExport').classList.remove('empty'); copyText(res, this); }
+}));
 
 </script>
 </body>

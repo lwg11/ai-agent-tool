@@ -2,9 +2,9 @@
 
 一个**单文件、零依赖、纯本地**运行的前端开发工具集 —— 双击 `dev-toolbox.html` 即用，数据不出浏览器。
 
-专为前端日常联调场景设计：cURL 转代码、接口日志解析、JSON 对比、API 调试、Mock 生成、AES / 国密加解密、请求集合收藏、SSE 流式调试、凭证泄露扫描……
+专为前端日常联调场景设计：cURL 转代码、接口日志解析、JSON 对比、API 调试、Mock 生成、AES / 国密加解密、请求集合收藏、SSE 流式调试、凭证泄露扫描、文件 Base64 互转与 multipart 构造、Cookie / 请求头解析、px/rem/vw 单位换算……
 
-## ✨ 功能模块（17 个）
+## ✨ 功能模块（19 个）
 
 | # | 模块 | 功能 |
 |---|------|------|
@@ -17,7 +17,7 @@
 | 7 | 🎫 JWT 解析 | 本地解码 header / payload，exp / iat 自动换算并标注是否过期 |
 | 8 | 🔍 正则测试 | 实时高亮、捕获组表格、常用正则速查 |
 | 9 | 🎨 颜色工具 | HEX / RGB / HSL 互转 + WCAG 对比度 AA / AAA 判定 |
-| 10 | 🎲 生成器换算 | UUID v4 / 随机密码 / px ⇄ rem |
+| 10 | 🎲 生成器换算 | UUID v4 / 随机密码 / px·rem·vw 三向联动换算（根字号 + 视口宽度双基准）。|
 | 11 | 📡 API 调试台 | 本地 mini Postman：cURL 一键导入、浏览器直发请求、CORS 被拦时生成 Node 脚本绕过、环境变量 `{{token}}` 全局替换、请求历史（最近 50 条）、响应一键转 Mock / TS 接口 / JSON 对比 / **axios 拦截器** |
 | 12 | 🛡️ AES 加解密 | AES-128/192/256 · ECB/CBC · PKCS7，纯本地实现（已用 Node crypto 交叉验证），密钥/IV 支持 Text/Hex/Base64 |
 | 13 | 🔌 WebSocket 调试台 | 连接 / 收发日志（JSON 自动美化）/ ping 心跳保活 / 断线自动重连 / 消息计数 / http(s)→ws(s) 自动转换 |
@@ -25,6 +25,8 @@
 | 15 | 📚 请求集合 | 接口收藏：按项目分组、localStorage 持久化、一键重放、复制 cURL、从 API 调试台导入 |
 | 16 | 🌊 SSE 调试台 | Server-Sent Events 流式调试：EventSource(GET) 与 fetch 流双模式，自动解析 data/event/id/retry，JSON 自动美化 |
 | 17 | 🕵️ 凭证泄露扫描 | 代码/日志扫描 AWS/GitHub/Slack/Stripe/Google Token、私钥、JWT、URL 密码与高熵疑似密钥，命中自动脱敏 |
+| 18 | 📎 文件 Base64 & multipart | 图片/文件 ⇄ Base64 互转（FileReader，可预览/下载），构造 multipart/form-data 请求体（文本/文件字段，生成原始体 + fetch(FormData)/cURL -F 代码） |
+| 19 | 🍪 Cookie / 请求头解析 | 粘贴 Cookie 串或 DevTools 请求头 dump，解析为结构化 KV（Cookie: 自动展开），导出 表格/JSON/JS 对象/cURL -H/环境变量 |
 
 ## 🚀 使用
 
@@ -48,6 +50,8 @@ npx serve .
 - `Alt + C`：请求集合
 - `Alt + E`：SSE 调试台
 - `Alt + X`：凭证泄露扫描
+- `Alt + B`：文件 Base64 & multipart
+- `Alt + H`：Cookie / 请求头解析
 - `Esc`：关闭所有弹窗
 - `Enter`（URL 框内）：API 调试台直接发送
 
