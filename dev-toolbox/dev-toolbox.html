@@ -144,14 +144,25 @@ input[type=range]{accent-color:var(--primary);width:100%}
 .hist-item .s{flex:none;font-family:ui-monospace,Consolas,monospace}
 details summary{outline:none}
 details summary:hover{color:var(--primary)}
+/* WebSocket 调试台 */
+.ws-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--muted);margin-right:6px;vertical-align:-1px}
+.ws-dot.ok{background:var(--ok)} .ws-dot.warn{background:var(--warn)} .ws-dot.err{background:var(--err)}
+.ws-entry{border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:8px;background:var(--code-bg);font-size:12.5px}
+.ws-entry .ws-meta{display:flex;gap:8px;align-items:center;margin-bottom:5px;color:var(--muted);font-size:11.5px;
+  font-family:ui-monospace,Consolas,monospace;flex-wrap:wrap}
+.ws-dir{padding:0 7px;border-radius:99px;font-weight:700;font-size:11px}
+.ws-dir.sent{color:var(--warn);border:1px solid var(--warn)} .ws-dir.recv{color:var(--primary);border:1px solid var(--primary)}
+.ws-dir.evt{color:var(--muted);border:1px solid var(--border)}
+.ws-body{font-family:ui-monospace,Consolas,monospace;white-space:pre-wrap;word-break:break-all;max-height:220px;overflow:auto}
 </style>
 </head>
 <body>
 
 <header>
-  <div class="brand">🇨🇭 前端瑞士军刀 <span class="ver">v1.0 · 单文件离线版</span></div>
+  <div class="brand">🇨🇭 前端瑞士军刀 <span class="ver">v1.3 · 单文件离线版</span></div>
   <div class="header-right">
     <span id="liveClock">--</span>
+    <button class="icon-btn" id="helpToggle" title="快捷键速查（按 ? 呼出）">⌨ 快捷键</button>
     <button class="icon-btn" id="themeToggle" title="切换主题">🌙 深色</button>
   </div>
 </header>
@@ -497,6 +508,7 @@ details summary:hover{color:var(--primary)}
       <button class="btn btn-sm" id="apiToDiffBtn">送去「JSON 对比」</button>
       <button class="btn btn-sm" id="apiToTsBtn">送去「转 TS 接口」</button>
       <button class="btn btn-sm" id="apiToMockBtn">🎭 生成 Mock 代码</button>
+      <button class="btn btn-sm" id="apiToAxiosBtn">🔌 生成 axios 拦截器</button>
     </div>
     <div id="apiCorsHint"></div>
   </div>
@@ -576,10 +588,58 @@ details summary:hover{color:var(--primary)}
   <div class="card" id="aesOutCard" style="display:none"><pre class="out" id="aesOut"></pre></div>
 </section>
 
+<!-- ============ 13. WebSocket 调试台 ============ -->
+<section class="module" id="mod-ws">
+  <div class="mod-head">
+    <h2>🔌 WebSocket 调试台</h2>
+    <p class="mod-desc">连接、收发、断线重连一站式调试：JSON 自动美化、ping/pong 心跳保活、消息计数、wss↔ws 互转。调试推送类接口（订单推送、消息通知）好帮手。</p>
+  </div>
+  <div class="card">
+    <h3>🔗 连接</h3>
+    <div class="req-line">
+      <input type="text" id="wsUrl" placeholder="wss://example.com/ws/path（http(s) 会自动转 ws(s)）" spellcheck="false">
+      <button class="btn btn-primary" id="wsConnBtn" style="flex:none">🔌 连接</button>
+    </div>
+    <div class="check-row">
+      <label><input type="checkbox" id="wsAutoReconnect"> 断线自动重连</label>
+      <label><input type="checkbox" id="wsHeartbeat"> 心跳保活（每 30s 发 ping）</label>
+      <label><input type="checkbox" id="wsPretty" checked> 收到 JSON 自动美化</label>
+      <span class="muted" style="margin-left:auto"><span class="ws-dot" id="wsDot"></span><span id="wsState">未连接</span></span>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <h3>📤 发送</h3>
+      <textarea id="wsSend" rows="5" placeholder='{"type":"subscribe","channel":"order-push"}'></textarea>
+      <div class="btn-row">
+        <button class="btn btn-primary btn-sm" id="wsSendBtn">发送（文本）</button>
+        <button class="btn btn-sm" id="wsSendPingBtn">发送 ping</button>
+      </div>
+      <div class="hint">发送内容原样发出；服务端返回的 JSON 会自动格式化显示在右侧日志。</div>
+    </div>
+    <div class="card">
+      <h3>📊 统计</h3>
+      <div class="grid3" style="gap:8px">
+        <div><div class="muted" style="font-size:12px">已发送</div><div class="big-num" id="wsSentCount" style="font-size:20px">0</div></div>
+        <div><div class="muted" style="font-size:12px">已接收</div><div class="big-num" id="wsRecvCount" style="font-size:20px">0</div></div>
+        <div><div class="muted" style="font-size:12px">连接时长</div><div class="big-num" id="wsUptime" style="font-size:20px">--</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>📜 消息日志 <span class="muted" style="font-weight:400;font-size:12px">（最新在上）</span></h3>
+    <div class="btn-row" style="margin-top:0">
+      <button class="btn btn-sm" id="wsClearLogBtn">清空日志</button>
+      <span class="muted" style="font-size:12px">自动滚动已 <span id="wsAutoScrollState">开启</span>，点击日志区可临时暂停</span>
+    </div>
+    <div id="wsLog"></div>
+  </div>
+</section>
+
 </main>
 </div>
 
-<footer>🇨🇭 前端瑞士军刀 —— 单文件、零依赖、纯本地运行，数据不出浏览器（API 调试台发送的请求除外）。快捷键：<span class="kbd">Alt</span>+<span class="kbd">1~0</span> 切换前 10 个模块，<span class="kbd">Alt</span>+<span class="kbd">Q</span> API 调试台，<span class="kbd">Alt</span>+<span class="kbd">A</span> AES</footer>
+<footer>🇨🇭 前端瑞士军刀 —— 单文件、零依赖、纯本地运行，数据不出浏览器（API/WS 调试台发出的请求除外）。快捷键：<span class="kbd">?</span> 速查面板，<span class="kbd">Alt</span>+<span class="kbd">1~0</span> 模块，<span class="kbd">Alt</span>+<span class="kbd">Q</span> API 台，<span class="kbd">Alt</span>+<span class="kbd">A</span> AES，<span class="kbd">Alt</span>+<span class="kbd">W</span> WebSocket</footer>
 <div id="toast"></div>
 
 <script>
@@ -637,6 +697,7 @@ const MODULES = [
   {id:'mod-gen',   icon:'🎲', name:'生成器换算',    desc:'UUID / 密码 / px⇄rem'},
   {id:'mod-api',   icon:'📡', name:'API 调试台',    desc:'本地 mini Postman：cURL 导入 / 直发 / Node 脚本'},
   {id:'mod-aes',   icon:'🛡️', name:'AES 加解密',    desc:'ECB/CBC · PKCS7 · 128/192/256，本地零依赖'},
+  {id:'mod-ws',    icon:'🔌', name:'WebSocket 台',  desc:'连接/收发/心跳保活/断线重连'},
 ];
 const sidebar = $('#sidebar');
 MODULES.forEach((m, i) => {
@@ -666,7 +727,44 @@ document.addEventListener('keydown', e => {
   }
   if(e.altKey && (e.key === 'q' || e.key === 'Q')) switchTo('mod-api');
   if(e.altKey && (e.key === 'a' || e.key === 'A')) switchTo('mod-aes');
+  if(e.altKey && (e.key === 'w' || e.key === 'W')) switchTo('mod-ws');
+  if(e.key === 'Escape'){
+    ['#dskHelpModal','#dskNodeModal','#dskMockModal','#dskAxiosModal'].forEach(sel => {
+      const el = document.querySelector(sel);
+      if(el) el.style.display = 'none';
+    });
+  }
+  if((e.key === '?' || (e.shiftKey && e.key === '/')) && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)){
+    toggleHelp();
+  }
 });
+/* —— ? 键快捷键速查面板 —— */
+let helpModal = null;
+function buildHelpModal(){
+  helpModal = document.createElement('div');
+  helpModal.id = 'dskHelpModal';
+  helpModal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:95;display:none;align-items:center;justify-content:center;padding:24px';
+  helpModal.innerHTML = '<div class="card" style="max-width:560px;width:100%;max-height:86vh;overflow:auto;margin:0">'
+    + '<h3>⌨ 快捷键速查</h3>'
+    + '<table class="data"><tr><th>按键</th><th>功能</th></tr>'
+    + '<tr><td><span class="kbd">?</span></td><td>打开本面板</td></tr>'
+    + '<tr><td><span class="kbd">Esc</span></td><td>关闭所有弹窗</td></tr>'
+    + '<tr><td><span class="kbd">Alt</span>+<span class="kbd">1~9 / 0</span></td><td>切换第 1~10 个模块</td></tr>'
+    + '<tr><td><span class="kbd">Alt</span>+<span class="kbd">Q</span></td><td>API 调试台</td></tr>'
+    + '<tr><td><span class="kbd">Alt</span>+<span class="kbd">A</span></td><td>AES 加解密</td></tr>'
+    + '<tr><td><span class="kbd">Alt</span>+<span class="kbd">W</span></td><td>WebSocket 调试台</td></tr>'
+    + '<tr><td><span class="kbd">Enter</span>（URL 框内）</td><td>API 调试台直接发送</td></tr>'
+    + '</table>'
+    + '<div class="btn-row"><button class="btn btn-sm" id="helpCloseBtn">关闭</button></div></div>';
+  helpModal.addEventListener('click', e => { if(e.target === helpModal) helpModal.style.display = 'none'; });
+  document.body.appendChild(helpModal);
+  helpModal.querySelector('#helpCloseBtn').addEventListener('click', () => helpModal.style.display = 'none');
+}
+function toggleHelp(){
+  if(!helpModal) buildHelpModal();
+  helpModal.style.display = helpModal.style.display === 'flex' ? 'none' : 'flex';
+}
+$('#helpToggle').addEventListener('click', toggleHelp);
 
 /* ================= 1. cURL 转换器 ================= */
 function tokenizeCurl(input){
@@ -1668,6 +1766,7 @@ function showNodeScript(){
   const code = genNodeScript();
   if(!nodeScriptModal){
     nodeScriptModal = document.createElement('div');
+    nodeScriptModal.id = 'dskNodeModal';
     nodeScriptModal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:90;display:flex;align-items:center;justify-content:center;padding:24px';
     nodeScriptModal.innerHTML = '<div class="card" style="max-width:820px;width:100%;max-height:86vh;overflow:auto;margin:0">'
       + '<h3>📦 Node 脚本（无跨域限制，headers/cookie 全保留）</h3>'
@@ -1828,6 +1927,7 @@ function showMockModal(){
   try{ json = JSON.parse(raw); }catch(e){ toast('响应不是合法 JSON，无法生成 mock'); return; }
   if(!mockModal){
     mockModal = document.createElement('div');
+    mockModal.id = 'dskMockModal';
     mockModal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:90;display:flex;align-items:center;justify-content:center;padding:24px';
     mockModal.innerHTML = '<div class="card" style="max-width:820px;width:100%;max-height:86vh;overflow:auto;margin:0">'
       + '<h3>🎭 Mock 代码生成</h3>'
@@ -1855,6 +1955,128 @@ function showMockModal(){
   mockModal.style.display = 'flex';
 }
 $('#apiToMockBtn').addEventListener('click', showMockModal);
+
+/* —— axios 拦截器生成 —— */
+let axiosModal = null;
+function detectEnvelope(json){
+  // 常见后端信封结构探测：{code, message, data}
+  if(json && typeof json === 'object' && !Array.isArray(json)
+     && ('code' in json || 'status' in json || 'errcode' in json)
+     && ('data' in json || 'result' in json || !Array.isArray(json))){
+    const codeKey = 'code' in json ? 'code' : 'status' in json ? 'status' : 'errcode';
+    const dataKey = 'data' in json ? 'data' : 'result';
+    const okVal = json[codeKey] === 0 ? 0 : json[codeKey];
+    const msgKey = 'message' in json ? 'message' : 'msg' in json ? 'msg' : null;
+    return {codeKey, dataKey, msgKey, okVal};
+  }
+  return null;
+}
+function genAxiosInterceptors(ts){
+  const raw = $('#apiResOut').textContent;
+  let env = null;
+  try{ env = detectEnvelope(JSON.parse(raw)); }catch(e){}
+  const headers = apiHeaders();
+  const authHeader = headers.find(([k]) => /^(authorization|x-xsrf-token|x-token)$/i.test(k));
+  const authKey = authHeader ? authHeader[0] : 'Authorization';
+  const authSample = authHeader ? authHeader[1] : '<在此填入 token>';
+  const emitCode = (withTypes) => {
+    const L = [];
+    L.push(withTypes ? "import axios, { AxiosRequestConfig, InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';" : "import axios from 'axios';");
+    L.push('');
+    L.push("const http = axios.create({");
+    L.push("  baseURL: import.meta.env?.VITE_API_BASE || '/api',");
+    L.push("  timeout: 15000,");
+    L.push("});");
+    L.push('');
+    L.push('// —— 请求拦截器：注入 token / CSRF 头');
+    L.push("http.interceptors.request.use(");
+    L.push("  (config" + (withTypes ? ": InternalAxiosRequestConfig" : "") + ") => {");
+    if(authKey.toLowerCase() === 'x-xsrf-token'){
+      L.push("    // CSRF 防护：与 Cookie 中的 XSRF-TOKEN 保持一致（后端校验）");
+      L.push("    const xsrf = document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] ?? '';");
+      L.push("    if (xsrf) config.headers['X-XSRF-TOKEN'] = decodeURIComponent(xsrf);");
+    } else {
+      L.push("    const token = localStorage.getItem('token') || '" + authSample + "';");
+      L.push("    if (token) config.headers['" + authKey + "'] = token.startsWith('Bearer') ? token : `Bearer ${token}`;");
+    }
+    L.push("    return config;");
+    L.push("  },");
+    L.push("  (error" + (withTypes ? ": AxiosError" : "") + ") => Promise.reject(error)");
+    L.push(");");
+    L.push('');
+    L.push('// —— 响应拦截器：拆信封 + 统一错误处理');
+    L.push("http.interceptors.response.use(");
+    L.push("  (response" + (withTypes ? ": AxiosResponse" : "") + ") => {");
+    if(env){
+      L.push("    const body = response.data;");
+      L.push("    // 按真实响应探测到的信封结构：" + env.codeKey + "/" + (env.msgKey || '无 message 字段') + "/" + env.dataKey + "，成功值 " + env.okVal);
+      L.push("    if (body && typeof body === 'object' && '" + env.codeKey + "' in body) {");
+      L.push("      if (body." + env.codeKey + " !== " + env.okVal + ") {");
+      if(env.msgKey) L.push("        return Promise.reject(new Error(body." + env.msgKey + " || '业务错误'));");
+      else L.push("        return Promise.reject(new Error('业务错误: ' + body." + env.codeKey + "));");
+      L.push("      }");
+      L.push("      return body." + env.dataKey + ";" + (withTypes ? "  // 直接返回业务数据" : ""));
+      L.push("    }");
+    }
+    L.push("    return response.data;");
+    L.push("  },");
+    L.push("  (error" + (withTypes ? ": AxiosError" : "") + ") => {");
+    L.push("    if (error.response) {");
+    L.push("      const { status, data } = error.response;");
+    L.push("      const map: Record<number, string>" + (withTypes ? "" : "") + " = { 401: '未登录', 403: '无权限', 404: '接口不存在', 500: '服务器错误' };");
+    L.push("      console.error('[api:error]', status, data);");
+    L.push("      if (status === 401) { /* 跳转登录 / 刷新 token */ }");
+    L.push("      return Promise.reject(new Error(map[status] || (data && data.message) || `HTTP ${status}`));");
+    L.push("    }");
+    L.push("    return Promise.reject(new Error(error.message || '网络异常'));");
+    L.push("  }");
+    L.push(");");
+    L.push('');
+    L.push('export default http;');
+    let code = L.join('\n');
+    if(!withTypes) code = code.replace(/: Record<number, string>/, '').replace(/<AxiosRequestConfig[^>]*>/g, '');
+    return code;
+  };
+  return {ts: emitCode(true), js: emitCode(false)};
+}
+function showAxiosModal(){
+  const raw = $('#apiResOut').textContent;
+  if(raw === '--' || !raw){ toast('暂无响应，先发一个请求'); return; }
+  const codes = genAxiosInterceptors();
+  if(!axiosModal){
+    axiosModal = document.createElement('div');
+    axiosModal.id = 'dskAxiosModal';
+    axiosModal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:90;display:none;align-items:center;justify-content:center;padding:24px';
+    axiosModal.innerHTML = '<div class="card" style="max-width:860px;width:100%;max-height:86vh;overflow:auto;margin:0">'
+      + '<h3>🔌 axios 拦截器代码</h3>'
+      + '<div class="hint" style="margin:0 0 8px">根据当前响应结构' + (detectEnvelopeSafe() ? '（已识别 code/message/data 信封）' : '') + '与请求头自动生成：token/CSRF 注入、信封拆包、401 跳登录、错误映射。</div>'
+      + '<div class="code-tabs" id="axiosTabs">'
+      + '<button class="code-tab active" data-t="ts">TypeScript</button>'
+      + '<button class="code-tab" data-t="js">JavaScript</button></div>'
+      + '<pre class="out" id="axiosOut"></pre>'
+      + '<div class="btn-row"><button class="btn btn-primary btn-sm" id="axiosCopyBtn">复制代码</button>'
+      + '<button class="btn btn-sm" id="axiosCloseBtn">关闭</button></div></div>';
+    axiosModal.addEventListener('click', e => { if(e.target === axiosModal) axiosModal.style.display = 'none'; });
+    document.body.appendChild(axiosModal);
+    axiosModal.querySelector('#axiosCloseBtn').addEventListener('click', () => axiosModal.style.display = 'none');
+    axiosModal.querySelector('#axiosCopyBtn').addEventListener('click', function(){
+      copyText(axiosModal.querySelector('#axiosOut').textContent, this);
+    });
+    axiosModal.querySelector('#axiosTabs').addEventListener('click', e => {
+      const t = e.target.closest('.code-tab'); if(!t) return;
+      axiosModal.querySelectorAll('.code-tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      const codes = genAxiosInterceptors();
+      axiosModal.querySelector('#axiosOut').textContent = t.dataset.t === 'ts' ? codes.ts : codes.js;
+    });
+  }
+  axiosModal.querySelector('#axiosOut').textContent = codes.ts;
+  axiosModal.style.display = 'flex';
+}
+function detectEnvelopeSafe(){
+  try{ return !!detectEnvelope(JSON.parse($('#apiResOut').textContent)); }catch(e){ return false; }
+}
+$('#apiToAxiosBtn').addEventListener('click', showAxiosModal);
 
 /* ================= 12. AES 加解密（已用 Node crypto 交叉验证） ================= */
 const AES_SBOX = new Uint8Array([
@@ -2058,6 +2280,119 @@ $('#aesMode').addEventListener('change', () => {
   $('#aesIvEncField').style.display = isCbc ? '' : 'none';
 });
 $('#aesMode').dispatchEvent(new Event('change'));
+
+/* ================= 13. WebSocket 调试台 ================= */
+let wsSock = null, wsHbTimer = null, wsUptimeTimer = null, wsConnectedAt = 0;
+let wsSent = 0, wsRecv = 0, wsAutoScroll = true, wsManualClose = false, wsRetryTimer = null;
+function wsSetState(state, color){
+  const dot = $('#wsDot'), txt = $('#wsState');
+  dot.className = 'ws-dot' + (color ? ' ' + color : '');
+  txt.textContent = state;
+}
+function wsEntry(dir, body){
+  const log = $('#wsLog');
+  const div = document.createElement('div');
+  div.className = 'ws-entry';
+  let show = body;
+  if(dir === 'recv' && $('#wsPretty').checked){
+    try{ show = JSON.stringify(JSON.parse(body), null, 2); }catch(e){}
+  }
+  div.innerHTML = '<div class="ws-meta"><span class="ws-dir ' + dir + '">'
+    + (dir === 'sent' ? '↑ 发送' : dir === 'recv' ? '↓ 接收' : '● 事件')
+    + '</span><span>' + fmtDate(new Date()) + '</span>'
+    + (body.length > 2048 ? '<span>' + (body.length / 1024).toFixed(1) + 'KB</span>' : '')
+    + '</div><div class="ws-body">' + escapeHtml(show.length > 8192 ? show.slice(0, 8192) + '\n…（截断，全量 ' + show.length + ' 字符）' : show) + '</div>';
+  log.insertBefore(div, log.firstChild);
+  while(log.children.length > 200) log.removeChild(log.lastChild);
+}
+function wsStopTimers(){
+  clearInterval(wsHbTimer); wsHbTimer = null;
+  clearInterval(wsUptimeTimer); wsUptimeTimer = null;
+}
+function wsUpdateStats(){
+  $('#wsSentCount').textContent = wsSent;
+  $('#wsRecvCount').textContent = wsRecv;
+}
+function wsConnect(){
+  let url = $('#wsUrl').value.trim();
+  if(!url){ toast('请输入 ws:// 或 wss:// 地址'); return; }
+  url = envResolve(url).replace(/^http(s)?:/i, (m, s) => s ? 'wss:' : 'ws:');
+  wsManualClose = false;
+  clearTimeout(wsRetryTimer);
+  try{ wsSock && wsSock.close(); }catch(e){}
+  wsSetState('连接中…', 'warn');
+  wsEntry('evt', '→ 连接 ' + url);
+  let sock;
+  try{ sock = new WebSocket(url); }
+  catch(err){ wsEntry('evt', '✗ 地址无效：' + err.message); wsSetState('未连接', 'err'); return; }
+  wsSock = sock;
+  sock.onopen = () => {
+    if(wsSock !== sock) return;
+    wsSetState('已连接', 'ok');
+    wsConnectedAt = Date.now();
+    wsEntry('evt', '✓ 连接成功');
+    if($('#wsHeartbeat').checked){
+      wsHbTimer = setInterval(() => {
+        if(sock.readyState === 1){ wsSendRaw('ping'); wsEntry('sent', 'ping'); wsSent++; wsUpdateStats(); }
+      }, 30000);
+    }
+    wsUptimeTimer = setInterval(() => {
+      const s = Math.floor((Date.now() - wsConnectedAt) / 1000);
+      $('#wsUptime').textContent = s < 3600
+        ? Math.floor(s / 60) + 'm' + (s % 60) + 's'
+        : Math.floor(s / 3600) + 'h' + Math.floor((s % 3600) / 60) + 'm';
+    }, 1000);
+  };
+  sock.onmessage = ev => {
+    if(wsSock !== sock) return;
+    wsRecv++; wsUpdateStats();
+    wsEntry('recv', typeof ev.data === 'string' ? ev.data : '(二进制数据 ' + ev.data.size + ' bytes)');
+  };
+  sock.onclose = ev => {
+    if(wsSock !== sock) return;
+    wsStopTimers();
+    wsEntry('evt', '✕ 连接关闭 code=' + ev.code + (ev.reason ? ' reason=' + ev.reason : ''));
+    wsSetState('已断开 (code ' + ev.code + ')', 'err');
+    if($('#wsAutoReconnect').checked && !wsManualClose){
+      wsEntry('evt', '… 3 秒后自动重连');
+      wsRetryTimer = setTimeout(wsConnect, 3000);
+    }
+  };
+  sock.onerror = () => {
+    if(wsSock !== sock) return;
+    wsEntry('evt', '✗ WebSocket 错误（常见：地址错误 / 服务未启动 / 跨域握手被拒）');
+  };
+}
+function wsSendRaw(data){
+  if(!wsSock || wsSock.readyState !== 1){ toast('未连接'); return false; }
+  wsSock.send(data);
+  return true;
+}
+$('#wsConnBtn').addEventListener('click', function(){
+  if(wsSock && wsSock.readyState <= 1){
+    wsManualClose = true;
+    clearTimeout(wsRetryTimer);
+    try{ wsSock.close(); }catch(e){}
+    wsSetState('已手动断开', '');
+    this.textContent = '🔌 连接';
+    return;
+  }
+  this.textContent = '⏹ 断开';
+  wsConnect();
+});
+$('#wsSendBtn').addEventListener('click', () => {
+  const v = $('#wsSend').value;
+  if(!v.trim()){ toast('发送内容为空'); return; }
+  if(wsSendRaw(v)){ wsEntry('sent', v); wsSent++; wsUpdateStats(); }
+});
+$('#wsSendPingBtn').addEventListener('click', () => {
+  if(wsSendRaw('ping')){ wsEntry('sent', 'ping'); wsSent++; wsUpdateStats(); }
+});
+$('#wsClearLogBtn').addEventListener('click', () => { $('#wsLog').innerHTML = ''; });
+$('#wsLog').addEventListener('click', () => {
+  wsAutoScroll = !wsAutoScroll;
+  $('#wsAutoScrollState').textContent = wsAutoScroll ? '开启' : '暂停';
+});
 </script>
 </body>
 </html>
