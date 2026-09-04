@@ -95,6 +95,9 @@ function parseCookieString(str) {
 
     // 登录态检查
     const bodyText = (await page.locator('body').innerText().catch(() => '')) || '';
+    if (bodyText.includes('访问异常')) {
+      throw new Error('触发掘金风控拦截页（"访问异常"）——多为短时间内访问过频，请稍后重试；正常每日一次的定时节奏不会触发');
+    }
     if (/登录|login/i.test(bodyText.slice(0, 2000)) && !bodyText.includes('连续签到天数')) {
       throw new Error('登录态失效（页面未出现签到统计），请重新复制 cookie 更新 config.json / Secret');
     }
@@ -117,12 +120,28 @@ function parseCookieString(str) {
     for (const s of btnSelectors) {
       const loc = page.locator(s.name).first();
       if ((await loc.count()) > 0 && (await loc.isVisible().catch(() => false))) {
+        const btnText = (await loc.innerText().catch(() => '')).trim();
+        // 已签状态下按钮会变成"已签到"字样 —— 直接视为成功
+        if (btnText.includes('已签')) {
+          console.log('[juejin-browser] ✅ 今日已签到（按钮状态为已签）');
+          await browser.close();
+          process.exit(0);
+        }
         btn = loc;
-        console.log(`[juejin-browser] 找到${s.label}: "${(await loc.innerText().catch(() => '')).trim()}"`);
+        console.log(`[juejin-browser] 找到${s.label}: "${btnText}"`);
         break;
       }
     }
-    if (!btn) throw new Error('未找到签到按钮（页面结构可能变化），附失败截图 failure.debug.png');
+    if (!btn) {
+      // 兜底：找不到按钮但页面有"已签到"字样 → 视为已签成功
+      const signedEl = page.locator('text=/已签/').first();
+      if ((await signedEl.count()) > 0 && (await signedEl.isVisible().catch(() => false))) {
+        console.log('[juejin-browser] ✅ 今日已签到（页面含已签状态文本）');
+        await browser.close();
+        process.exit(0);
+      }
+      throw new Error('未找到签到按钮（页面结构可能变化），附失败截图 failure.debug.png');
+    }
     await btn.click();
     console.log('[api:juejin-browser] 已点击签到按钮');
 

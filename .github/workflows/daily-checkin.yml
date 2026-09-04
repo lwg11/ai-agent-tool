@@ -18,10 +18,13 @@ concurrency:
   group: daily-checkin
   cancel-in-progress: false
 
+permissions:
+  contents: write # 写回 checkin-history.json 供控制台页面展示
+
 jobs:
   checkin:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 12
 
     steps:
       - name: 检出代码
@@ -98,6 +101,20 @@ jobs:
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
+      - name: 写回签到历史（供控制台页面展示）
+        if: always() && steps.dice.outputs.go == 'true'
+        run: |
+          node scripts/merge-history.js
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add checkin-history.json
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(checkin): 更新签到历史 [skip ci]"
+            git push
+          else
+            echo "历史无变化，跳过提交"
+          fi
+
       - name: 清理凭证文件
         if: always()
-        run: rm -f ikuuu-checkin/config.json juejin-checkin/config.json checkin.log
+        run: rm -f ikuuu-checkin/config.json juejin-checkin/config.json checkin.log checkin-result.json
