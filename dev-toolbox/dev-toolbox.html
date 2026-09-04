@@ -1,0 +1,3634 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>前端瑞士军刀 · Dev Swiss Knife</title>
+<style>
+:root{
+  --bg:#f3f4f6; --panel:#ffffff; --border:#e2e5ea; --text:#1f2328; --muted:#6b7280;
+  --primary:#4f46e5; --primary-h:#4338ca; --primary-soft:rgba(79,70,229,.08);
+  --code-bg:#f8fafc; --code-border:#e8ebf0;
+  --ok:#16a34a; --warn:#d97706; --err:#dc2626;
+  --shadow:0 1px 3px rgba(0,0,0,.06);
+}
+[data-theme=dark]{
+  --bg:#0f1115; --panel:#171a20; --border:#2a2f3a; --text:#e6e8eb; --muted:#9aa3b2;
+  --primary:#818cf8; --primary-h:#a5b4fc; --primary-soft:rgba(129,140,248,.14);
+  --code-bg:#111419; --code-border:#252b36;
+  --shadow:none;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font:14px/1.65 system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+header{position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;
+  padding:10px 18px;background:var(--panel);border-bottom:1px solid var(--border)}
+.brand{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px}
+.brand .ver{font-size:11px;font-weight:400;color:var(--muted);border:1px solid var(--border);padding:1px 8px;border-radius:99px}
+.header-right{display:flex;align-items:center;gap:14px;color:var(--muted);font-size:12.5px}
+#liveClock{font-variant-numeric:tabular-nums;font-family:ui-monospace,Consolas,monospace}
+.icon-btn{border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;
+  padding:5px 10px;cursor:pointer;font-size:13px}
+.icon-btn:hover{border-color:var(--primary)}
+.layout{display:flex;min-height:calc(100vh - 53px)}
+nav{width:212px;flex:none;padding:12px 10px;border-right:1px solid var(--border);background:var(--panel)}
+.nav-item{display:flex;gap:9px;align-items:center;width:100%;padding:9px 12px;border:0;background:none;
+  color:var(--muted);border-radius:8px;cursor:pointer;font-size:13.5px;text-align:left;margin-bottom:2px;
+  font-family:inherit}
+.nav-item.active{background:var(--primary);color:#fff}
+.nav-item:hover:not(.active){background:var(--primary-soft);color:var(--text)}
+.nav-key{margin-left:auto;font-size:10.5px;opacity:.55;font-family:ui-monospace,Consolas,monospace}
+.nav-sec{font-size:11px;color:var(--muted);opacity:.7;margin:12px 8px 4px;letter-spacing:.05em}
+main{flex:1;padding:20px 26px 60px;min-width:0}
+footer{position:fixed;bottom:0;left:0;right:0;padding:6px 18px;font-size:11.5px;color:var(--muted);
+  background:var(--panel);border-top:1px solid var(--border);z-index:15}
+.module{display:none;animation:fadeIn .18s ease}
+.module.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.mod-head h2{margin:0 0 2px;font-size:19px}
+.mod-desc{margin:0 0 16px;color:var(--muted);font-size:13px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px 16px;
+  box-shadow:var(--shadow);margin-bottom:14px}
+.card h3{margin:0 0 10px;font-size:14px}
+.btn{border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;
+  padding:7px 14px;cursor:pointer;font-size:13px;font-family:inherit}
+.btn:hover{border-color:var(--primary);color:var(--primary)}
+.btn-primary{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-h);border-color:var(--primary-h);color:#fff}
+.btn-sm{padding:4px 10px;font-size:12px}
+.btn-row{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+textarea,input[type=text],input[type=number],input[type=datetime-local],select{
+  width:100%;background:var(--code-bg);border:1px solid var(--code-border);color:var(--text);
+  border-radius:8px;padding:9px 11px;font:13px/1.55 ui-monospace,"Cascadia Code",Consolas,monospace;
+  outline:none;resize:vertical}
+textarea:focus,input:focus,select:focus{border-color:var(--primary)}
+label.field{display:block;margin-bottom:10px;font-size:12.5px;color:var(--muted)}
+label.field>span{display:block;margin-bottom:5px;font-weight:600;color:var(--text)}
+pre.out{background:var(--code-bg);border:1px solid var(--code-border);border-radius:8px;padding:12px 14px;
+  font:12.5px/1.6 ui-monospace,"Cascadia Code",Consolas,monospace;white-space:pre-wrap;word-break:break-all;
+  max-height:460px;overflow:auto;margin:0}
+pre.out.empty{color:var(--muted)}
+.err-box{border-color:var(--err)!important;background:rgba(220,38,38,.06)!important;color:var(--err)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:860px){.grid2,.grid3{grid-template-columns:1fr}.layout{flex-direction:column}
+  nav{width:100%;display:flex;overflow-x:auto;border-right:0;border-bottom:1px solid var(--border)}
+  .nav-item{white-space:nowrap;width:auto}.nav-sec,.nav-key{display:none}}
+table.data{width:100%;border-collapse:collapse;font-size:12.5px}
+table.data th,table.data td{border:1px solid var(--border);padding:6px 10px;text-align:left;vertical-align:top;
+  word-break:break-all}
+table.data th{background:var(--code-bg);font-weight:600;white-space:nowrap}
+.tag{display:inline-block;padding:1px 9px;border-radius:99px;font-size:11.5px;font-weight:600;
+  border:1px solid var(--border);background:var(--code-bg)}
+.tag-blue{color:var(--primary);border-color:var(--primary);background:var(--primary-soft)}
+.tag-ok{color:var(--ok);border-color:var(--ok);background:rgba(22,163,74,.08)}
+.tag-err{color:var(--err);border-color:var(--err);background:rgba(220,38,38,.07)}
+.tag-warn{color:var(--warn);border-color:var(--warn);background:rgba(217,119,6,.08)}
+.kbd{font:11px ui-monospace,monospace;border:1px solid var(--border);border-bottom-width:2px;
+  border-radius:4px;padding:0 5px;background:var(--code-bg)}
+.code-tabs{display:flex;gap:6px;margin:12px 0 8px;flex-wrap:wrap}
+.code-tab{padding:5px 13px;border-radius:8px 8px 0 0;border:1px solid var(--border);border-bottom:0;
+  background:var(--code-bg);cursor:pointer;font-size:12.5px;color:var(--muted)}
+.code-tab.active{background:var(--panel);color:var(--primary);font-weight:600;border-color:var(--primary)}
+.hl{background:rgba(217,119,6,.28);border-radius:3px}
+[data-theme=dark] .hl{background:rgba(217,119,6,.45)}
+.stat-ok{color:var(--ok)} .stat-err{color:var(--err)} .stat-warn{color:var(--warn)}
+#toast{position:fixed;top:64px;right:22px;background:var(--text);color:var(--bg);padding:9px 16px;
+  border-radius:9px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:99}
+#toast.show{opacity:.96}
+.swatch-lg{height:64px;border-radius:10px;border:1px solid var(--border)}
+.check-row{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;align-items:center;margin:6px 0}
+.check-row label{display:flex;align-items:center;gap:5px;cursor:pointer;color:var(--text)}
+input[type=checkbox]{accent-color:var(--primary);width:15px;height:15px}
+input[type=color]{width:100%;height:40px;border:1px solid var(--border);border-radius:8px;background:none;
+  cursor:pointer;padding:2px}
+input[type=range]{accent-color:var(--primary);width:100%}
+.mono{font-family:ui-monospace,Consolas,monospace}
+.muted{color:var(--muted)}
+.big-num{font:600 26px/1.3 ui-monospace,Consolas,monospace;letter-spacing:.5px}
+.chip-row{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--border);background:var(--code-bg);border-radius:99px;padding:3px 11px;
+  font-size:12px;cursor:pointer}
+.chip:hover{border-color:var(--primary);color:var(--primary)}
+.result-item{border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:12px;background:var(--panel)}
+.result-item .ri-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.diff-add td{background:rgba(22,163,74,.07)} .diff-del td{background:rgba(220,38,38,.06)}
+.diff-chg td{background:rgba(217,119,6,.07)}
+.jw-card{border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;background:var(--panel)}
+.jw-card h4{margin:0 0 8px;font-size:13px}
+.oauth{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.hint{font-size:12px;color:var(--muted);margin-top:6px}
+.arrow{color:var(--muted);text-align:center;font-size:18px;margin:4px 0}
+/* API 调试台 */
+.req-line{display:flex;gap:8px;flex-wrap:wrap}
+.req-line select{width:118px;flex:none}
+.req-line input{flex:1;min-width:260px}
+.kv-row{display:grid;grid-template-columns:26px 1fr 1.4fr 34px;gap:8px;align-items:center;margin-bottom:8px}
+.kv-row input[type=text]{padding:7px 10px}
+.kv-row .del{border:none;background:none;color:var(--muted);cursor:pointer;font-size:15px;padding:0}
+.kv-row .del:hover{color:var(--err)}
+.panel-tabs{display:flex;gap:6px;margin:14px 0 10px;flex-wrap:wrap}
+.panel-tab{padding:5px 14px;border-radius:99px;border:1px solid var(--border);background:var(--code-bg);
+  cursor:pointer;font-size:12.5px;color:var(--muted);font-family:inherit}
+.panel-tab.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.api-panel{display:none}
+.api-panel.active{display:block}
+.status-1,.status-3{color:var(--warn)} .status-2{color:var(--ok)}
+.status-4,.status-5{color:var(--err)}
+.hist-item{display:flex;gap:10px;align-items:center;padding:8px 10px;border:1px solid var(--border);
+  border-radius:8px;margin-bottom:6px;cursor:pointer;font-size:12.5px;background:var(--code-bg)}
+.hist-item:hover{border-color:var(--primary)}
+.hist-item .m{font-weight:700;width:54px;flex:none;font-family:ui-monospace,Consolas,monospace}
+.hist-item .u{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-family:ui-monospace,Consolas,monospace}
+.hist-item .s{flex:none;font-family:ui-monospace,Consolas,monospace}
+details summary{outline:none}
+details summary:hover{color:var(--primary)}
+/* WebSocket 调试台 */
+.ws-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--muted);margin-right:6px;vertical-align:-1px}
+.ws-dot.ok{background:var(--ok)} .ws-dot.warn{background:var(--warn)} .ws-dot.err{background:var(--err)}
+.ws-entry{border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:8px;background:var(--code-bg);font-size:12.5px}
+.ws-entry .ws-meta{display:flex;gap:8px;align-items:center;margin-bottom:5px;color:var(--muted);font-size:11.5px;
+  font-family:ui-monospace,Consolas,monospace;flex-wrap:wrap}
+.ws-dir{padding:0 7px;border-radius:99px;font-weight:700;font-size:11px}
+.ws-dir.sent{color:var(--warn);border:1px solid var(--warn)} .ws-dir.recv{color:var(--primary);border:1px solid var(--primary)}
+.ws-dir.evt{color:var(--muted);border:1px solid var(--border)}
+.ws-body{font-family:ui-monospace,Consolas,monospace;white-space:pre-wrap;word-break:break-all;max-height:220px;overflow:auto}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">🇨🇭 前端瑞士军刀 <span class="ver">v1.5 · 单文件离线版</span></div>
+  <div class="header-right">
+    <span id="liveClock">--</span>
+    <button class="icon-btn" id="helpToggle" title="快捷键速查（按 ? 呼出）">⌨ 快捷键</button>
+    <button class="icon-btn" id="themeToggle" title="切换主题">🌙 深色</button>
+  </div>
+</header>
+
+<div class="layout">
+<nav id="sidebar"></nav>
+<main>
+
+<!-- ============ 1. cURL 转换器 ============ -->
+<section class="module" id="mod-curl">
+  <div class="mod-head">
+    <h2>🌀 cURL 转换器</h2>
+    <p class="mod-desc">粘贴浏览器 DevTools「Copy as cURL」的内容（含 headers + cookies），一键转成 fetch / axios / 可直接贴进 Console 的代码。支持 --data-raw、-H、$'...' 转义、续行符。</p>
+  </div>
+  <div class="card">
+    <label class="field"><span>cURL 命令</span>
+      <textarea id="curlIn" rows="8" placeholder="curl 'https://...' -H 'accept: application/json' --data-raw '{...}' --compressed"></textarea>
+    </label>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="curlParseBtn">⚡ 解析并生成</button>
+      <button class="btn" id="curlExampleBtn">填充示例</button>
+      <button class="btn" id="curlClearBtn">清空</button>
+      <span class="check-row" style="margin-left:8px">
+        <label><input type="checkbox" id="curlJsonBody"> JSON body 转 JSON.stringify(...) 形式</label>
+      </span>
+    </div>
+  </div>
+  <div id="curlSummary" style="display:none" class="card">
+    <h3>📋 请求概览</h3>
+    <div id="curlSummaryBody"></div>
+  </div>
+  <div class="card" id="curlOutCard" style="display:none">
+    <div class="code-tabs" id="curlTabs">
+      <button class="code-tab active" data-t="fetch">fetch (async/await)</button>
+      <button class="code-tab" data-t="axios">axios</button>
+      <button class="code-tab" data-t="console">Console 即贴版</button>
+    </div>
+    <pre class="out" id="curlCodeOut"></pre>
+    <div class="btn-row"><button class="btn btn-sm" id="curlCopyBtn">复制代码</button></div>
+  </div>
+</section>
+
+<!-- ============ 2. JSON 工具 ============ -->
+<section class="module" id="mod-json">
+  <div class="mod-head">
+    <h2>🧱 JSON 工具 + TS 类型生成</h2>
+    <p class="mod-desc">格式化 / 压缩 / 校验 / 对比逗号容错，还能把后端返回的 JSON 一键转成 TypeScript interface（自动采样数组合并类型，null 自动标 ?）。</p>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <label class="field"><span>输入 JSON</span>
+        <textarea id="jsonIn" rows="16" placeholder='{"code":0,"data":{...}}'></textarea>
+      </label>
+      <div class="btn-row">
+        <button class="btn btn-primary" data-json="fmt2">格式化 (2空格)</button>
+        <button class="btn" data-json="fmt4">格式化 (4空格)</button>
+        <button class="btn" data-json="min">压缩</button>
+        <button class="btn" data-json="ts">转 TS 接口</button>
+        <button class="btn" data-json="clear">清空</button>
+      </div>
+    </div>
+    <div class="card">
+      <label class="field"><span>输出</span><pre class="out empty" id="jsonOut">结果将显示在这里…</pre></label>
+      <div class="btn-row"><button class="btn btn-sm" id="jsonCopyBtn">复制结果</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. 接口日志解析 ============ -->
+<section class="module" id="mod-logs">
+  <div class="mod-head">
+    <h2>🧾 [api:xxx] 日志解析</h2>
+    <p class="mod-desc">粘贴浏览器 Console 日志，自动按 <span class="mono">[api:接口名]</span> 标记切分、提取并格式化每个接口的 JSON 响应。没有 [api] 标记时，自动降级为「提取所有行内 JSON」模式。</p>
+  </div>
+  <div class="card">
+    <label class="field"><span>Console 日志（直接全选复制粘贴）</span>
+      <textarea id="logsIn" rows="10" placeholder='[api:getOrderList] {"code":0,"data":{...}}'></textarea>
+    </label>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="logsParseBtn">⚡ 解析日志</button>
+      <button class="btn" id="logsExampleBtn">填充示例</button>
+      <button class="btn" id="logsClearBtn">清空</button>
+    </div>
+  </div>
+  <div id="logsOut"></div>
+</section>
+
+<!-- ============ 4. JSON 对比 ============ -->
+<section class="module" id="mod-diff">
+  <div class="mod-head">
+    <h2>🔀 JSON 对比</h2>
+    <p class="mod-desc">两个 JSON 逐字段递归对比，标出新增 / 删除 / 修改的路径与值。联调时对比「接口文档示例」和「真实接口返回」特别好使。</p>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <label class="field"><span>原始 JSON（如：文档示例）</span><textarea id="diffA" rows="12"></textarea></label>
+    </div>
+    <div class="card">
+      <label class="field"><span>新 JSON（如：真实返回）</span><textarea id="diffB" rows="12"></textarea></label>
+    </div>
+  </div>
+  <div class="btn-row"><button class="btn btn-primary" id="diffBtn">⚡ 开始对比</button></div>
+  <div class="card" id="diffOutCard" style="display:none"><div id="diffOut"></div></div>
+</section>
+
+<!-- ============ 5. 时间戳 ============ -->
+<section class="module" id="mod-ts">
+  <div class="mod-head">
+    <h2>⏱️ 时间戳转换</h2>
+    <p class="mod-desc">秒级(10位) / 毫秒级(13位)自动识别，本地 / ISO / UTC 全格式输出，附实时时钟。</p>
+  </div>
+  <div class="card">
+    <div class="grid3">
+      <div><div class="muted" style="font-size:12px">本地时间</div><div class="big-num" id="tsLocal">--</div></div>
+      <div><div class="muted" style="font-size:12px">ISO 8601</div><div class="big-num" id="tsIso">--</div></div>
+      <div><div class="muted" style="font-size:12px">Unix 时间戳(ms)</div><div class="big-num" id="tsUnix">--</div></div>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <h3>时间戳 → 日期</h3>
+      <label class="field"><span>时间戳（秒或毫秒）</span>
+        <input type="text" id="tsIn" placeholder="如 1756896000000 或 1756896000">
+      </label>
+      <div class="btn-row"><button class="btn btn-primary" id="tsNowBtn">取当前时间戳</button></div>
+      <pre class="out empty" id="tsOut">--</pre>
+    </div>
+    <div class="card">
+      <h3>日期 → 时间戳</h3>
+      <label class="field"><span>选择日期时间</span><input type="datetime-local" id="dateIn" step="1"></label>
+      <pre class="out empty" id="dateOut">--</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. 编解码 ============ -->
+<section class="module" id="mod-codec">
+  <div class="mod-head">
+    <h2>🔐 编解码工具</h2>
+    <p class="mod-desc">Base64（UTF-8 安全）/ URL / Unicode / HTML 实体，双向转换。</p>
+  </div>
+  <div class="card">
+    <label class="field"><span>输入</span><textarea id="codecIn" rows="6"></textarea></label>
+    <div class="btn-row">
+      <button class="btn" data-codec="b64e">Base64 编码</button>
+      <button class="btn" data-codec="b64d">Base64 解码</button>
+      <button class="btn" data-codec="urle">URL 编码</button>
+      <button class="btn" data-codec="urld">URL 解码</button>
+      <button class="btn" data-codec="unie">Unicode 编码</button>
+      <button class="btn" data-codec="unid">Unicode 解码</button>
+      <button class="btn" data-codec="htmle">HTML 转义</button>
+      <button class="btn" data-codec="htmld">HTML 还原</button>
+    </div>
+    <label class="field"><span>输出</span><pre class="out empty" id="codecOut">--</pre></label>
+    <div class="btn-row"><button class="btn btn-sm" id="codecCopyBtn">复制输出</button>
+      <button class="btn btn-sm" id="codecSwapBtn">⬇ 输出转输入</button></div>
+  </div>
+</section>
+
+<!-- ============ 7. JWT ============ -->
+<section class="module" id="mod-jwt">
+  <div class="mod-head">
+    <h2>🎫 JWT 解析</h2>
+    <p class="mod-desc">本地解码 JWT 的 header / payload（不验证签名、不联网），自动换算 exp / iat 并标注是否过期。</p>
+  </div>
+  <div class="card">
+    <label class="field"><span>JWT Token</span><textarea id="jwtIn" rows="5" placeholder="eyJhbGciOi..."></textarea></label>
+    <div class="btn-row"><button class="btn btn-primary" id="jwtBtn">⚡ 解析</button><button class="btn" id="jwtClearBtn">清空</button></div>
+  </div>
+  <div id="jwtOut"></div>
+</section>
+
+<!-- ============ 8. 正则 ============ -->
+<section class="module" id="mod-re">
+  <div class="mod-head">
+    <h2>🔍 正则测试器</h2>
+    <p class="mod-desc">实时匹配高亮、捕获组表格、常用正则速查。</p>
+  </div>
+  <div class="card">
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <span class="mono muted" style="font-size:16px">/</span>
+      <input type="text" id="rePattern" placeholder="\d{4}-\d{2}-\d{2}" style="flex:1">
+      <span class="mono muted" style="font-size:16px">/</span>
+      <input type="text" id="reFlags" value="g" style="width:70px" title="flags">
+    </div>
+    <div class="check-row" style="margin-top:8px">
+      <label><input type="checkbox" data-flag="g" checked> g 全局</label>
+      <label><input type="checkbox" data-flag="i"> i 忽略大小写</label>
+      <label><input type="checkbox" data-flag="m"> m 多行</label>
+      <label><input type="checkbox" data-flag="s"> s dotAll</label>
+      <label><input type="checkbox" data-flag="u"> u unicode</label>
+    </div>
+    <label class="field" style="margin-top:10px"><span>测试文本</span><textarea id="reText" rows="6">订单 SO20260903-001 创建于 2026-09-03，服务时间 2026-09-05 14:00。</textarea></label>
+    <div class="hint">常用速查（点击填入）：</div>
+    <div class="chip-row" id="reCheats" style="margin-top:6px">
+      <button class="chip" data-p="1[3-9]\d{9}" data-f="g">手机号</button>
+      <button class="chip" data-p="[\w.+-]+@[\w-]+\.[\w.]+" data-f="g">邮箱</button>
+      <button class="chip" data-p="https?://[^\s']+" data-f="g">URL</button>
+      <button class="chip" data-p="\d{4}-\d{2}-\d{2}" data-f="g">日期 yyyy-MM-dd</button>
+      <button class="chip" data-p="^[\u4e00-\u9fa5]{2,4}$" data-f="">中文姓名</button>
+      <button class="chip" data-p="(25[0-5]|2\d\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2\d\d|1\d\d|[1-9]?\d)){3}" data-f="g">IPv4</button>
+      <button class="chip" data-p="^SO\d{11}-?\d*$" data-f="">订单号 SO 前缀</button>
+      <button class="chip" data-p="[A-Za-z0-9_-]{10,}" data-f="g">token 串</button>
+    </div>
+  </div>
+  <div class="card">
+    <h3>匹配结果</h3>
+    <div id="reStatus" class="muted" style="font-size:12.5px;margin-bottom:8px">--</div>
+    <pre class="out empty" id="reHlOut">--</pre>
+    <div id="reMatchTable" style="margin-top:10px"></div>
+  </div>
+</section>
+
+<!-- ============ 9. 颜色 ============ -->
+<section class="module" id="mod-color">
+  <div class="mod-head">
+    <h2>🎨 颜色工具</h2>
+    <p class="mod-desc">HEX / RGB / HSL 互转 + WCAG 前景背景对比度检查（AA / AAA 判定）。</p>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <h3>格式互转</h3>
+      <label class="field"><span>输入颜色（#abc / #aabbcc / rgb(...) / hsl(...)）</span>
+        <input type="text" id="colorIn" value="#4f46e5"></label>
+      <div class="swatch-lg" id="colorSwatch" style="margin-bottom:10px"></div>
+      <pre class="out" id="colorOut"></pre>
+    </div>
+    <div class="card">
+      <h3>WCAG 对比度检查</h3>
+      <label class="field"><span>前景色</span><input type="color" id="fgColor" value="#1f2328"></label>
+      <label class="field"><span>背景色</span><input type="color" id="bgColor" value="#ffffff"></label>
+      <div class="swatch-lg" id="contrastSwatch" style="margin-bottom:10px;display:flex;align-items:center;justify-content:center;font-size:15px">Aa 文字示例</div>
+      <div id="contrastOut"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10. 生成器 ============ -->
+<section class="module" id="mod-gen">
+  <div class="mod-head">
+    <h2>🎲 生成器 & 换算</h2>
+    <p class="mod-desc">UUID、随机密码、px ⇄ rem 换算。</p>
+  </div>
+  <div class="grid3">
+    <div class="card">
+      <h3>UUID v4</h3>
+      <div class="btn-row"><button class="btn btn-primary" id="uuidBtn">生成</button></div>
+      <pre class="out empty" id="uuidOut">--</pre>
+    </div>
+    <div class="card">
+      <h3>随机密码</h3>
+      <label class="field"><span>长度：<span id="pwLenVal">16</span></span><input type="range" id="pwLen" min="6" max="64" value="16"></label>
+      <div class="check-row">
+        <label><input type="checkbox" id="pwLower" checked> a-z</label>
+        <label><input type="checkbox" id="pwUpper" checked> A-Z</label>
+        <label><input type="checkbox" id="pwDigit" checked> 0-9</label>
+        <label><input type="checkbox" id="pwSymbol" checked> !@#$%</label>
+      </div>
+      <div class="btn-row"><button class="btn btn-primary" id="pwBtn">生成 5 个</button></div>
+      <pre class="out empty" id="pwOut">--</pre>
+    </div>
+    <div class="card">
+      <h3>px / rem / vw 换算</h3>
+      <label class="field"><span>根字号 root font-size (px)</span><input type="number" id="rootFs" value="16"></label>
+      <label class="field"><span>视口宽度 (px，用于 vw)</span><input type="number" id="vwWidth" value="375"></label>
+      <label class="field"><span>px</span><input type="number" id="pxIn" value="24"></label>
+      <div class="arrow">⇅</div>
+      <label class="field"><span>rem</span><input type="number" id="remIn" step="0.0001"></label>
+      <div class="arrow">⇅</div>
+      <label class="field"><span>vw</span><input type="number" id="vwIn" step="0.0001"></label>
+      <div class="hint">三向联动：px = rem×根字号 = vw×视口宽度÷100。改任意一边自动同步。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 11. API 调试台 ============ -->
+<section class="module" id="mod-api">
+  <div class="mod-head">
+    <h2>📡 API 调试台</h2>
+    <p class="mod-desc">本地版 mini Postman：粘贴 cURL 一键导入，浏览器直接发请求；跨域被拦时一键生成 Node 脚本（自带全部 headers/cookies）到终端跑。支持环境变量、请求历史（本地保存）。</p>
+  </div>
+
+  <div class="card">
+    <h3>🚀 发送请求</h3>
+    <div class="req-line">
+      <select id="apiMethod">
+        <option>GET</option><option>POST</option><option>PUT</option>
+        <option>PATCH</option><option>DELETE</option><option>HEAD</option>
+      </select>
+      <input type="text" id="apiUrl" placeholder="https://api.example.com/path?id=1" spellcheck="false">
+      <button class="btn btn-primary" id="apiSendBtn" style="flex:none">🚀 发送</button>
+    </div>
+    <div class="hint">跨域(CORS)提示：浏览器直连跨域接口可能被拦，被拦时下方会自动给出一键生成 Node 脚本方案。</div>
+
+    <div class="panel-tabs">
+      <button class="panel-tab active" data-p="params">Params</button>
+      <button class="panel-tab" data-p="headers">Headers</button>
+      <button class="panel-tab" data-p="body">Body</button>
+    </div>
+
+    <div class="api-panel active" id="panel-params">
+      <div id="paramRows"></div>
+      <button class="btn btn-sm" id="addParamBtn">+ 参数</button>
+    </div>
+
+    <div class="api-panel" id="panel-headers">
+      <div class="hint" style="margin:0 0 8px">Cookie 无法通过 JS 设置（浏览器安全限制），需要带 Cookie 的请求请走「Node 脚本」方式。</div>
+      <div id="headerRows"></div>
+      <button class="btn btn-sm" id="addHeaderBtn">+ Header</button>
+      <div class="hint">快捷添加：
+        <span class="chip" data-hh="content-type: application/json">content-type: json</span>
+        <span class="chip" data-hh="accept: application/json">accept: json</span>
+        <span class="chip" data-hh="x-xsrf-token: ">x-xsrf-token</span>
+      </div>
+    </div>
+
+    <div class="api-panel" id="panel-body">
+      <label class="field"><span>请求体（JSON 时自动格式化校验）</span>
+        <textarea id="apiBody" rows="8" placeholder='{"orderStatus":"ALL","queryType":"ALL"}'></textarea>
+      </label>
+      <div class="btn-row">
+        <button class="btn btn-sm" id="bodyFmtBtn">格式化 JSON</button>
+        <span class="tag" id="bodyTag">Body 未启用</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="envCard">
+    <h3>🌍 环境变量 <span class="muted" style="font-weight:400;font-size:12px">（URL / Headers / Body 里写 <span class="mono">{{token}}</span>，发送时自动替换；切换环境一处生效）</span></h3>
+    <div class="check-row" style="margin-top:0;margin-bottom:10px">
+      <span class="muted" style="font-size:12px">环境：</span>
+      <span class="chip" data-envsel="uat">uat</span>
+      <span class="chip" data-envsel="prod">prod</span>
+      <button class="btn btn-sm" id="envAddBtn" style="margin-left:auto">+ 新环境</button>
+    </div>
+    <div id="envRows"></div>
+    <div class="hint">内置示例：{{token}}、{{xsrf}}、{{baseUrl}}——把 URL 换成 <span class="mono">{{baseUrl}}/api/...</span>，换环境只改一处。同名变量在多环境下有不同值，发送时按当前选中环境替换。</div>
+  </div>
+
+  <div class="card" id="apiResCard" style="display:none">
+    <h3>📨 响应</h3>
+    <div id="apiResMeta"></div>
+    <pre class="out empty" id="apiResOut">--</pre>
+    <div class="btn-row">
+      <button class="btn btn-sm" id="apiResCopyBtn">复制响应</button>
+      <button class="btn btn-sm" id="apiToDiffBtn">送去「JSON 对比」</button>
+      <button class="btn btn-sm" id="apiToTsBtn">送去「转 TS 接口」</button>
+      <button class="btn btn-sm" id="apiToMockBtn">🎭 生成 Mock 代码</button>
+      <button class="btn btn-sm" id="apiToAxiosBtn">🔌 生成 axios 拦截器</button>
+    </div>
+    <div id="apiCorsHint"></div>
+  </div>
+
+  <div class="card">
+    <h3>📥 cURL 导入</h3>
+    <textarea id="apiCurlIn" rows="5" placeholder="粘贴 DevTools Copy as cURL，点导入自动填入 method / url / headers / body"></textarea>
+    <div class="btn-row"><button class="btn" id="apiCurlImportBtn">📥 导入 cURL</button></div>
+    <div class="hint">常用环境（点击快速填入 URL 前缀）：
+      <span class="chip" data-env="https://shlt.uat3.qgutech.com">shlt.uat3</span>
+      <span class="chip" data-env="http://localhost:3000">localhost:3000</span>
+      <span class="chip" data-env="https://testapi.xiaolintong.net.cn">小邻通 testapi</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>🕘 请求历史 <span class="muted" style="font-weight:400;font-size:12px">（保存在 localStorage，最近 50 条）</span></h3>
+    <div class="btn-row" style="margin-top:0"><button class="btn btn-sm" id="histClearBtn">清空历史</button></div>
+    <div id="histList"></div>
+  </div>
+</section>
+
+<!-- ============ 12. AES 加解密 ============ -->
+<section class="module" id="mod-aes">
+  <div class="mod-head">
+    <h2>🛡️ AES 加解密</h2>
+    <p class="mod-desc">纯本地 AES-128/192/256 · ECB/CBC · PKCS7，密钥/IV 支持 Text / Hex / Base64 输入，密文 Hex/Base64 输出。已用 Node crypto 交叉验证（36/36 通过）。对接第三方加密接口（如小邻通工单推送）时本地验证加解密正确性。</p>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <h3>⚙️ 配置</h3>
+      <div class="grid2" style="gap:10px">
+        <label class="field"><span>模式</span>
+          <select id="aesMode"><option>ECB</option><option>CBC</option></select>
+        </label>
+        <label class="field"><span>密钥长度</span>
+          <select id="aesKeyLen"><option value="128">128 位</option><option value="192">192 位</option><option value="256">256 位</option></select>
+        </label>
+      </div>
+      <label class="field"><span>密钥 Key</span>
+        <input type="text" id="aesKey" placeholder="16/24/32 字节" spellcheck="false">
+      </label>
+      <label class="field"><span>密钥编码</span>
+        <select id="aesKeyEnc"><option>Text</option><option>Hex</option><option>Base64</option></select>
+      </label>
+      <label class="field" id="aesIvField"><span>IV（仅 CBC，16 字节）</span>
+        <input type="text" id="aesIv" placeholder="0102030405060708" spellcheck="false">
+      </label>
+      <label class="field" id="aesIvEncField"><span>IV 编码</span>
+        <select id="aesIvEnc"><option>Hex</option><option>Text</option><option>Base64</option></select>
+      </label>
+      <div class="check-row">
+        <label><input type="checkbox" id="aesPadBlock" checked> 输出按 16 字节分块展示</label>
+      </div>
+    </div>
+    <div class="card">
+      <h3>🔁 加密 / 解密</h3>
+      <label class="field"><span>明文</span>
+        <textarea id="aesPlain" rows="4" placeholder="要加密的内容"></textarea>
+      </label>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="aesEncBtn">🔒 加密</button>
+        <button class="btn" id="aesDecBtn">🔓 解密</button>
+        <button class="btn btn-sm" id="aesSwapBtn">⬇ 密文转明文</button>
+      </div>
+      <label class="field"><span>密文</span>
+        <textarea id="aesCipher" rows="4" placeholder="Hex 或 Base64 密文"></textarea>
+      </label>
+      <div class="check-row">
+        <span class="muted" style="font-size:12px">密文编码：</span>
+        <label><input type="radio" name="aesOutEnc" value="hex" checked> Hex</label>
+        <label><input type="radio" name="aesOutEnc" value="b64"> Base64</label>
+      </div>
+      <div class="btn-row"><button class="btn btn-sm" id="aesCopyBtn">复制密文</button></div>
+    </div>
+  </div>
+  <div class="card" id="aesOutCard" style="display:none"><pre class="out" id="aesOut"></pre></div>
+</section>
+
+<!-- ============ 13. WebSocket 调试台 ============ -->
+<section class="module" id="mod-ws">
+  <div class="mod-head">
+    <h2>🔌 WebSocket 调试台</h2>
+    <p class="mod-desc">连接、收发、断线重连一站式调试：JSON 自动美化、ping/pong 心跳保活、消息计数、wss↔ws 互转。调试推送类接口（订单推送、消息通知）好帮手。</p>
+  </div>
+  <div class="card">
+    <h3>🔗 连接</h3>
+    <div class="req-line">
+      <input type="text" id="wsUrl" placeholder="wss://example.com/ws/path（http(s) 会自动转 ws(s)）" spellcheck="false">
+      <button class="btn btn-primary" id="wsConnBtn" style="flex:none">🔌 连接</button>
+    </div>
+    <div class="check-row">
+      <label><input type="checkbox" id="wsAutoReconnect"> 断线自动重连</label>
+      <label><input type="checkbox" id="wsHeartbeat"> 心跳保活（每 30s 发 ping）</label>
+      <label><input type="checkbox" id="wsPretty" checked> 收到 JSON 自动美化</label>
+      <span class="muted" style="margin-left:auto"><span class="ws-dot" id="wsDot"></span><span id="wsState">未连接</span></span>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <h3>📤 发送</h3>
+      <textarea id="wsSend" rows="5" placeholder='{"type":"subscribe","channel":"order-push"}'></textarea>
+      <div class="btn-row">
+        <button class="btn btn-primary btn-sm" id="wsSendBtn">发送（文本）</button>
+        <button class="btn btn-sm" id="wsSendPingBtn">发送 ping</button>
+      </div>
+      <div class="hint">发送内容原样发出；服务端返回的 JSON 会自动格式化显示在右侧日志。</div>
+    </div>
+    <div class="card">
+      <h3>📊 统计</h3>
+      <div class="grid3" style="gap:8px">
+        <div><div class="muted" style="font-size:12px">已发送</div><div class="big-num" id="wsSentCount" style="font-size:20px">0</div></div>
+        <div><div class="muted" style="font-size:12px">已接收</div><div class="big-num" id="wsRecvCount" style="font-size:20px">0</div></div>
+        <div><div class="muted" style="font-size:12px">连接时长</div><div class="big-num" id="wsUptime" style="font-size:20px">--</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>📜 消息日志 <span class="muted" style="font-weight:400;font-size:12px">（最新在上）</span></h3>
+    <div class="btn-row" style="margin-top:0">
+      <button class="btn btn-sm" id="wsClearLogBtn">清空日志</button>
+      <span class="muted" style="font-size:12px">自动滚动已 <span id="wsAutoScrollState">开启</span>，点击日志区可临时暂停</span>
+    </div>
+    <div id="wsLog"></div>
+  </div>
+</section>
+
+<!-- ============ 14. 国密 SM2 / SM3 / SM4 ============ -->
+<section class="module" id="mod-gm">
+  <div class="mod-head">
+    <h2>🔏 国密 SM2 / SM3 / SM4</h2>
+    <p class="mod-desc">纯 JS 实现的国密算法套件，零依赖、可浏览器离线运行：SM3 杂凑、SM4 分组密码（ECB/CBC）、SM2 椭圆曲线（签名/验签、公钥加密/私钥解密）。已用 Node 原生 crypto 与 sm-crypto 交叉验证（SM3/SM4 全量一致；SM2 与 sm-crypto 互相验签/解密通过）。</p>
+  </div>
+  <div class="panel-tabs">
+    <button class="panel-tab active" data-p="sm3">SM3 哈希</button>
+    <button class="panel-tab" data-p="sm4">SM4 加解密</button>
+    <button class="panel-tab" data-p="sm2">SM2 签名/加密</button>
+  </div>
+
+  <div class="api-panel active" id="panel-sm3">
+    <div class="grid2">
+      <div class="card">
+        <h3>📥 输入</h3>
+        <label class="field"><span>输入编码</span>
+          <select id="gmSm3Enc"><option>Text</option><option>Hex</option><option>Base64</option></select>
+        </label>
+        <label class="field"><span>待哈希内容</span>
+          <textarea id="gmSm3In" rows="6" placeholder="hello world 或十六进制 / Base64"></textarea>
+        </label>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="gmSm3Btn">🧮 计算 SM3</button>
+          <button class="btn btn-sm" id="gmSm3CopyBtn">复制摘要</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>📤 摘要（256-bit Hex）</h3>
+        <pre class="out empty" id="gmSm3Out">结果将显示在这里…</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="api-panel" id="panel-sm4">
+    <div class="grid2">
+      <div class="card">
+        <h3>⚙️ 配置</h3>
+        <label class="field"><span>模式</span>
+          <select id="gmSm4Mode"><option>ECB</option><option>CBC</option></select>
+        </label>
+        <label class="field"><span>密钥 Key（16 字节 / 128 位）</span>
+          <input type="text" id="gmSm4Key" placeholder="1234567890abcdef" spellcheck="false">
+        </label>
+        <label class="field"><span>密钥编码</span>
+          <select id="gmSm4KeyEnc"><option>Text</option><option>Hex</option><option>Base64</option></select>
+        </label>
+        <label class="field" id="gmSm4IvField"><span>IV（仅 CBC，16 字节）</span>
+          <input type="text" id="gmSm4Iv" placeholder="0102030405060708" spellcheck="false">
+        </label>
+        <label class="field" id="gmSm4IvEncField"><span>IV 编码</span>
+          <select id="gmSm4IvEnc"><option>Hex</option><option>Text</option><option>Base64</option></select>
+        </label>
+      </div>
+      <div class="card">
+        <h3>🔁 加密 / 解密</h3>
+        <label class="field"><span>明文编码</span>
+          <select id="gmSm4PlainEnc"><option>Text</option><option>Hex</option></select>
+        </label>
+        <label class="field"><span>明文</span>
+          <textarea id="gmSm4Plain" rows="3" placeholder="要加密的内容"></textarea>
+        </label>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="gmSm4EncBtn">🔒 加密</button>
+          <button class="btn" id="gmSm4DecBtn">🔓 解密</button>
+        </div>
+        <label class="field"><span>密文</span>
+          <textarea id="gmSm4Cipher" rows="3" placeholder="Hex 或 Base64 密文"></textarea>
+        </label>
+        <div class="check-row">
+          <span class="muted" style="font-size:12px">密文编码：</span>
+          <label><input type="radio" name="gmSm4OutEnc" value="hex" checked> Hex</label>
+          <label><input type="radio" name="gmSm4OutEnc" value="b64"> Base64</label>
+        </div>
+        <div class="btn-row"><button class="btn btn-sm" id="gmSm4CopyBtn">复制密文</button></div>
+      </div>
+    </div>
+    <div class="card" id="gmSm4OutCard" style="display:none"><pre class="out" id="gmSm4Out"></pre></div>
+  </div>
+
+  <div class="api-panel" id="panel-sm2">
+    <div class="card">
+      <h3>🔑 密钥对</h3>
+      <div class="btn-row" style="margin-top:0">
+        <button class="btn btn-primary btn-sm" id="gmSm2GenBtn">🎲 生成 SM2 密钥对</button>
+        <span class="muted" style="font-size:12px">曲线：sm2p256v1（素数域 256 位）</span>
+      </div>
+      <div class="grid2">
+        <label class="field"><span>私钥 d（32 字节 Hex）</span>
+          <input type="text" id="gmSm2Priv" placeholder="3945208f7b2144b1..." spellcheck="false">
+        </label>
+        <label class="field"><span>公钥（65 字节，以 04 开头）</span>
+          <input type="text" id="gmSm2Pub" placeholder="04 + x(32) + y(32)" spellcheck="false">
+        </label>
+      </div>
+      <label class="field"><span>UserId（SM2 标识，默认 1234567812345678，UTF-8）</span>
+        <input type="text" id="gmSm2UserId" value="1234567812345678" spellcheck="false">
+      </label>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <h3>✍️ 签名 / 验签</h3>
+        <label class="field"><span>明文编码</span>
+          <select id="gmSm2MsgEnc"><option>Text</option><option>Hex</option></select>
+        </label>
+        <label class="field"><span>待签名 / 验签明文</span>
+          <textarea id="gmSm2Msg" rows="4" placeholder="message digest"></textarea>
+        </label>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="gmSm2SignBtn">✍️ 签名</button>
+          <button class="btn" id="gmSm2VerifyBtn">✔️ 验签</button>
+        </div>
+        <label class="field"><span>签名（r‖s，64 字节 Hex）</span>
+          <textarea id="gmSm2Sig" rows="3" placeholder="签名值"></textarea>
+        </label>
+      </div>
+      <div class="card">
+        <h3>🔐 加密 / 解密（C1C3C2）</h3>
+        <div class="check-row" style="margin-bottom:10px">
+          <label><input type="checkbox" id="gmSm2C104" checked> 加密输出带 0x04 前缀（取消则省略；两种格式均可解密）</label>
+        </div>
+        <label class="field"><span>密文（Hex，可带 / 不带 04 前缀）</span>
+          <textarea id="gmSm2Cipher" rows="4" placeholder="04 + C1(32) + C3(32) + C2"></textarea>
+        </label>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="gmSm2EncBtn">🔒 公钥加密</button>
+          <button class="btn" id="gmSm2DecBtn">🔓 私钥解密</button>
+        </div>
+      </div>
+    </div>
+    <div class="card" id="gmSm2OutCard" style="display:none"><pre class="out" id="gmSm2Out"></pre></div>
+  </div>
+</section>
+
+<!-- ============ 15. 请求集合 ============ -->
+<section class="module" id="mod-coll">
+  <div class="mod-head">
+    <h2>📚 请求集合</h2>
+    <p class="mod-desc">把常用接口保存成「请求集合」，按项目分组，支持一键重放、复制 cURL、导入当前 API 调试台配置。数据仅存浏览器 localStorage。</p>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <h3>🗂️ 已保存（按项目）</h3>
+      <div class="btn-row" style="margin-top:0">
+        <button class="btn btn-sm" id="collNewBtn">＋ 新建</button>
+        <button class="btn btn-sm" id="collImportApiBtn">从 API 调试台导入</button>
+        <button class="btn btn-sm" id="collClearBtn">清空全部</button>
+      </div>
+      <div id="collList" style="margin-top:6px"></div>
+    </div>
+    <div class="card">
+      <h3>✏️ 编辑</h3>
+      <div class="grid2" style="gap:10px">
+        <label class="field"><span>名称</span><input type="text" id="collName" placeholder="如：获取订单详情"></label>
+        <label class="field"><span>项目分组</span><input type="text" id="collProject" placeholder="如：上海联通家政"></label>
+      </div>
+      <label class="field"><span>方法 / URL（URL 支持 {{变量}}）</span>
+        <div class="req-line">
+          <select id="collMethod"><option>GET</option><option>POST</option><option>PUT</option><option>DELETE</option><option>PATCH</option></select>
+          <input type="text" id="collUrl" placeholder="https://{{baseUrl}}/api/order/{{id}}" spellcheck="false">
+        </div>
+      </label>
+      <label class="field"><span>Headers（每行 Key: Value）</span>
+        <textarea id="collHeaders" rows="4" placeholder="accept: application/json&#10;authorization: Bearer {{token}}"></textarea>
+      </label>
+      <label class="field"><span>Body（JSON）</span>
+        <textarea id="collBody" rows="4" placeholder='{"a":1}'></textarea>
+      </label>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="collSaveBtn">💾 保存</button>
+        <button class="btn" id="collSendBtn">🚀 重放</button>
+        <button class="btn btn-sm" id="collCurlBtn">复制 cURL</button>
+        <button class="btn btn-sm" id="collDelBtn">删除</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>📥 响应</h3>
+    <pre class="out empty" id="collResult">重放结果将显示在这里…</pre>
+  </div>
+</section>
+
+<!-- ============ 16. SSE 调试台 ============ -->
+<section class="module" id="mod-sse">
+  <div class="mod-head">
+    <h2>🌊 SSE 调试台</h2>
+    <p class="mod-desc">调试 Server-Sent Events 流：EventSource 模式（GET，浏览器自动重连）或 fetch 流模式（可带自定义头 / 请求体 / 任意方法）。自动按 SSE 协议解析 data / event / id / retry，JSON 自动美化。</p>
+  </div>
+  <div class="card">
+    <h3>🔗 连接</h3>
+    <div class="req-line">
+      <input type="text" id="sseUrl" placeholder="https://{{baseUrl}}/api/sse/stream" spellcheck="false">
+      <select id="sseMode"><option value="es">EventSource (GET)</option><option value="fetch">fetch 流（任意方法/带头）</option></select>
+      <button class="btn btn-primary" id="sseConnBtn" style="flex:none">🌊 连接</button>
+      <button class="btn" id="sseDiscBtn" style="flex:none">断开</button>
+    </div>
+    <div class="grid2" style="gap:10px;margin-top:10px">
+      <label class="field"><span>方法（fetch 模式）</span><select id="sseMethod"><option>GET</option><option>POST</option><option>PUT</option></select></label>
+      <label class="field"><span>自动重连（fetch 模式）</span>
+        <div class="check-row" style="padding-top:6px"><label><input type="checkbox" id="sseAuto"> 断线 3 秒后自动重连</label></div>
+      </label>
+    </div>
+    <label class="field"><span>Headers（fetch 模式，每行 Key: Value）</span>
+      <textarea id="sseHeader" rows="3" placeholder="authorization: Bearer {{token}}"></textarea>
+    </label>
+    <label class="field"><span>Body（fetch 模式，POST 等）</span>
+      <textarea id="sseBody" rows="3" placeholder='{"topic":"order"}'></textarea>
+    </label>
+    <div class="check-row">
+      <span class="tag" id="sseStatus">未连接</span>
+      <span class="muted" style="font-size:12px">已接收事件：<b id="sseCount" style="font-variant-numeric:tabular-nums">0</b></span>
+    </div>
+  </div>
+  <div class="card">
+    <h3>📜 事件日志 <span class="muted" style="font-weight:400;font-size:12px">（最新在上）</span></h3>
+    <div class="btn-row" style="margin-top:0"><button class="btn btn-sm" id="sseClearBtn">清空日志</button></div>
+    <div id="sseLog"></div>
+  </div>
+</section>
+
+<!-- ============ 17. 凭证泄露扫描 ============ -->
+<section class="module" id="mod-secret">
+  <div class="mod-head">
+    <h2>🕵️ 凭证泄露扫描</h2>
+    <p class="mod-desc">把代码、配置文件或日志粘贴进来，扫描可能的密钥 / 凭证泄露：AWS AK/SK、GitHub/Slack/Stripe/Google Token、私钥、JWT、URL 中的密码，以及高熵疑似密钥。命中项自动脱敏展示。</p>
+  </div>
+  <div class="card">
+    <h3>📥 待扫描文本</h3>
+    <textarea id="secIn" rows="10" placeholder="粘贴代码、.env、curl 历史或日志…"></textarea>
+    <div class="btn-row" style="margin-top:10px">
+      <button class="btn btn-primary" id="secScanBtn">🔍 开始扫描</button>
+      <button class="btn btn-sm" id="secClearBtn">清空</button>
+      <label class="check-row" style="margin-left:auto"><input type="checkbox" id="secEntropy" checked> 启用高熵检测</label>
+    </div>
+  </div>
+  <div class="card" id="secOutCard">
+    <h3>🎯 扫描结果</h3>
+    <div id="secOut"><div class="hint" style="margin:0">点击「开始扫描」查看结果。</div></div>
+  </div>
+</section>
+
+<section class="module" id="mod-b64">
+  <div class="mod-head">
+    <h2>📎 文件 Base64 & multipart</h2>
+    <p class="mod-desc">图片/文件 ⇄ Base64 互转（本地，不上传），并构造 multipart/form-data 请求体。</p>
+  </div>
+  <div class="grid3">
+    <div class="card">
+      <h3>① 文件 → Base64</h3>
+      <div id="b64Drop" style="border:1.5px dashed var(--border);border-radius:8px;padding:16px;text-align:center;cursor:pointer;color:var(--muted);font-size:13px">拖拽文件到此处，或 <label class="btn btn-sm" style="display:inline-block;margin:0 4px">选择文件<input type="file" id="b64File" hidden></label></div>
+      <div id="b64FileMeta" class="muted" style="font-size:12px;margin:8px 0"></div>
+      <div id="b64PrevWrap" style="display:none;margin:8px 0"><img id="b64Prev" style="max-width:160px;max-height:120px;border-radius:6px;border:1px solid var(--border)"></div>
+      <label class="field"><span>Data URL（完整，含前缀）</span><textarea id="b64Out" rows="5" readonly placeholder="选择文件后自动生成"></textarea></label>
+      <div class="btn-row"><button class="btn btn-sm" id="b64CopyBtn">复制 Data URL</button><button class="btn btn-sm" id="b64DownloadBtn">下载原文件</button></div>
+    </div>
+    <div class="card">
+      <h3>② Base64 → 文件</h3>
+      <label class="field"><span>Data URL 或纯 Base64</span><textarea id="b64In" rows="5" placeholder="data:image/png;base64,iVBOR... 或仅 base64 文本"></textarea></label>
+      <label class="field"><span>文件名（含扩展名，可选）</span><input type="text" id="b64FileName" placeholder="e.g. image.png"></label>
+      <div class="btn-row"><button class="btn btn-primary" id="b64ToFileBtn">生成并下载</button><button class="btn btn-sm" id="b64InClear">清空</button></div>
+      <div class="hint" style="margin:0">纯 Base64 文本需手动填文件名与扩展名；Data URL 自动识别 mime。</div>
+    </div>
+    <div class="card">
+      <h3>③ multipart/form-data 构造</h3>
+      <div id="mpRows"></div>
+      <div class="btn-row"><button class="btn btn-sm" id="mpAddText">＋ 文本字段</button><button class="btn btn-sm" id="mpAddFile">＋ 文件字段</button></div>
+      <label class="field"><span>生成的请求体（文本结构，文件以占位标记）</span><pre class="out empty" id="mpOut">--</pre></label>
+      <div class="btn-row"><button class="btn btn-sm" id="mpCopyBtn">复制请求体</button><button class="btn btn-sm" id="mpCodeBtn">生成 fetch / cURL</button></div>
+      <div id="mpCodeWrap" style="display:none;margin-top:8px"><label class="field"><span>代码</span><pre class="out empty" id="mpCode"></pre></label></div>
+    </div>
+  </div>
+</section>
+
+<section class="module" id="mod-hdrs">
+  <div class="mod-head">
+    <h2>🍪 Cookie / 请求头解析</h2>
+    <p class="mod-desc">粘贴 Cookie 串或 DevTools「Copy request headers」dump，解析为结构化 KV，自动展开 Cookie，支持多格式导出。</p>
+  </div>
+  <div class="card">
+    <label class="field"><span>粘贴内容（Cookie 串 / 请求头块 / 含 Cookie: 的行）</span><textarea id="hdrsIn" rows="9" placeholder="Cookie: a=1; b=2&#10;authorization: Bearer xxx&#10;x-xsrf-token: abc&#10;（或直接粘贴 a=1; b=2）"></textarea></label>
+    <div class="btn-row"><button class="btn btn-primary" id="hdrsParseBtn">解析</button><button class="btn btn-sm" id="hdrsClearBtn">清空</button></div>
+    <div id="hdrsOut" class="hint" style="margin-top:8px">点击「解析」查看结果。</div>
+  </div>
+  <div class="card" id="hdrsExportCard" style="display:none">
+    <h3>导出</h3>
+    <div class="btn-row">
+      <button class="btn btn-sm" data-hdrs-exp="table">表格</button>
+      <button class="btn btn-sm" data-hdrs-exp="json">JSON</button>
+      <button class="btn btn-sm" data-hdrs-exp="js">JS 对象</button>
+      <button class="btn btn-sm" data-hdrs-exp="curl">cURL -H</button>
+      <button class="btn btn-sm" data-hdrs-exp="env">环境变量</button>
+    </div>
+    <pre class="out empty" id="hdrsExport"></pre>
+  </div>
+</section>
+</main>
+</div>
+
+<footer>🇨🇭 前端瑞士军刀 —— 单文件、零依赖、纯本地运行，数据不出浏览器（API/WS 调试台发出的请求除外）。快捷键：<span class="kbd">?</span> 速查面板，<span class="kbd">Alt</span>+<span class="kbd">1~0</span> 模块，<span class="kbd">Alt</span>+<span class="kbd">Q</span> API 台，<span class="kbd">Alt</span>+<span class="kbd">A</span> AES，<span class="kbd">Alt</span>+<span class="kbd">W</span> WebSocket · Alt+G 国密 · Alt+C 请求集合 · Alt+E SSE · Alt+X 凭证 · Alt+B 文件Base64 · Alt+H 请求头解析</footer>
+<div id="toast"></div>
+
+<script>
+'use strict';
+/* ================= 通用工具 ================= */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+let toastTimer = null;
+function toast(msg){
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(()=>t.classList.remove('show'), 1600);
+}
+async function copyText(text, btn){
+  if(!text){ toast('没有可复制的内容'); return; }
+  let ok = false;
+  try{ await navigator.clipboard.writeText(text); ok = true; }
+  catch(e){
+    try{
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.cssText = 'position:fixed;opacity:0';
+      document.body.appendChild(ta); ta.select();
+      ok = document.execCommand('copy'); document.body.removeChild(ta);
+    }catch(e2){ ok = false; }
+  }
+  if(btn){ const old = btn.textContent; btn.textContent = '✓ 已复制'; setTimeout(()=>btn.textContent = old, 1400); }
+  toast(ok ? '已复制到剪贴板 ✓' : '复制失败，请手动复制');
+}
+
+/* ================= 主题 ================= */
+const themeToggle = $('#themeToggle');
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme', t);
+  themeToggle.textContent = t === 'dark' ? '☀️ 浅色' : '🌙 深色';
+  try{ localStorage.setItem('dsk-theme', t); }catch(e){}
+}
+try{ const saved = localStorage.getItem('dsk-theme'); if(saved) applyTheme(saved); }catch(e){}
+themeToggle.addEventListener('click', () => {
+  const cur = document.documentElement.getAttribute('data-theme');
+  applyTheme(cur === 'dark' ? 'light' : 'dark');
+});
+
+/* ================= 侧边导航 ================= */
+const MODULES = [
+  {id:'mod-curl',  icon:'🌀', name:'cURL 转换器',   desc:'Copy as cURL → fetch / axios 代码'},
+  {id:'mod-json',  icon:'🧱', name:'JSON + TS 生成', desc:'格式化 / 校验 / 转 TypeScript 接口'},
+  {id:'mod-logs',  icon:'🧾', name:'接口日志解析',   desc:'[api:xxx] 控制台日志提取 JSON'},
+  {id:'mod-diff',  icon:'🔀', name:'JSON 对比',     desc:'文档示例 vs 真实返回逐字段比对'},
+  {id:'mod-ts',    icon:'⏱️', name:'时间戳转换',    desc:'秒/毫秒 ↔ 日期，本地/ISO/UTC'},
+  {id:'mod-codec', icon:'🔐', name:'编解码',        desc:'Base64 / URL / Unicode / HTML'},
+  {id:'mod-jwt',   icon:'🎫', name:'JWT 解析',      desc:'本地解码 header/payload，查过期'},
+  {id:'mod-re',    icon:'🔍', name:'正则测试',      desc:'实时高亮 + 捕获组 + 速查'},
+  {id:'mod-color', icon:'🎨', name:'颜色工具',      desc:'HEX/RGB/HSL 互转 + 对比度'},
+  {id:'mod-gen',   icon:'🎲', name:'生成器换算',    desc:'UUID / 密码 / px⇄rem'},
+  {id:'mod-api',   icon:'📡', name:'API 调试台',    desc:'本地 mini Postman：cURL 导入 / 直发 / Node 脚本'},
+  {id:'mod-aes',   icon:'🛡️', name:'AES 加解密',    desc:'ECB/CBC · PKCS7 · 128/192/256，本地零依赖'},
+  {id:'mod-ws',    icon:'🔌', name:'WebSocket 台',  desc:'连接/收发/心跳保活/断线重连'},
+  {id:'mod-gm',    icon:'🔏', name:'国密 SM2/SM3/SM4', desc:'纯 JS 国密算法：SM3 哈希 / SM4 加解密 / SM2 签名验签与加解密'},
+  {id:'mod-coll',  icon:'📚', name:'请求集合',        desc:'保存/收藏接口，按项目分组，一键重放与导出 cURL'},
+  {id:'mod-sse',   icon:'🌊', name:'SSE 调试台',      desc:'Server-Sent Events 流式调试：EventSource / fetch 流，自动解析事件'},
+  {id:'mod-secret',icon:'🕵️', name:'凭证泄露扫描',    desc:'代码/日志扫描：AK/SK、token、私钥、JWT、高熵密钥'},
+  {id:'mod-b64',   icon:'📎', name:'文件 Base64',     desc:'图片/文件 ⇄ Base64 互转，构造 multipart/form-data 请求体'},
+  {id:'mod-hdrs',  icon:'🍪', name:'请求头解析',      desc:'Cookie 串 / DevTools 请求头 dump 解析为结构化 KV，多格式导出'},
+];
+/* 额外模块的 Alt 字母快捷键（前 10 个用 Alt+1~0） */
+const MOD_SHORTCUT = {
+  'mod-api':'Q','mod-aes':'A','mod-ws':'W','mod-gm':'G','mod-coll':'C',
+  'mod-sse':'E','mod-secret':'X','mod-b64':'B','mod-hdrs':'H'
+};
+const sidebar = $('#sidebar');
+MODULES.forEach((m, i) => {
+  const b = document.createElement('button');
+  b.className = 'nav-item'; b.dataset.mod = m.id;
+  const sk = MOD_SHORTCUT[m.id];
+  const navKey = sk ? sk : (i < 10 ? String((i + 1) % 10) : '');
+  b.innerHTML = '<span>' + m.icon + '</span><span>' + m.name + '</span><span class="nav-key">' + (navKey ? 'Alt+' + navKey : '') + '</span>';
+  b.title = m.desc;
+  sidebar.appendChild(b);
+});
+function switchTo(id){
+  $$('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.mod === id));
+  $$('.module').forEach(s => s.classList.toggle('active', s.id === id));
+  try{ localStorage.setItem('dsk-mod', id); }catch(e){}
+  window.scrollTo(0, 0);
+}
+sidebar.addEventListener('click', e => {
+  const b = e.target.closest('.nav-item'); if(b) switchTo(b.dataset.mod);
+});
+let initMod = MODULES[0].id;
+try{ const m = localStorage.getItem('dsk-mod'); if(m && document.getElementById(m)) initMod = m; }catch(e){}
+switchTo(initMod);
+document.addEventListener('keydown', e => {
+  if(e.altKey && /^[0-9]$/.test(e.key)){
+    const idx = e.key === '0' ? 9 : (+e.key - 1);
+    if(MODULES[idx]) switchTo(MODULES[idx].id);
+  }
+  if(e.altKey){
+    for(const id in MOD_SHORTCUT){
+      const k = MOD_SHORTCUT[id];
+      if(e.key === k || e.key === k.toLowerCase()) { switchTo(id); break; }
+    }
+  }
+  if(e.key === 'Escape'){
+    ['#dskHelpModal','#dskNodeModal','#dskMockModal','#dskAxiosModal'].forEach(sel => {
+      const el = document.querySelector(sel);
+      if(el) el.style.display = 'none';
+    });
+  }
+  if((e.key === '?' || (e.shiftKey && e.key === '/')) && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)){
+    toggleHelp();
+  }
+});
+/* —— ? 键快捷键速查面板 —— */
+let helpModal = null;
+function buildHelpModal(){
+  helpModal = document.createElement('div');
+  helpModal.id = 'dskHelpModal';
+  helpModal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:95;display:none;align-items:center;justify-content:center;padding:24px';
+  helpModal.innerHTML = '<div class="card" style="max-width:560px;width:100%;max-height:86vh;overflow:auto;margin:0">'
+    + '<h3>⌨ 快捷键速查</h3>'
+    + '<table class="data"><tr><th>按键</th><th>功能</th></tr>'
+    + '<tr><td><span class="kbd">?</span></td><td>打开本面板</td></tr>'
+    + '<tr><td><span class="kbd">Esc</span></td><td>关闭所有弹窗</td></tr>'
+    + '<tr><td><span class="kbd">Alt</span>+<span class="kbd">1~9 / 0</span></td><td>切换第 1~10 个模块</td></tr>'
+    + '<tr><td><span class="kbd">Alt</span>+<span class="kbd">Q</span></td><td>API 调试台</td></tr>'
+    + '<tr><td><span class="kbd">Alt</span>+<span class="kbd">A</span></td><td>AES 加解密</td></tr>'
+    + '<tr><td><span class="kbd">Alt</span>+<span class="kbd">W</span></td><td>WebSocket 调试台</td></tr>'
+    + '<tr><td><span class="kbd">Alt</span>+<span class="kbd">G</span></td><td>国密 SM2/SM3/SM4</td></tr>'
+    + '<tr><td><span class="kbd">Alt</span>+<span class="kbd">C</span></td><td>请求集合</td></tr>'
+    + '<tr><td><span class="kbd">Alt</span>+<span class="kbd">E</span></td><td>SSE 调试台</td></tr>'
+    + '<tr><td><span class="kbd">Alt</span>+<span class="kbd">X</span></td><td>凭证泄露扫描</td></tr>'
+    + '<tr><td><span class="kbd">Alt</span>+<span class="kbd">B</span></td><td>文件 Base64 & multipart</td></tr>'
+    + '<tr><td><span class="kbd">Alt</span>+<span class="kbd">H</span></td><td>Cookie / 请求头解析</td></tr>'
+    + '<tr><td><span class="kbd">Enter</span>（URL 框内）</td><td>API 调试台直接发送</td></tr>'
+    + '</table>'
+    + '<div class="btn-row"><button class="btn btn-sm" id="helpCloseBtn">关闭</button></div></div>';
+  helpModal.addEventListener('click', e => { if(e.target === helpModal) helpModal.style.display = 'none'; });
+  document.body.appendChild(helpModal);
+  helpModal.querySelector('#helpCloseBtn').addEventListener('click', () => helpModal.style.display = 'none');
+}
+function toggleHelp(){
+  if(!helpModal) buildHelpModal();
+  helpModal.style.display = helpModal.style.display === 'flex' ? 'none' : 'flex';
+}
+$('#helpToggle').addEventListener('click', toggleHelp);
+
+/* ================= 1. cURL 转换器 ================= */
+function tokenizeCurl(input){
+  const s = input.replace(/\u547d\u4ee4|\r/g, '').replace(/\\\n\s*/g, ' ');
+  const tokens = []; let i = 0; const n = s.length;
+  const dbl = {n:'\n', t:'\t', r:'\r', '"':'"', '\\':'\\', "'":"'", '`':'`', '$':'$', ':':':'};
+  while(i < n){
+    if(/\s/.test(s[i])){ i++; continue; }
+    let tok = '';
+    while(i < n){
+      const c = s[i];
+      if(c === "'"){ i++; while(i < n && s[i] !== "'"){ tok += s[i]; i++; } if(i < n) i++; }
+      else if(c === '$' && s[i+1] === "'"){
+        i += 2;
+        while(i < n && s[i] !== "'"){ if(s[i] === '\\' && i+1 < n){ tok += dbl[s[i+1]] || s[i+1]; i += 2; } else { tok += s[i]; i++; } }
+        if(i < n) i++;
+      }
+      else if(c === '"'){
+        i++;
+        while(i < n && s[i] !== '"'){ if(s[i] === '\\' && i+1 < n){ tok += dbl[s[i+1]] || s[i+1]; i += 2; } else { tok += s[i]; i++; } }
+        if(i < n) i++;
+      }
+      else if(c === '\\' && i + 1 < n){ tok += s[i+1]; i += 2; }
+      else if(/\s/.test(c)){ break; }
+      else { tok += c; i++; }
+    }
+    tokens.push(tok);
+  }
+  return tokens;
+}
+function parseCurl(tokens){
+  const req = {url:'', method:'', headers:[], data:'', user:''};
+  for(let k = 0; k < tokens.length; k++){
+    const t = tokens[k];
+    if(t === 'curl' || t === '') continue;
+    if(t.startsWith('-')){
+      switch(t){
+        case '-H': case '--header': req.headers.push(tokens[++k] || ''); break;
+        case '-X': case '--request': req.method = tokens[++k] || ''; break;
+        case '-d': case '--data': case '--data-raw': case '--data-binary':
+        case '--data-ascii': case '--data-urlencode': case '--json':
+          req.data += tokens[++k] || ''; break;
+        case '-F': case '--form': req.data += (req.data ? '&' : '') + (tokens[++k] || ''); req.form = true; break;
+        case '-b': case '--cookie': req.headers.push('cookie: ' + (tokens[++k] || '')); break;
+        case '-A': case '--user-agent': req.headers.push('user-agent: ' + (tokens[++k] || '')); break;
+        case '-e': case '--referer': req.headers.push('referer: ' + (tokens[++k] || '')); break;
+        case '-u': case '--user': req.user = tokens[++k] || ''; break;
+        case '--url': req.url = tokens[++k] || ''; break;
+        default:
+          if(t.startsWith('--data=')) req.data += t.slice(7);
+          else if(t.startsWith('--header=')) req.headers.push(t.slice(9));
+          else if(t.startsWith('-H') && t.length > 2) req.headers.push(t.slice(2));
+          else if(t.startsWith('--cookie=')) req.headers.push('cookie: ' + t.slice(9));
+          else if(t.startsWith('--user-agent=')) req.headers.push('user-agent: ' + t.slice(13));
+          break;
+      }
+    } else if(!req.url && /^https?:\/\//i.test(t)){
+      req.url = t;
+    }
+  }
+  if(!req.method) req.method = req.data ? 'POST' : 'GET';
+  if(req.user) req.headers.push('authorization: Basic ' + btoa(req.user));
+  if(req.data && !req.headers.some(h => /content-type\s*:/i.test(h)))
+    req.headers.push('content-type: ' + (req.form ? 'multipart/form-data' : 'application/x-www-form-urlencoded'));
+  return req;
+}
+function splitQuery(url){
+  const idx = url.indexOf('?');
+  if(idx < 0) return {base:url, params:[]};
+  const base = url.slice(0, idx), qs = url.slice(idx + 1);
+  const params = [];
+  qs.split('&').forEach(kv => {
+    if(!kv) return;
+    const eq = kv.indexOf('=');
+    params.push({k: eq < 0 ? kv : kv.slice(0, eq), v: eq < 0 ? '' : kv.slice(eq + 1)});
+  });
+  return {base, params};
+}
+const q1 = s => "'" + String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + "'";
+let curlReq = null, curlTab = 'fetch';
+
+function genFetchCode(req, jsonBody){
+  const L = [];
+  L.push('const res = await fetch(' + q1(req.url) + ', {');
+  L.push('  method: ' + q1(req.method.toUpperCase()) + ',');
+  if(req.headers.length){
+    L.push('  headers: {');
+    req.headers.forEach(h => {
+      const i = h.indexOf(':');
+      L.push('    ' + q1(h.slice(0, i).trim()) + ': ' + q1(h.slice(i + 1).trim()) + ',');
+    });
+    L.push('  },');
+  }
+  if(req.data) L.push('  body: ' + bodyExpr(req.data, jsonBody) + ',');
+  L.push('});');
+  L.push('if (!res.ok) throw new Error(\'HTTP \' + res.status);');
+  L.push('const data = await res.json();');
+  L.push('console.log(\'[api:result]\', data);');
+  return L.join('\n');
+}
+function genAxiosCode(req, jsonBody){
+  const L = [];
+  L.push('const { data } = await axios({');
+  L.push('  url: ' + q1(req.url) + ',');
+  L.push('  method: ' + q1(req.method.toLowerCase()) + ',');
+  if(req.headers.length){
+    L.push('  headers: {');
+    req.headers.forEach(h => {
+      const i = h.indexOf(':');
+      L.push('    ' + q1(h.slice(0, i).trim()) + ': ' + q1(h.slice(i + 1).trim()) + ',');
+    });
+    L.push('  },');
+  }
+  if(req.data) L.push('  data: ' + bodyExpr(req.data, jsonBody) + ',');
+  L.push('});');
+  L.push('console.log(\'[api:result]\', data);');
+  return L.join('\n');
+}
+function genConsoleCode(req, jsonBody){
+  const h = req.headers.map(h => {
+    const i = h.indexOf(':');
+    return q1(h.slice(0, i).trim()) + ':' + q1(h.slice(i + 1).trim());
+  }).join(',');
+  let s = 'fetch(' + q1(req.url) + ',{method:' + q1(req.method.toUpperCase());
+  if(req.headers.length) s += ',headers:{' + h + '}';
+  if(req.data) s += ',body:' + bodyExpr(req.data, jsonBody);
+  s += '}).then(function(r){return r.json()}).then(function(d){console.log(\'[api:result]\', d)}).catch(function(e){console.error(\'[api:error]\', e)});';
+  return s;
+}
+function bodyExpr(body, jsonBody){
+  if(jsonBody){
+    try{ return 'JSON.stringify(' + JSON.stringify(JSON.parse(body), null, 2) + ')'; }
+    catch(e){ /* 落到普通字符串 */ }
+  }
+  return q1(body);
+}
+function renderCurlSummary(req){
+  const {base, params} = splitQuery(req.url);
+  let html = '<div style="margin-bottom:10px"><span class="tag tag-blue">' + escapeHtml(req.method.toUpperCase()) + '</span> <span class="mono">' + escapeHtml(base) + '</span></div>';
+  if(params.length){
+    html += '<div class="muted" style="font-size:12px;margin:8px 0 4px">Query 参数 (' + params.length + ')</div><table class="data"><tr><th>key</th><th>value</th></tr>';
+    params.forEach(p => html += '<tr><td class="mono">' + escapeHtml(decodeSafe(p.k)) + '</td><td class="mono">' + escapeHtml(decodeSafe(p.v)) + '</td></tr>');
+    html += '</table>';
+  }
+  if(req.headers.length){
+    html += '<div class="muted" style="font-size:12px;margin:10px 0 4px">Headers (' + req.headers.length + ')</div><table class="data"><tr><th>name</th><th>value</th></tr>';
+    req.headers.forEach(h => {
+      const i = h.indexOf(':');
+      html += '<tr><td class="mono">' + escapeHtml(h.slice(0, i).trim()) + '</td><td class="mono" style="word-break:break-all">' + escapeHtml(h.slice(i + 1).trim()) + '</td></tr>';
+    });
+    html += '</table>';
+  }
+  if(req.data){
+    let bodyShow = req.data;
+    try{ bodyShow = JSON.stringify(JSON.parse(req.data), null, 2); }catch(e){}
+    html += '<div class="muted" style="font-size:12px;margin:10px 0 4px">Body</div><pre class="out">' + escapeHtml(bodyShow) + '</pre>';
+  }
+  $('#curlSummaryBody').innerHTML = html;
+  $('#curlSummary').style.display = '';
+}
+function decodeSafe(s){ try{ return decodeURIComponent(s); }catch(e){ return s; } }
+function renderCurlCode(){
+  if(!curlReq) return;
+  const jb = $('#curlJsonBody').checked;
+  const code = curlTab === 'fetch' ? genFetchCode(curlReq, jb)
+             : curlTab === 'axios' ? genAxiosCode(curlReq, jb)
+             : genConsoleCode(curlReq, jb);
+  const out = $('#curlCodeOut'); out.textContent = code; out.classList.remove('empty');
+}
+$('#curlParseBtn').addEventListener('click', () => {
+  const raw = $('#curlIn').value.trim();
+  if(!raw){ toast('请先粘贴 cURL 命令'); return; }
+  const tokens = tokenizeCurl(raw);
+  curlReq = parseCurl(tokens);
+  if(!curlReq.url){ toast('⚠️ 未识别到 http(s) URL，请检查格式'); }
+  renderCurlSummary(curlReq);
+  $('#curlOutCard').style.display = '';
+  renderCurlCode();
+  toast('解析完成 ✓');
+});
+$('#curlClearBtn').addEventListener('click', () => {
+  $('#curlIn').value = ''; $('#curlSummary').style.display = 'none';
+  $('#curlOutCard').style.display = 'none'; curlReq = null;
+});
+$('#curlJsonBody').addEventListener('change', renderCurlCode);
+$('#curlTabs').addEventListener('click', e => {
+  const t = e.target.closest('.code-tab'); if(!t) return;
+  $$('#curlTabs .code-tab').forEach(x => x.classList.remove('active'));
+  t.classList.add('active'); curlTab = t.dataset.t; renderCurlCode();
+});
+$('#curlCopyBtn').addEventListener('click', function(){ copyText($('#curlCodeOut').textContent, this); });
+$('#curlExampleBtn').addEventListener('click', () => {
+  $('#curlIn').value = "curl 'https://shlt.uat3.qgutech.com/api/order/list?pageNo=1&pageSize=10' \\\n  -H 'accept: application/json, text/plain, */*' \\\n  -H 'x-xsrf-token: e10a1c2d-3b4e-5f60-7a8b-9c0d1e2f3a4b' \\\n  -H 'cookie: XSRF-TOKEN=e10a1c2d-3b4e-5f60-7a8b-9c0d1e2f3a4b; SESSION=YzVhNGQzZjEt' \\\n  -H 'content-type: application/json' \\\n  --data-raw '{\"orderStatus\":\"ALL\",\"queryType\":\"ALL\"}' \\\n  --compressed";
+});
+
+/* ================= 2. JSON 工具 ================= */
+const JSON_EXAMPLE = JSON.stringify({code:0, message:'ok', data:{total:2, list:[
+  {orderId:'SO20260903001', serviceName:'日常保洁', specName:'2小时·日常保洁', amount:128.5, status:'DONE', orderTime:1756896000000, worker:{workerId:3312, name:'王阿姨', phone:'138****8888'}},
+  {orderId:'SO20260902008', serviceName:'深度保洁', specName:'4小时·深度保洁', amount:299, status:'SERVING', orderTime:1756809600000, worker:null}
+]}}, null, 2);
+
+function setJsonOut(text, isErr){
+  const out = $('#jsonOut');
+  out.textContent = text;
+  out.classList.remove('empty');
+  out.classList.toggle('err-box', !!isErr);
+}
+function getJsonInput(){
+  let s = $('#jsonIn').value.trim();
+  if(!s){ toast('请先输入 JSON'); return null; }
+  return s;
+}
+function parseJsonLenient(s){
+  try{ return {ok:true, value:JSON.parse(s)}; }
+  catch(e){
+    const fixed = s.replace(/,(\s*[}\]])/g, '$1');
+    try{ return {ok:true, value:JSON.parse(fixed), fixed:true}; }
+    catch(e2){ return {ok:false, err:e2.message}; }
+  }
+}
+const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1).replace(/[^A-Za-z0-9_$]/g, '_') : 'Item';
+function inferTS(v, name, ifaces){
+  if(v === null) return 'null';
+  if(Array.isArray(v)){
+    if(!v.length) return 'any[]';
+    const set = new Set();
+    v.forEach(e => set.add(inferTS(e, name + 'Item', ifaces)));
+    const t = Array.from(set).join(' | ');
+    return (set.size > 1 ? '(' + t + ')' : t) + '[]';
+  }
+  switch(typeof v){
+    case 'string': return 'string';
+    case 'number': return 'number';
+    case 'boolean': return 'boolean';
+    default: {
+      const lines = Object.keys(v).map(k => {
+        let t = inferTS(v[k], name + cap(k), ifaces);
+        if(v[k] === null) t += ' | null';
+        const key = /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(k) ? k : JSON.stringify(k);
+        const opt = v[k] === null ? '?' : '';
+        return '  ' + key + opt + ': ' + t + ';';
+      });
+      ifaces.push({name, body:'interface ' + name + ' {\n' + (lines.join('\n') || '  [k: string]: any;') + '\n}'});
+      return name;
+    }
+  }
+}
+function jsonToTS(v, rootName){
+  const ifaces = [];
+  const rootType = inferTS(v, rootName, ifaces);
+  if(typeof v !== 'object' || v === null) return '// 顶层是 ' + rootType + '，无需 interface';
+  const rootIdx = ifaces.findIndex(x => x.name === rootName);
+  if(rootIdx > 0){ const [root] = ifaces.splice(rootIdx, 1); ifaces.unshift(root); }
+  return ifaces.map(x => x.body).join('\n\n');
+}
+$$('#mod-json [data-json]').forEach(btn => btn.addEventListener('click', () => {
+  const act = btn.dataset.json;
+  if(act === 'clear'){ $('#jsonIn').value = ''; setJsonOut('结果将显示在这里…', false); $('#jsonOut').classList.add('empty'); return; }
+  const s = getJsonInput(); if(s === null) return;
+  const r = parseJsonLenient(s);
+  if(!r.ok){ setJsonOut('❌ JSON 解析失败：' + r.err, true); return; }
+  if(r.fixed) toast('⚠️ 检测到尾逗号，已自动修正');
+  if(act === 'fmt2') setJsonOut(JSON.stringify(r.value, null, 2));
+  else if(act === 'fmt4') setJsonOut(JSON.stringify(r.value, null, 4));
+  else if(act === 'min') setJsonOut(JSON.stringify(r.value));
+  else if(act === 'ts'){
+    const root = Array.isArray(r.value) ? 'ListItem' : 'Root';
+    setJsonOut(jsonToTS(r.value, root) + '\n');
+    toast('TS 接口已生成（数组已采样合并类型）');
+  }
+}));
+$('#jsonCopyBtn').addEventListener('click', function(){
+  const t = $('#jsonOut').textContent;
+  if($('#jsonOut').classList.contains('empty')){ toast('暂无结果'); return; }
+  copyText(t, this);
+});
+$('#jsonIn').value = JSON_EXAMPLE;
+
+/* ================= 3. 接口日志解析 ================= */
+function extractBalancedJSON(s){
+  const starts = [s.indexOf('{'), s.indexOf('[')].filter(i => i >= 0);
+  if(!starts.length) return null;
+  const start = Math.min.apply(null, starts);
+  const open = s[start], close = open === '{' ? '}' : ']';
+  let depth = 0, inStr = false, esc = false;
+  for(let i = start; i < s.length; i++){
+    const c = s[i];
+    if(esc){ esc = false; continue; }
+    if(c === '\\'){ if(inStr) esc = true; continue; }
+    if(inStr){ if(c === '"') inStr = false; continue; }
+    if(c === '"') inStr = true;
+    else if(c === open) depth++;
+    else if(c === close){ depth--; if(!depth) return s.slice(start, i + 1); }
+  }
+  return null;
+}
+function parseApiLogs(text){
+  const lines = text.split(/\r?\n/);
+  const items = []; let cur = null;
+  lines.forEach(line => {
+    const m = line.match(/\[api[:：]\s*([^\]]*)\]/);
+    if(m){
+      cur = {name:m[1].trim() || '(未命名)', raw:line, rest:line.slice(line.indexOf(']') + 1)};
+      items.push(cur);
+    } else if(cur){
+      cur.rest += '\n' + line;
+    }
+  });
+  if(!items.length){
+    // 降级：提取所有含 JSON 的行
+    lines.forEach(line => {
+      const j = extractBalancedJSON(line);
+      if(j){ items.push({name:'(行内JSON)', raw:line, rest:j}); }
+    });
+  }
+  items.forEach(it => {
+    const j = extractBalancedJSON(it.rest);
+    if(j){
+      try{ it.json = JSON.stringify(JSON.parse(j), null, 2); it.valid = true; }
+      catch(e){ it.json = j; it.valid = false; }
+    }
+  });
+  return items;
+}
+$('#logsParseBtn').addEventListener('click', () => {
+  const text = $('#logsIn').value.trim();
+  if(!text){ toast('请先粘贴日志'); return; }
+  const items = parseApiLogs(text);
+  const out = $('#logsOut');
+  if(!items.length){
+    out.innerHTML = '<div class="card muted">未找到 [api:xxx] 标记，也未检测到行内 JSON。</div>';
+    return;
+  }
+  let html = '<div class="hint" style="margin-bottom:10px">共解析出 <b>' + items.length + '</b> 条接口日志</div>';
+  items.forEach((it, i) => {
+    html += '<div class="result-item"><div class="ri-head">'
+      + '<span class="tag tag-blue mono">[api:' + escapeHtml(it.name) + ']</span>'
+      + (it.valid === undefined ? '' : it.valid ? '<span class="tag tag-ok">JSON ✓</span>' : '<span class="tag tag-warn">JSON 片段(未通过校验)</span>')
+      + '<button class="btn btn-sm" data-logcopy="' + i + '" style="margin-left:auto">复制 JSON</button></div>'
+      + '<pre class="out">' + escapeHtml(it.json || it.rest.trim() || '(无内容)') + '</pre></div>';
+  });
+  out.innerHTML = html;
+  $$('#logsOut [data-logcopy]').forEach(b => b.addEventListener('click', function(){
+    const it = items[+this.dataset.logcopy];
+    copyText(it.json || it.rest, this);
+  }));
+});
+$('#logsClearBtn').addEventListener('click', () => { $('#logsIn').value = ''; $('#logsOut').innerHTML = ''; });
+$('#logsExampleBtn').addEventListener('click', () => {
+  $('#logsIn').value = '[api:getOrderList] {"code":0,"message":"ok","data":{"total":1,"list":[{"orderId":"SO20260903001","serviceName":"日常保洁","amount":128.5,"status":"DONE"}]}}\n'
+    + '[api:getUserInfo] {"code":0,"data":{"userId":"u_88231","nickName":"测试用户","langPref":"zh-CN"}}\n'
+    + '[api:getServiceSpec] {"code":0,"data":[{"specId":11,"specName":"2小时·日常保洁","price":128.5},{"specId":12,"specName":"4小时·深度保洁","price":299}]}';
+});
+
+/* ================= 4. JSON 对比 ================= */
+function diffVal(a, b, path, out){
+  const ta = a === null ? 'null' : Array.isArray(a) ? 'array' : typeof a;
+  const tb = b === null ? 'null' : Array.isArray(b) ? 'array' : typeof b;
+  if(ta !== tb){ out.push({path, type:'chg', a, b}); return; }
+  if(ta === 'object'){
+    const keys = new Set(Object.keys(a).concat(Object.keys(b)));
+    keys.forEach(k => {
+      if(!(k in a)) out.push({path: path + '.' + k, type:'add', b:b[k]});
+      else if(!(k in b)) out.push({path: path + '.' + k, type:'del', a:a[k]});
+      else diffVal(a[k], b[k], path + '.' + k, out);
+    });
+  } else if(ta === 'array'){
+    const n = Math.max(a.length, b.length);
+    for(let i = 0; i < n; i++){
+      if(i >= a.length) out.push({path: path + '[' + i + ']', type:'add', b:b[i]});
+      else if(i >= b.length) out.push({path: path + '[' + i + ']', type:'del', a:a[i]});
+      else diffVal(a[i], b[i], path + '[' + i + ']', out);
+    }
+  } else {
+    if(a !== b) out.push({path, type:'chg', a, b});
+  }
+}
+$('#diffBtn').addEventListener('click', () => {
+  const ra = parseJsonLenient($('#diffA').value.trim() || '{}');
+  const rb = parseJsonLenient($('#diffB').value.trim() || '{}');
+  if(!ra.ok || !rb.ok){
+    $('#diffOutCard').style.display = '';
+    $('#diffOut').innerHTML = '<span class="stat-err">❌ JSON 解析失败：' + escapeHtml(!ra.ok ? ra.err : rb.err) + '</span>';
+    return;
+  }
+  const out = [];
+  diffVal(ra.value, rb.value, '$', out);
+  $('#diffOutCard').style.display = '';
+  const c = {add:0, del:0, chg:0}; out.forEach(d => c[d.type]++);
+  if(!out.length){
+    $('#diffOut').innerHTML = '<span class="stat-ok">✅ 两个 JSON 完全一致</span>';
+    return;
+  }
+  let html = '<div style="margin-bottom:10px"><span class="tag tag-ok">新增 +' + c.add + '</span> <span class="tag tag-err">删除 -' + c.del + '</span> <span class="tag tag-warn">修改 ~' + c.chg + '</span></div>';
+  html += '<table class="data"><tr><th>路径</th><th>状态</th><th>原值</th><th>新值</th></tr>';
+  out.forEach(d => {
+    const label = d.type === 'add' ? '+ 新增' : d.type === 'del' ? '- 删除' : '~ 修改';
+    const fmt = v => v === undefined ? '<span class="muted">—</span>' : escapeHtml(typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v));
+    html += '<tr class="diff-' + d.type + '"><td class="mono">' + escapeHtml(d.path) + '</td><td class="mono">' + label + '</td><td class="mono">' + fmt(d.a) + '</td><td class="mono">' + fmt(d.b) + '</td></tr>';
+  });
+  html += '</table>';
+  $('#diffOut').innerHTML = html;
+});
+
+/* ================= 5. 时间戳 ================= */
+function pad2(n){ return String(n).padStart(2, '0'); }
+function fmtDate(d){
+  return d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate()) + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds());
+}
+function fmtFull(d){
+  const wk = '日一二三四五六'[d.getDay()];
+  return '本地时间　' + fmtDate(d) + '（周' + wk + '）\nISO 8601　' + d.toISOString() + '\nUTC　　　　' + d.toISOString().replace('T',' ').slice(0,19) + 'Z\n相对　　　　' + relativeFromNow(d);
+}
+function relativeFromNow(d){
+  const diff = Date.now() - d.getTime();
+  const abs = Math.abs(diff);
+  const fut = diff < 0;
+  let s;
+  if(abs < 60e3) s = Math.round(abs/1000) + ' 秒';
+  else if(abs < 3600e3) s = Math.round(abs/60e3) + ' 分钟';
+  else if(abs < 86400e3) s = Math.round(abs/3600e3) + ' 小时';
+  else s = Math.round(abs/86400e3) + ' 天';
+  return fut ? s + '后' : s + '前';
+}
+setInterval(() => {
+  const now = new Date();
+  $('#liveClock').textContent = fmtDate(now);
+  $('#tsLocal').textContent = fmtDate(now);
+  $('#tsIso').textContent = now.toISOString().slice(0,19) + 'Z';
+  $('#tsUnix').textContent = String(now.getTime());
+}, 1000);
+$('#tsNowBtn').addEventListener('click', () => { $('#tsIn').value = String(Date.now()); $('#tsIn').dispatchEvent(new Event('input')); });
+$('#tsIn').addEventListener('input', () => {
+  const out = $('#tsOut'); const v = $('#tsIn').value.trim().replace(/\.\d+/, '');
+  out.classList.remove('err-box');
+  if(!v){ out.textContent = '--'; return; }
+  if(!/^\d+$/.test(v)){ out.textContent = '❌ 请输入纯数字时间戳'; out.classList.add('err-box'); return; }
+  let ms = Number(v);
+  if(v.length === 10) ms *= 1000;
+  else if(v.length !== 13){ out.textContent = '❌ 位数不对：秒级 10 位 / 毫秒级 13 位'; out.classList.add('err-box'); return; }
+  const d = new Date(ms);
+  out.textContent = fmtFull(d) + '\n秒级时间戳　' + Math.floor(ms/1000) + '\n毫秒时间戳　' + ms;
+});
+function initDateIn(){
+  const d = new Date(); d.setSeconds(0, 0);
+  $('#dateIn').value = d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate()) + 'T' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds());
+  $('#dateIn').dispatchEvent(new Event('input'));
+}
+$('#dateIn').addEventListener('input', () => {
+  const out = $('#dateOut'); const v = $('#dateIn').value;
+  out.classList.remove('err-box');
+  if(!v){ out.textContent = '--'; return; }
+  const d = new Date(v);
+  if(isNaN(d.getTime())){ out.textContent = '❌ 日期无效'; out.classList.add('err-box'); return; }
+  out.textContent = '秒级时间戳　' + Math.floor(d.getTime()/1000) + '\n毫秒时间戳　' + d.getTime() + '\nISO 8601　' + d.toISOString();
+});
+initDateIn();
+
+/* ================= 6. 编解码 ================= */
+function b64encode(s){ return btoa(String.fromCharCode.apply(null, new TextEncoder().encode(s))); }
+function b64decode(s){
+  const bin = atob(s.replace(/\s+/g, ''));
+  return new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0)));
+}
+function htmlEscape(s){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function htmlUnescape(s){
+  return s.replace(/&(amp|lt|gt|quot|#39|nbsp);/g, (m, k) => ({amp:'&',lt:'<',gt:'>',quot:'"',nbsp:' ','#39':"'"}[k]))
+          .replace(/&#(\d+);/g, (m, n) => String.fromCodePoint(+n))
+          .replace(/&#x([0-9a-f]+);/gi, (m, n) => String.fromCodePoint(parseInt(n, 16)));
+}
+function codecRun(kind){
+  const input = $('#codecIn').value;
+  const out = $('#codecOut');
+  out.classList.remove('err-box', 'empty');
+  try{
+    let r = '';
+    switch(kind){
+      case 'b64e': r = b64encode(input); break;
+      case 'b64d': r = b64decode(input); break;
+      case 'urle': r = encodeURIComponent(input); break;
+      case 'urld': r = decodeURIComponent(input.replace(/\+/g, ' ')); break;
+      case 'unie': r = input.split('').map(c => '\\u' + c.codePointAt(0).toString(16).padStart(4, '0')).join(''); break;
+      case 'unid': r = input.replace(/\\u([0-9a-fA-F]{4})/g, (m, h) => String.fromCharCode(parseInt(h, 16))); break;
+      case 'htmle': r = htmlEscape(input); break;
+      case 'htmld': r = htmlUnescape(input); break;
+    }
+    out.textContent = r;
+  }catch(e){
+    out.textContent = '❌ ' + e.message + (kind.endsWith('d') ? '（内容可能不是该编码格式）' : '');
+    out.classList.add('err-box');
+  }
+}
+$$('#mod-codec [data-codec]').forEach(b => b.addEventListener('click', () => codecRun(b.dataset.codec)));
+$('#codecCopyBtn').addEventListener('click', function(){
+  if($('#codecOut').classList.contains('empty')){ toast('暂无输出'); return; }
+  copyText($('#codecOut').textContent, this);
+});
+$('#codecSwapBtn').addEventListener('click', () => {
+  const t = $('#codecOut').textContent;
+  if($('#codecOut').classList.contains('empty') || !t){ toast('暂无输出'); return; }
+  $('#codecIn').value = t; toast('已将输出填入输入框');
+});
+
+/* ================= 7. JWT ================= */
+function b64urlDecode(seg){
+  let s = seg.replace(/-/g, '+').replace(/_/g, '/');
+  while(s.length % 4) s += '=';
+  return new TextDecoder().decode(Uint8Array.from(atob(s), c => c.charCodeAt(0)));
+}
+$('#jwtBtn').addEventListener('click', () => {
+  const token = $('#jwtIn').value.trim();
+  const out = $('#jwtOut');
+  if(!token){ toast('请输入 JWT'); return; }
+  const segs = token.split('.');
+  if(segs.length < 2){ out.innerHTML = '<div class="card stat-err">❌ 格式不对：JWT 至少应有 header.payload 两段（以 . 分隔）</div>'; return; }
+  let header = null, payload = null, hErr = '', pErr = '';
+  try{ header = JSON.parse(b64urlDecode(segs[0])); }catch(e){ hErr = e.message; }
+  try{ payload = JSON.parse(b64urlDecode(segs[1])); }catch(e){ pErr = e.message; }
+  function renderClaims(obj){
+    if(!obj) return '<span class="stat-err">解码失败：' + escapeHtml(hErr || pErr) + '</span>';
+    let html = '<table class="data"><tr><th>字段</th><th>值</th></tr>';
+    Object.keys(obj).forEach(k => {
+      let v = obj[k];
+      if(typeof v === 'number' && /^(exp|iat|nbf|auth_time)$/i.test(k) && v > 1e9){
+        const d = new Date(v * 1000);
+        const expBad = k.toLowerCase() === 'exp' && Date.now() > v * 1000;
+        v = v + '　→　' + fmtDate(d) + (expBad ? '　<span class="tag tag-err">已过期</span>' : '　<span class="tag tag-ok">有效</span>');
+      }
+      html += '<tr><td class="mono">' + escapeHtml(k) + '</td><td class="mono">' + (typeof v === 'object' ? escapeHtml(JSON.stringify(v, null, 2)) : v) + '</td></tr>';
+    });
+    return html + '</table>';
+  }
+  let html = '<div class="jw-card"><h4>Header</h4>' + (header ? renderClaims(header) : '<span class="stat-err">解码失败：' + escapeHtml(hErr) + '</span>') + '</div>';
+  html += '<div class="jw-card"><h4>Payload</h4>' + (payload ? renderClaims(payload) : '<span class="stat-err">解码失败：' + escapeHtml(pErr) + '</span>') + '</div>';
+  if(segs[2]) html += '<div class="jw-card"><h4>Signature <span class="muted" style="font-weight:400;font-size:11px">（不校验）</span></h4><pre class="out">' + escapeHtml(segs[2]) + '</pre></div>';
+  out.innerHTML = html;
+});
+$('#jwtClearBtn').addEventListener('click', () => { $('#jwtIn').value = ''; $('#jwtOut').innerHTML = ''; });
+
+/* ================= 8. 正则 ================= */
+function currentRegex(){
+  const p = $('#rePattern').value;
+  const f = $('#reFlags').value;
+  if(!p) return null;
+  try{ return new RegExp(p, f); }
+  catch(e){ return {err:e.message}; }
+}
+function renderRegex(){
+  const status = $('#reStatus');
+  const re = currentRegex();
+  const hlOut = $('#reHlOut'); const tbl = $('#reMatchTable');
+  hlOut.classList.remove('err-box'); tbl.innerHTML = '';
+  if(!$('#rePattern').value){ status.textContent = '--'; hlOut.textContent = '--'; return; }
+  if(!re){ status.textContent = '--'; return; }
+  if(re.err){ status.innerHTML = '<span class="stat-err">❌ 正则语法错误：' + escapeHtml(re.err) + '</span>'; return; }
+  const text = $('#reText').value;
+  const global = re.flags.includes('g');
+  const re2 = new RegExp(re.source, re.flags.includes('g') ? re.flags : re.flags + 'g');
+  const ranges = []; let m; let guard = 0;
+  while((m = re2.exec(text)) && guard++ < 5000){
+    ranges.push(m);
+    if(m[0] === '') re2.lastIndex++;
+  }
+  if(!ranges.length){
+    status.innerHTML = '<span class="stat-warn">0 个匹配</span>';
+    hlOut.textContent = text || '(空)';
+    return;
+  }
+  status.innerHTML = '<span class="stat-ok">✓ ' + ranges.length + ' 个匹配</span>' + (global ? '' : ' <span class="muted">（未开 g 只显示第一个，但下方已全部列出）</span>');
+  let html = '', last = 0;
+  ranges.forEach(mm => {
+    html += escapeHtml(text.slice(last, mm.index));
+    html += '<span class="hl">' + escapeHtml(mm[0]) + '</span>';
+    last = mm.index + mm[0].length;
+  });
+  html += escapeHtml(text.slice(last));
+  hlOut.innerHTML = html || '(空)';
+  const maxGroups = Math.max.apply(null, ranges.map(mm => mm.length - 1));
+  let t = '<table class="data"><tr><th>#</th><th>匹配</th><th>位置</th>';
+  for(let g = 1; g <= maxGroups; g++) t += '<th>$' + g + '</th>';
+  t += '</tr>';
+  ranges.forEach((mm, i) => {
+    t += '<tr><td>' + (i+1) + '</td><td class="mono">' + escapeHtml(mm[0]) + '</td><td class="mono">' + mm.index + '</td>';
+    for(let g = 1; g <= maxGroups; g++) t += '<td class="mono">' + (mm[g] !== undefined ? escapeHtml(mm[g]) : '<span class="muted">—</span>') + '</td>';
+    t += '</tr>';
+  });
+  t += '</table>';
+  tbl.innerHTML = t;
+}
+$('#rePattern').addEventListener('input', renderRegex);
+$('#reText').addEventListener('input', renderRegex);
+$('#reFlags').addEventListener('input', renderRegex);
+$$('#mod-re [data-flag]').forEach(cb => cb.addEventListener('change', () => {
+  const flags = $$('#mod-re [data-flag]').filter(x => x.checked).map(x => x.dataset.flag).join('');
+  $('#reFlags').value = flags;
+  renderRegex();
+}));
+$('#reCheats').addEventListener('click', e => {
+  const c = e.target.closest('.chip'); if(!c) return;
+  $('#rePattern').value = c.dataset.p;
+  $('#reFlags').value = c.dataset.f || '';
+  $$('#mod-re [data-flag]').forEach(x => x.checked = (c.dataset.f || '').includes(x.dataset.flag));
+  renderRegex();
+});
+
+/* ================= 9. 颜色 ================= */
+function hexToRgb(hex){
+  hex = hex.replace('#', '').trim();
+  if(hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+  if(hex.length === 8) hex = hex.slice(0, 6);
+  if(!/^[0-9a-fA-F]{6}$/.test(hex)) return null;
+  return {r:parseInt(hex.slice(0,2),16), g:parseInt(hex.slice(2,4),16), b:parseInt(hex.slice(4,6),16)};
+}
+function rgbToHex(r,g,b){
+  const h = x => x.toString(16).padStart(2,'0');
+  return '#' + h(Math.round(r)) + h(Math.round(g)) + h(Math.round(b));
+}
+function rgbToHsl(r,g,b){
+  r/=255; g/=255; b/=255;
+  const max = Math.max(r,g,b), min = Math.min(r,g,b);
+  let h=0, s=0; const l=(max+min)/2;
+  if(max !== min){
+    const d = max - min;
+    s = l > 0.5 ? d/(2-max-min) : d/(max+min);
+    switch(max){
+      case r: h = (g-b)/d + (g < b ? 6 : 0); break;
+      case g: h = (b-r)/d + 2; break;
+      case b: h = (r-g)/d + 4; break;
+    }
+    h /= 6;
+  }
+  return {h:Math.round(h*360), s:Math.round(s*100), l:Math.round(l*100)};
+}
+function hslToRgb(h,s,l){
+  h/=360; s/=100; l/=100;
+  if(s === 0){ const v = Math.round(l*255); return {r:v,g:v,b:v}; }
+  const q = l < 0.5 ? l*(1+s) : l+s-l*s, p = 2*l-q;
+  const f = t => {
+    if(t < 0) t += 1; if(t > 1) t -= 1;
+    if(t < 1/6) return p+(q-p)*6*t;
+    if(t < 1/2) return q;
+    if(t < 2/3) return p+(q-p)*(2/3-t)*6;
+    return p;
+  };
+  return {r:Math.round(f(h+1/3)*255), g:Math.round(f(h)*255), b:Math.round(f(h-1/3)*255)};
+}
+function parseColor(str){
+  str = str.trim().toLowerCase();
+  let m;
+  if(m = str.match(/^#?([0-9a-f]{3}|[0-9a-f]{6})$/)) return hexToRgb(m[0].startsWith('#') ? m[0] : '#' + m[0]);
+  if(m = str.match(/^rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/)) return {r:+m[1], g:+m[2], b:+m[3]};
+  if(m = str.match(/^hsla?\(\s*(\d+)[,\s]+(\d+)%?[,\s]+(\d+)%?/)) return hslToRgb(+m[1], +m[2], +m[3]);
+  return null;
+}
+function renderColor(){
+  const rgb = parseColor($('#colorIn').value);
+  const sw = $('#colorSwatch'), out = $('#colorOut');
+  if(!rgb){ out.textContent = '❌ 无法解析，支持 #abc / #aabbcc / rgb() / hsl()'; out.classList.add('err-box'); return; }
+  out.classList.remove('err-box');
+  const hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+  const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+  sw.style.background = hex;
+  out.textContent = 'HEX　' + hex.toUpperCase() + '\nRGB　rgb(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ')\nHSL　hsl(' + hsl.h + ', ' + hsl.s + '%, ' + hsl.l + '%)';
+}
+$('#colorIn').addEventListener('input', renderColor);
+function luminance(rgb){
+  const f = c => { c/=255; return c <= 0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4); };
+  return 0.2126*f(rgb.r) + 0.7152*f(rgb.g) + 0.0722*f(rgb.b);
+}
+function renderContrast(){
+  const fg = hexToRgb($('#fgColor').value), bg = hexToRgb($('#bgColor').value);
+  const l1 = luminance(fg), l2 = luminance(bg);
+  const ratio = (Math.max(l1,l2)+0.05) / (Math.min(l1,l2)+0.05);
+  $('#contrastSwatch').style.background = $('#bgColor').value;
+  $('#contrastSwatch').style.color = $('#fgColor').value;
+  const badge = (ok, label) => '<span class="tag ' + (ok ? 'tag-ok' : 'tag-err') + '">' + (ok ? '✓ ' : '✗ ') + label + '</span>';
+  $('#contrastOut').innerHTML =
+    '<div class="big-num" style="margin-bottom:8px">' + ratio.toFixed(2) + ':1</div>'
+    + '<div class="chip-row">'
+    + badge(ratio >= 4.5, '正文 AA (≥4.5)') + ' '
+    + badge(ratio >= 7, '正文 AAA (≥7)') + ' '
+    + badge(ratio >= 3, '大字 AA (≥3)') + '</div>';
+}
+$('#fgColor').addEventListener('input', renderContrast);
+$('#bgColor').addEventListener('input', renderContrast);
+renderColor(); renderContrast();
+
+/* ================= 10. 生成器 ================= */
+function uuidV4(){
+  if(crypto.randomUUID) return crypto.randomUUID();
+  const b = crypto.getRandomValues(new Uint8Array(16));
+  b[6] = (b[6] & 0x0f) | 0x40; b[8] = (b[8] & 0x3f) | 0x80;
+  const h = Array.from(b, x => x.toString(16).padStart(2,'0')).join('');
+  return h.slice(0,8) + '-' + h.slice(8,12) + '-' + h.slice(12,16) + '-' + h.slice(16,20) + '-' + h.slice(20);
+}
+$('#uuidBtn').addEventListener('click', () => {
+  const out = $('#uuidOut'); out.classList.remove('empty');
+  const list = [uuidV4(), uuidV4(), uuidV4()];
+  out.textContent = list.join('\n');
+});
+$('#uuidBtn').click();
+$('#pwLen').addEventListener('input', () => $('#pwLenVal').textContent = $('#pwLen').value);
+$('#pwBtn').addEventListener('click', () => {
+  const len = +$('#pwLen').value;
+  let chars = '';
+  if($('#pwLower').checked) chars += 'abcdefghijkmnpqrstuvwxyz';
+  if($('#pwUpper').checked) chars += 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  if($('#pwDigit').checked) chars += '23456789';
+  if($('#pwSymbol').checked) chars += '!@#$%^&*-_=+';
+  if(!chars){ toast('至少勾选一个字符集'); return; }
+  const arr = new Uint32Array(len);
+  const list = [];
+  for(let i = 0; i < 5; i++){
+    crypto.getRandomValues(arr);
+    list.push(Array.from(arr, x => chars[x % chars.length]).join(''));
+  }
+  const out = $('#pwOut'); out.classList.remove('empty');
+  out.textContent = list.join('\n');
+});
+let uLock = false;
+function uSyncFromPx(){
+  const px = parseFloat($('#pxIn').value);
+  const root = parseFloat($('#rootFs').value) || 16;
+  const vwW = parseFloat($('#vwWidth').value) || 100;
+  if(isNaN(px)){ $('#remIn').value = ''; $('#vwIn').value = ''; return; }
+  $('#remIn').value = +(px / root).toFixed(4);
+  $('#vwIn').value = +(px / vwW * 100).toFixed(4);
+}
+$('#pxIn').addEventListener('input', () => {
+  if(uLock) return; uLock = true;
+  uSyncFromPx();
+  uLock = false;
+});
+$('#remIn').addEventListener('input', () => {
+  if(uLock) return; uLock = true;
+  const rem = parseFloat($('#remIn').value); const root = parseFloat($('#rootFs').value) || 16;
+  if(isNaN(rem)){ $('#pxIn').value = ''; $('#vwIn').value = ''; }
+  else {
+    const px = rem * root;
+    $('#pxIn').value = +px.toFixed(2);
+    const vwW = parseFloat($('#vwWidth').value) || 100;
+    $('#vwIn').value = +(px / vwW * 100).toFixed(4);
+  }
+  uLock = false;
+});
+$('#vwIn').addEventListener('input', () => {
+  if(uLock) return; uLock = true;
+  const vw = parseFloat($('#vwIn').value); const vwW = parseFloat($('#vwWidth').value) || 100;
+  if(isNaN(vw)){ $('#pxIn').value = ''; $('#remIn').value = ''; }
+  else {
+    const px = vw * vwW / 100;
+    $('#pxIn').value = +px.toFixed(2);
+    const root = parseFloat($('#rootFs').value) || 16;
+    $('#remIn').value = +(px / root).toFixed(4);
+  }
+  uLock = false;
+});
+$('#rootFs').addEventListener('input', () => { if(!uLock){ uLock = true; uSyncFromPx(); uLock = false; } });
+$('#vwWidth').addEventListener('input', () => { if(!uLock){ uLock = true; uSyncFromPx(); uLock = false; } });
+$('#pxIn').dispatchEvent(new Event('input'));
+
+/* ================= 11. API 调试台 ================= */
+const API_HIST_KEY = 'dsk-api-hist';
+const ENV_KEY = 'dsk-envs';
+const ENV_DEFAULT = {
+  current: 'uat',
+  envs: {
+    uat: {token: 'dev-token-abc123', xsrf: 'e10a1c2d-3b4e-5f60-7a8b-9c0d1e2f3a4b', baseUrl: 'https://shlt.uat3.qgutech.com'},
+    prod: {token: '', xsrf: '', baseUrl: 'https://shlt.qgutech.com'}
+  }
+};
+function envLoad(){
+  try{
+    const v = JSON.parse(localStorage.getItem(ENV_KEY));
+    if(v && v.envs) return v;
+  }catch(e){}
+  return JSON.parse(JSON.stringify(ENV_DEFAULT));
+}
+function envSave(v){ try{ localStorage.setItem(ENV_KEY, JSON.stringify(v)); }catch(e){} }
+let envData = envLoad();
+function envResolve(str){
+  return String(str).replace(/\{\{\s*([A-Za-z0-9_-]+)\s*\}\}/g, (m, k) => {
+    const cur = envData.envs[envData.current] || {};
+    return k in cur ? cur[k] : m;
+  });
+}
+function envHasPlaceholder(str){ return /\{\{\s*[A-Za-z0-9_-]+\s*\}\}/.test(String(str)); }
+function envUnresolved(str){
+  const cur = envData.envs[envData.current] || {};
+  return (String(str).match(/\{\{\s*([A-Za-z0-9_-]+)\s*\}\}/g) || [])
+    .map(s => s.replace(/[{}\s]/g, '')).filter(k => !(k in cur));
+}
+function envRender(){
+  const wrap = $('#envRows');
+  wrap.innerHTML = '';
+  const vars = envData.envs[envData.current] || {};
+  const keys = Object.keys(vars);
+  if(!keys.length){ wrap.innerHTML = '<div class="hint" style="margin:0">当前环境暂无变量，点「+ 参数」同款按钮下方的说明试试 {{token}} 语法。</div>'; }
+  keys.forEach(k => {
+    const row = document.createElement('div');
+    row.className = 'kv-row';
+    row.innerHTML = '<span class="mono" style="font-size:12px;color:var(--primary)">{{' + escapeHtml(k) + '}}</span>'
+      + '<input type="text" class="k" value="' + escapeHtml(k) + '" spellcheck="false">'
+      + '<input type="text" class="v" value="' + escapeHtml(vars[k]) + '" spellcheck="false">'
+      + '<button class="del" title="删除">×</button>';
+    row.querySelector('.del').addEventListener('click', () => {
+      delete envData.envs[envData.current][k]; envSave(envData); envRender();
+    });
+    row.querySelector('.v').addEventListener('change', function(){
+      envData.envs[envData.current][k] = this.value; envSave(envData); toast('已保存');
+    });
+    row.querySelector('.k').addEventListener('change', function(){
+      const nk = this.value.trim(); if(!nk || nk === k) { this.value = k; return; }
+      const vars2 = envData.envs[envData.current];
+      vars2[nk] = vars2[k]; delete vars2[k]; envSave(envData); envRender();
+    });
+    wrap.appendChild(row);
+  });
+  const addBtn = document.createElement('button');
+  addBtn.className = 'btn btn-sm'; addBtn.textContent = '+ 变量';
+  addBtn.addEventListener('click', () => {
+    const name = prompt('变量名（URL/Headers/Body 里用 {{名字}} 引用）：');
+    if(!name) return;
+    envData.envs[envData.current][name.trim()] = '';
+    envSave(envData); envRender();
+  });
+  wrap.appendChild(addBtn);
+  $$('#envCard [data-envsel]').forEach(chip => {
+    chip.style.outline = chip.dataset.envsel === envData.current ? '2px solid var(--primary)' : 'none';
+  });
+}
+$$('#envCard [data-envsel]').forEach(chip => chip.addEventListener('click', () => {
+  if(!envData.envs[chip.dataset.envsel]){ envData.envs[chip.dataset.envsel] = {}; }
+  envData.current = chip.dataset.envsel; envSave(envData); envRender();
+  toast('当前环境：' + chip.dataset.envsel);
+}));
+$('#envAddBtn').addEventListener('click', () => {
+  const name = prompt('新环境名（如 staging）：');
+  if(!name) return;
+  const n = name.trim();
+  if(envData.envs[n]){ toast('该环境已存在'); return; }
+  envData.envs[n] = JSON.parse(JSON.stringify(envData.envs[envData.current] || {}));
+  envData.current = n; envSave(envData); addEnvChip(n); envRender();
+});
+function addEnvChip(name){
+  const chip = document.createElement('span');
+  chip.className = 'chip'; chip.dataset.envsel = name; chip.textContent = name;
+  chip.addEventListener('click', () => {
+    envData.current = name; envSave(envData); envRender(); toast('当前环境：' + name);
+  });
+  $('#envCard .check-row').insertBefore(chip, $('#envAddBtn'));
+}
+Object.keys(envData.envs).forEach(addEnvChip);
+envRender();
+const FORBIDDEN_HEADERS = new Set(['cookie','set-cookie','host','referer','user-agent','origin',
+  'accept-encoding','connection','content-length','date','dnt','sec-ch-ua','sec-ch-ua-mobile',
+  'sec-ch-ua-platform','sec-fetch-dest','sec-fetch-mode','sec-fetch-site','sec-fetch-user',
+  'te','trailer','transfer-encoding','upgrade']);
+function apiKVInit(rowsId, addBtnId, phK, phV, defs){
+  const wrap = document.getElementById(rowsId);
+  function addRow(k, v){
+    const row = document.createElement('div');
+    row.className = 'kv-row';
+    row.innerHTML = '<button class="del" title="删除">×</button>'
+      + '<input type="text" class="k" placeholder="' + phK + '" spellcheck="false">'
+      + '<input type="text" class="v" placeholder="' + phV + '" spellcheck="false">';
+    row.querySelector('.k').value = k || '';
+    row.querySelector('.v').value = v || '';
+    row.querySelector('.del').addEventListener('click', () => row.remove());
+    wrap.appendChild(row);
+  }
+  (defs || [['','']]).forEach(d => addRow(d[0], d[1]));
+  document.getElementById(addBtnId).addEventListener('click', () => addRow());
+  return {wrap, addRow};
+}
+const paramEditor  = apiKVInit('paramRows',  'addParamBtn',  'key（如 pageNo）',  'value（如 1）');
+const headerEditor = apiKVInit('headerRows', 'addHeaderBtn', 'header（如 accept）', 'value');
+$$('#mod-api [data-hh]').forEach(chip => chip.addEventListener('click', () => {
+  const [k, v] = chip.dataset.hh.split(/:\s*/);
+  headerEditor.addRow(k.trim(), (v || '').trim());
+}));
+$$('#mod-api [data-env]').forEach(chip => chip.addEventListener('click', () => {
+  const u = $('#apiUrl').value.trim();
+  if(/^https?:\/\//i.test(u)){ toast('URL 已有前缀，如需替换请手动修改'); return; }
+  $('#apiUrl').value = chip.dataset.env + (u ? '/' + u.replace(/^\/+/, '') : '');
+}));
+$$('#mod-api .panel-tab').forEach(t => t.addEventListener('click', () => {
+  $$('#mod-api .panel-tab').forEach(x => x.classList.remove('active'));
+  t.classList.add('active');
+  $$('#mod-api .api-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + t.dataset.p));
+}));
+$('#bodyFmtBtn').addEventListener('click', () => {
+  const ta = $('#apiBody'); const v = ta.value.trim();
+  if(!v){ toast('Body 为空'); return; }
+  const r = parseJsonLenient(v);
+  if(!r.ok){ toast('❌ 不是合法 JSON'); return; }
+  ta.value = JSON.stringify(r.value, null, 2);
+});
+function kvCollect(wrap){
+  return Array.from(wrap.querySelectorAll('.kv-row')).map(r => ({
+    k: r.querySelector('.k').value.trim(),
+    v: r.querySelector('.v').value.trim(),
+    on: !r.querySelector('.cb') || r.querySelector('.cb').checked
+  })).filter(x => x.k);
+}
+function kvFill(editor, list){
+  editor.wrap.innerHTML = '';
+  (list && list.length ? list : [['','']]).forEach(d => editor.addRow(d[0] || '', d[1] || ''));
+}
+function buildApiUrl(){
+  const base = $('#apiUrl').value.trim();
+  const params = kvCollect(paramEditor.wrap);
+  if(!params.length) return base;
+  const qs = params.map(p => encodeURIComponent(p.k) + '=' + encodeURIComponent(p.v)).join('&');
+  if(!base) return qs;
+  return base + (base.includes('?') ? '&' : '?') + qs;
+}
+function bodyEnabled(){
+  const m = $('#apiMethod').value;
+  const has = $('#apiBody').value.trim().length > 0;
+  return (m === 'GET' || m === 'HEAD') ? 'never' : (has ? 'yes' : 'empty');
+}
+function updateBodyTag(){
+  const s = bodyEnabled();
+  const t = $('#bodyTag');
+  if(s === 'never'){ t.textContent = 'Body 未启用（GET/HEAD 不发 body）'; t.className = 'tag'; }
+  else if(s === 'yes'){ t.textContent = 'Body 已启用 ✓'; t.className = 'tag tag-ok'; }
+  else { t.textContent = 'Body 为空（仍会发送）'; t.className = 'tag tag-warn'; }
+}
+$('#apiMethod').addEventListener('change', updateBodyTag);
+$('#apiBody').addEventListener('input', updateBodyTag);
+function apiHeaders(){
+  return kvCollect(headerEditor.wrap).map(h => [h.k, h.v]);
+}
+async function apiSend(){
+  let url = buildApiUrl();
+  const unresolved = envUnresolved(url)
+    .concat(kvCollect(headerEditor.wrap).flatMap(x => envUnresolved(x.k + '=' + x.v)))
+    .concat(bodyEnabled() !== 'never' ? envUnresolved($('#apiBody').value) : []);
+  if([...new Set(unresolved)].length){
+    toast('⚠️ 未定义变量: ' + [...new Set(unresolved)].join(', ') + '（在环境变量卡片中设置）');
+  }
+  url = envResolve(url);
+  if(!/^https?:\/\//i.test(url)){ toast('❌ 请输入完整 http(s) URL'); return; }
+  const method = $('#apiMethod').value;
+  const allHeaders = apiHeaders().map(([k, v]) => [k, envResolve(v)]);
+  const dropped = allHeaders.filter(([k]) => FORBIDDEN_HEADERS.has(k.toLowerCase()));
+  if(dropped.length) toast('⚠️ 浏览器将忽略: ' + dropped.map(d => d[0]).join(', ') + ' —— 要带这些头请用 Node 脚本');
+  const headers = {};
+  allHeaders.forEach(([k, v]) => { headers[k] = v; });
+  const be = bodyEnabled();
+  const opts = {method, headers};
+  if(be !== 'never' && $('#apiBody').value.trim()) opts.body = envResolve($('#apiBody').value);
+  const t0 = performance.now();
+  const btn = $('#apiSendBtn'); btn.disabled = true; btn.textContent = '发送中…';
+  $('#apiResCard').style.display = '';
+  $('#apiResMeta').innerHTML = '<span class="muted">请求中…</span>';
+  $('#apiCorsHint').innerHTML = '';
+  try{
+    const res = await fetch(url, opts);
+    const ms = Math.round(performance.now() - t0);
+    let text = await res.text();
+    let pretty = text;
+    try{ pretty = JSON.stringify(JSON.parse(text), null, 2); }catch(e){}
+    renderApiRes({status: res.status, ms, size: text.length, body: pretty,
+      headers: Array.from(res.headers.entries()), url, method, ok: res.ok});
+    apiHistPush({method, url, status: res.status, ms, time: Date.now(),
+      headers: apiHeaders(), body: be !== 'never' ? $('#apiBody').value : ''});
+  }catch(err){
+    const ms = Math.round(performance.now() - t0);
+    renderApiRes({status: 0, ms, size: 0, body: '❌ ' + err.message, headers: [], url, method, ok: false, cors: true});
+  }finally{
+    btn.disabled = false; btn.textContent = '🚀 发送';
+  }
+}
+function renderApiRes(r){
+  const meta = $('#apiResMeta'), out = $('#apiResOut');
+  if(r.status === 0){
+    meta.innerHTML = '<span class="tag tag-err">FAILED</span> <span class="mono muted">' + r.ms + 'ms</span>';
+    out.textContent = r.body + '\n\n—— 最常见原因是 CORS 跨域拦截或网络不可达。\n—— 浏览器安全限制：JS 不能设置 Cookie / 部分协议头（如 user-agent）。\n—— 解决办法：用下方「Node 脚本」按钮，生成脚本到终端里跑，无跨域限制、headers 全量保留。';
+    out.classList.add('err-box');
+    showCorsHint(r);
+    return;
+  }
+  out.classList.remove('err-box');
+  const sc = Math.floor(r.status / 100);
+  meta.innerHTML = '<span class="tag ' + (r.ok ? 'tag-ok' : 'tag-err') + ' status-' + sc + '">' + r.status + ' ' + (r.ok ? 'OK' : 'ERROR') + '</span>'
+    + ' <span class="mono muted">' + r.ms + 'ms · ' + (r.size / 1024).toFixed(1) + 'KB</span>'
+    + ' <span class="mono muted" style="word-break:break-all">' + escapeHtml(r.method + ' ' + r.url) + '</span>';
+  out.textContent = r.body || '(空响应体)';
+  out.classList.remove('empty');
+  if(r.headers.length){
+    let h = '<details style="margin-top:10px"><summary class="muted" style="font-size:12.5px;cursor:pointer">响应 Headers (' + r.headers.length + ')</summary><table class="data" style="margin-top:8px"><tr><th>name</th><th>value</th></tr>';
+    r.headers.forEach(([k, v]) => h += '<tr><td class="mono">' + escapeHtml(k) + '</td><td class="mono">' + escapeHtml(v) + '</td></tr>');
+    h += '</table></details>';
+    meta.innerHTML += h;
+  }
+}
+function genNodeScript(){
+  const method = $('#apiMethod').value;
+  const url = envResolve(buildApiUrl());
+  const headers = apiHeaders().map(([k, v]) => [k, envResolve(v)]);
+  let body = bodyEnabled() !== 'never' ? envResolve($('#apiBody').value.trim()) : '';
+  const L = [];
+  L.push('// 从「前端瑞士军刀 · API 调试台」生成 —— 保存为 req.mjs，运行：node req.mjs');
+  L.push('const res = await fetch(' + q1(url) + ', {');
+  L.push('  method: ' + q1(method) + ',');
+  if(headers.length){
+    L.push('  headers: {');
+    headers.forEach(([k, v]) => L.push('    ' + q1(k) + ': ' + q1(v) + ','));
+    L.push('  },');
+  }
+  if(body){
+    try{ body = 'JSON.stringify(' + JSON.stringify(JSON.parse(body), null, 2) + ')'; }catch(e){}
+    L.push('  body: ' + body + ',');
+  }
+  L.push('});');
+  L.push('console.log(\'status:\', res.status);');
+  L.push('const text = await res.text();');
+  L.push('try{ console.log(JSON.stringify(JSON.parse(text), null, 2)); }catch(e){ console.log(text); }');
+  return L.join('\n');
+}
+let nodeScriptModal = null;
+function showNodeScript(){
+  const code = genNodeScript();
+  if(!nodeScriptModal){
+    nodeScriptModal = document.createElement('div');
+    nodeScriptModal.id = 'dskNodeModal';
+    nodeScriptModal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:90;display:flex;align-items:center;justify-content:center;padding:24px';
+    nodeScriptModal.innerHTML = '<div class="card" style="max-width:820px;width:100%;max-height:86vh;overflow:auto;margin:0">'
+      + '<h3>📦 Node 脚本（无跨域限制，headers/cookie 全保留）</h3>'
+      + '<div class="hint" style="margin:0 0 8px">浏览器被 CORS 拦截时的替代方案：把脚本存为 req.mjs，在终端运行 node req.mjs。</div>'
+      + '<pre class="out" id="nodeScriptOut"></pre>'
+      + '<div class="btn-row"><button class="btn btn-primary btn-sm" id="nodeCopyBtn">复制脚本</button>'
+      + '<button class="btn btn-sm" id="nodeCloseBtn">关闭</button></div></div>';
+    nodeScriptModal.addEventListener('click', e => { if(e.target === nodeScriptModal) nodeScriptModal.style.display = 'none'; });
+    document.body.appendChild(nodeScriptModal);
+    nodeScriptModal.querySelector('#nodeCloseBtn').addEventListener('click', () => nodeScriptModal.style.display = 'none');
+    nodeScriptModal.querySelector('#nodeCopyBtn').addEventListener('click', function(){ copyText(nodeScriptModal.querySelector('#nodeScriptOut').textContent, this); });
+  }
+  nodeScriptModal.querySelector('#nodeScriptOut').textContent = code;
+  nodeScriptModal.style.display = 'flex';
+}
+function showCorsHint(r){
+  $('#apiCorsHint').innerHTML = '<div class="btn-row" style="margin-top:10px"><button class="btn btn-primary btn-sm" id="genNodeBtn">📦 生成 Node 脚本（绕过跨域）</button></div>';
+  $('#genNodeBtn').addEventListener('click', showNodeScript);
+}
+$('#apiSendBtn').addEventListener('click', apiSend);
+$('#apiUrl').addEventListener('keydown', e => { if(e.key === 'Enter') apiSend(); });
+$('#apiCurlImportBtn').addEventListener('click', () => {
+  const raw = $('#apiCurlIn').value.trim();
+  if(!raw){ toast('请先粘贴 cURL'); return; }
+  const req = parseCurl(tokenizeCurl(raw));
+  if(!req.url){ toast('⚠️ 未识别到 URL'); return; }
+  $('#apiMethod').value = (req.method || 'GET').toUpperCase();
+  const {base, params} = splitQuery(req.url);
+  $('#apiUrl').value = base;
+  kvFill(paramEditor, params.map(p => [decodeSafe(p.k), decodeSafe(p.v)]));
+  kvFill(headerEditor, req.headers.map(h => {
+    const i = h.indexOf(':');
+    return [h.slice(0, i).trim(), h.slice(i + 1).trim()];
+  }));
+  $('#apiBody').value = req.data || '';
+  updateBodyTag();
+  toast('导入完成，检查后点「🚀 发送」');
+});
+function apiHistGet(){ try{ return JSON.parse(localStorage.getItem(API_HIST_KEY)) || []; }catch(e){ return []; } }
+function apiHistSave(list){ try{ localStorage.setItem(API_HIST_KEY, JSON.stringify(list.slice(0, 50))); }catch(e){} }
+function apiHistPush(item){ const l = apiHistGet(); l.unshift(item); apiHistSave(l); apiHistRender(); }
+function apiHistRender(){
+  const list = apiHistGet();
+  const el = $('#histList');
+  if(!list.length){ el.innerHTML = '<div class="muted" style="font-size:12.5px">暂无历史记录</div>'; return; }
+  el.innerHTML = '';
+  list.forEach(it => {
+    const div = document.createElement('div');
+    div.className = 'hist-item';
+    const ok = it.status >= 200 && it.status < 300;
+    div.innerHTML = '<span class="m ' + (it.status === 0 ? 'stat-err' : ok ? 'stat-ok' : 'stat-warn') + '">' + escapeHtml(it.method) + '</span>'
+      + '<span class="u" title="' + escapeHtml(it.url) + '">' + escapeHtml(it.url) + '</span>'
+      + '<span class="s ' + (it.status === 0 ? 'stat-err' : ok ? '' : 'stat-warn') + '">' + it.status + ' · ' + it.ms + 'ms</span>'
+      + '<span class="s muted">' + fmtDate(new Date(it.time)) + '</span>';
+    div.addEventListener('click', () => {
+      $('#apiMethod').value = it.method;
+      const {base, params} = splitQuery(it.url);
+      $('#apiUrl').value = base;
+      kvFill(paramEditor, params.map(p => [decodeSafe(p.k), decodeSafe(p.v)]));
+      kvFill(headerEditor, (it.headers || []).map(h => [h[0], h[1]]));
+      $('#apiBody').value = it.body || '';
+      updateBodyTag();
+      toast('已回填，检查后点「🚀 发送」');
+    });
+    el.appendChild(div);
+  });
+}
+$('#histClearBtn').addEventListener('click', () => { apiHistSave([]); apiHistRender(); toast('历史已清空'); });
+apiHistRender();
+updateBodyTag();
+/* API 调试台响应数据流转 */
+$('#apiResCopyBtn').addEventListener('click', function(){
+  const t = $('#apiResOut').textContent;
+  if($('#apiResOut').classList.contains('empty')){ toast('暂无响应'); return; }
+  copyText(t, this);
+});
+$('#apiToDiffBtn').addEventListener('click', () => {
+  const t = $('#apiResOut').textContent;
+  if($('#apiResOut').classList.contains('empty') || !t){ toast('暂无响应'); return; }
+  $('#diffB').value = t;
+  switchTo('mod-diff');
+  toast('已填入「JSON 对比」右侧（真实返回），左侧贴文档示例即可');
+});
+$('#apiToTsBtn').addEventListener('click', () => {
+  const t = $('#apiResOut').textContent;
+  if($('#apiResOut').textContent === '--' || !t){ toast('暂无响应'); return; }
+  $('#jsonIn').value = t;
+  switchTo('mod-json');
+  toast('已填入 JSON 输入框，点「转 TS 接口」即可');
+});
+/* —— Mock 代码生成 —— */
+function mockScalar(key, v){
+  const k = (key || '').toLowerCase();
+  if(typeof v === 'number'){
+    if(/(time|date|_at$|Time$)/.test(k) && v > 1e9) return 'Date.now()';
+    if(/(id$|^id|Id$)/.test(k)) return 'Math.floor(Math.random() * 100000)';
+    if(/(price|amount|fee|money|cost)/.test(k)) return '+(Math.random() * 300 + 50).toFixed(2)';
+    if(/(count|total|num|qty|quantity)/.test(k)) return 'Math.floor(Math.random() * 100)';
+    if(/(status|state)/.test(k)) return 'Math.floor(Math.random() * 4)';
+    return String(v);
+  }
+  if(typeof v === 'string'){
+    if(/(phone|mobile|tel)/.test(k)) return "'138' + String(Math.floor(Math.random() * 1e8)).padStart(8, '0')";
+    if(/(email)/.test(k)) return "'user' + Math.floor(Math.random() * 999) + '@test.com'";
+    if(/(url|img|image|avatar|icon)/.test(k)) return "'https://placehold.co/200x200?text=img'";
+    if(/(name$|^name)/.test(k) && /[\u4e00-\u9fa5]/.test(v)) return "'用户' + Math.floor(Math.random() * 9999)";
+    if(/(time|date|_at$|Time$)/.test(k) && /^\d{4}-|^\d{10,}$/.test(v)) return "new Date().toISOString()";
+    if(/(id$|^id|Id$|no$|^no)/.test(k)) return "'MOCK' + Date.now() + String(Math.floor(Math.random() * 100))";
+    return JSON.stringify(v);
+  }
+  if(typeof v === 'boolean') return 'Math.random() > 0.5';
+  if(v === null) return 'null';
+  return JSON.stringify(v);
+}
+function mockExpr(v, key, depth){
+  if(depth > 6) return 'null';
+  if(v === null) return 'null';
+  if(Array.isArray(v)){
+    if(!v.length) return '[]';
+    return 'Array.from({length: ' + Math.min(v.length * 2, 10) + '}, () => ' + mockExpr(v[0], key, depth + 1) + ')';
+  }
+  if(typeof v === 'object'){
+    const parts = Object.keys(v).map(k => '    ' + JSON.stringify(k) + ': ' + mockExpr(v[k], k, depth + 1));
+    return '{\n' + parts.join(',\n') + '\n  }';
+  }
+  return mockScalar(key, v);
+}
+function genMockCode(json, mode){
+  const expr = mockExpr(json, 'root', 0);
+  const ident = expr.replace(/^\{\n/, '').trim();
+  if(mode === 'js'){
+    return '// mock.js —— 从「前端瑞士军刀」响应生成，node mock.js 或 import 使用\n'
+      + 'export function createMockData() {\n  return ' + expr + ';\n}\n\n'
+      + 'console.log(JSON.stringify(createMockData(), null, 2));';
+  }
+  if(mode === 'mockjs'){
+    return '// Mock.js 拦截版 —— 需引入 mockjs：npm i mockjs\n'
+      + "import Mock from 'mockjs';\n"
+      + "// Mock.mock(/\\/api\\/your-path/, 'post', (options) => ({\n"
+      + '//   code: 0, message: \'ok\',\n'
+      + '//   data: ' + expr.split('\n').join('\n//   ') + ',\n'
+      + '// }));';
+  }
+  // vite/webpack 插件或 msw 风格
+  return '// MSW handler 版 —— 需引入 msw：npm i msw\n'
+    + "import { http, HttpResponse } from 'msw';\n\n"
+    + 'export const handlers = [\n'
+    + "  http.post('https://your-api.com/your-path', () => {\n"
+    + '    return HttpResponse.json(' + expr.split('\n').join('\n    ') + ');\n'
+    + '  }),\n'
+    + '];';
+}
+let mockModal = null;
+function showMockModal(){
+  const raw = $('#apiResOut').textContent;
+  if(raw === '--' || !raw){ toast('暂无响应'); return; }
+  let json = null;
+  try{ json = JSON.parse(raw); }catch(e){ toast('响应不是合法 JSON，无法生成 mock'); return; }
+  if(!mockModal){
+    mockModal = document.createElement('div');
+    mockModal.id = 'dskMockModal';
+    mockModal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:90;display:flex;align-items:center;justify-content:center;padding:24px';
+    mockModal.innerHTML = '<div class="card" style="max-width:820px;width:100%;max-height:86vh;overflow:auto;margin:0">'
+      + '<h3>🎭 Mock 代码生成</h3>'
+      + '<div class="code-tabs" id="mockTabs">'
+      + '<button class="code-tab active" data-t="js">纯函数版</button>'
+      + '<button class="code-tab" data-t="mockjs">Mock.js 拦截版</button>'
+      + '<button class="code-tab" data-t="msw">MSW Handler 版</button></div>'
+      + '<pre class="out" id="mockOut"></pre>'
+      + '<div class="btn-row"><button class="btn btn-primary btn-sm" id="mockCopyBtn">复制代码</button>'
+      + '<button class="btn btn-sm" id="mockCloseBtn">关闭</button></div></div>';
+    mockModal.addEventListener('click', e => { if(e.target === mockModal) mockModal.style.display = 'none'; });
+    document.body.appendChild(mockModal);
+    mockModal.querySelector('#mockCloseBtn').addEventListener('click', () => mockModal.style.display = 'none');
+    mockModal.querySelector('#mockCopyBtn').addEventListener('click', function(){
+      copyText(mockModal.querySelector('#mockOut').textContent, this);
+    });
+    mockModal.querySelector('#mockTabs').addEventListener('click', e => {
+      const t = e.target.closest('.code-tab'); if(!t) return;
+      mockModal.querySelectorAll('.code-tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      mockModal.querySelector('#mockOut').textContent = genMockCode(json, t.dataset.t);
+    });
+  }
+  mockModal.querySelector('#mockOut').textContent = genMockCode(json, 'js');
+  mockModal.style.display = 'flex';
+}
+$('#apiToMockBtn').addEventListener('click', showMockModal);
+
+/* —— axios 拦截器生成 —— */
+let axiosModal = null;
+function detectEnvelope(json){
+  // 常见后端信封结构探测：{code, message, data}
+  if(json && typeof json === 'object' && !Array.isArray(json)
+     && ('code' in json || 'status' in json || 'errcode' in json)
+     && ('data' in json || 'result' in json || !Array.isArray(json))){
+    const codeKey = 'code' in json ? 'code' : 'status' in json ? 'status' : 'errcode';
+    const dataKey = 'data' in json ? 'data' : 'result';
+    const okVal = json[codeKey] === 0 ? 0 : json[codeKey];
+    const msgKey = 'message' in json ? 'message' : 'msg' in json ? 'msg' : null;
+    return {codeKey, dataKey, msgKey, okVal};
+  }
+  return null;
+}
+function genAxiosInterceptors(ts){
+  const raw = $('#apiResOut').textContent;
+  let env = null;
+  try{ env = detectEnvelope(JSON.parse(raw)); }catch(e){}
+  const headers = apiHeaders();
+  const authHeader = headers.find(([k]) => /^(authorization|x-xsrf-token|x-token)$/i.test(k));
+  const authKey = authHeader ? authHeader[0] : 'Authorization';
+  const authSample = authHeader ? authHeader[1] : '<在此填入 token>';
+  const emitCode = (withTypes) => {
+    const L = [];
+    L.push(withTypes ? "import axios, { AxiosRequestConfig, InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';" : "import axios from 'axios';");
+    L.push('');
+    L.push("const http = axios.create({");
+    L.push("  baseURL: import.meta.env?.VITE_API_BASE || '/api',");
+    L.push("  timeout: 15000,");
+    L.push("});");
+    L.push('');
+    L.push('// —— 请求拦截器：注入 token / CSRF 头');
+    L.push("http.interceptors.request.use(");
+    L.push("  (config" + (withTypes ? ": InternalAxiosRequestConfig" : "") + ") => {");
+    if(authKey.toLowerCase() === 'x-xsrf-token'){
+      L.push("    // CSRF 防护：与 Cookie 中的 XSRF-TOKEN 保持一致（后端校验）");
+      L.push("    const xsrf = document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] ?? '';");
+      L.push("    if (xsrf) config.headers['X-XSRF-TOKEN'] = decodeURIComponent(xsrf);");
+    } else {
+      L.push("    const token = localStorage.getItem('token') || '" + authSample + "';");
+      L.push("    if (token) config.headers['" + authKey + "'] = token.startsWith('Bearer') ? token : `Bearer ${token}`;");
+    }
+    L.push("    return config;");
+    L.push("  },");
+    L.push("  (error" + (withTypes ? ": AxiosError" : "") + ") => Promise.reject(error)");
+    L.push(");");
+    L.push('');
+    L.push('// —— 响应拦截器：拆信封 + 统一错误处理');
+    L.push("http.interceptors.response.use(");
+    L.push("  (response" + (withTypes ? ": AxiosResponse" : "") + ") => {");
+    if(env){
+      L.push("    const body = response.data;");
+      L.push("    // 按真实响应探测到的信封结构：" + env.codeKey + "/" + (env.msgKey || '无 message 字段') + "/" + env.dataKey + "，成功值 " + env.okVal);
+      L.push("    if (body && typeof body === 'object' && '" + env.codeKey + "' in body) {");
+      L.push("      if (body." + env.codeKey + " !== " + env.okVal + ") {");
+      if(env.msgKey) L.push("        return Promise.reject(new Error(body." + env.msgKey + " || '业务错误'));");
+      else L.push("        return Promise.reject(new Error('业务错误: ' + body." + env.codeKey + "));");
+      L.push("      }");
+      L.push("      return body." + env.dataKey + ";" + (withTypes ? "  // 直接返回业务数据" : ""));
+      L.push("    }");
+    }
+    L.push("    return response.data;");
+    L.push("  },");
+    L.push("  (error" + (withTypes ? ": AxiosError" : "") + ") => {");
+    L.push("    if (error.response) {");
+    L.push("      const { status, data } = error.response;");
+    L.push("      const map: Record<number, string>" + (withTypes ? "" : "") + " = { 401: '未登录', 403: '无权限', 404: '接口不存在', 500: '服务器错误' };");
+    L.push("      console.error('[api:error]', status, data);");
+    L.push("      if (status === 401) { /* 跳转登录 / 刷新 token */ }");
+    L.push("      return Promise.reject(new Error(map[status] || (data && data.message) || `HTTP ${status}`));");
+    L.push("    }");
+    L.push("    return Promise.reject(new Error(error.message || '网络异常'));");
+    L.push("  }");
+    L.push(");");
+    L.push('');
+    L.push('export default http;');
+    let code = L.join('\n');
+    if(!withTypes) code = code.replace(/: Record<number, string>/, '').replace(/<AxiosRequestConfig[^>]*>/g, '');
+    return code;
+  };
+  return {ts: emitCode(true), js: emitCode(false)};
+}
+function showAxiosModal(){
+  const raw = $('#apiResOut').textContent;
+  if(raw === '--' || !raw){ toast('暂无响应，先发一个请求'); return; }
+  const codes = genAxiosInterceptors();
+  if(!axiosModal){
+    axiosModal = document.createElement('div');
+    axiosModal.id = 'dskAxiosModal';
+    axiosModal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:90;display:none;align-items:center;justify-content:center;padding:24px';
+    axiosModal.innerHTML = '<div class="card" style="max-width:860px;width:100%;max-height:86vh;overflow:auto;margin:0">'
+      + '<h3>🔌 axios 拦截器代码</h3>'
+      + '<div class="hint" style="margin:0 0 8px">根据当前响应结构' + (detectEnvelopeSafe() ? '（已识别 code/message/data 信封）' : '') + '与请求头自动生成：token/CSRF 注入、信封拆包、401 跳登录、错误映射。</div>'
+      + '<div class="code-tabs" id="axiosTabs">'
+      + '<button class="code-tab active" data-t="ts">TypeScript</button>'
+      + '<button class="code-tab" data-t="js">JavaScript</button></div>'
+      + '<pre class="out" id="axiosOut"></pre>'
+      + '<div class="btn-row"><button class="btn btn-primary btn-sm" id="axiosCopyBtn">复制代码</button>'
+      + '<button class="btn btn-sm" id="axiosCloseBtn">关闭</button></div></div>';
+    axiosModal.addEventListener('click', e => { if(e.target === axiosModal) axiosModal.style.display = 'none'; });
+    document.body.appendChild(axiosModal);
+    axiosModal.querySelector('#axiosCloseBtn').addEventListener('click', () => axiosModal.style.display = 'none');
+    axiosModal.querySelector('#axiosCopyBtn').addEventListener('click', function(){
+      copyText(axiosModal.querySelector('#axiosOut').textContent, this);
+    });
+    axiosModal.querySelector('#axiosTabs').addEventListener('click', e => {
+      const t = e.target.closest('.code-tab'); if(!t) return;
+      axiosModal.querySelectorAll('.code-tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      const codes = genAxiosInterceptors();
+      axiosModal.querySelector('#axiosOut').textContent = t.dataset.t === 'ts' ? codes.ts : codes.js;
+    });
+  }
+  axiosModal.querySelector('#axiosOut').textContent = codes.ts;
+  axiosModal.style.display = 'flex';
+}
+function detectEnvelopeSafe(){
+  try{ return !!detectEnvelope(JSON.parse($('#apiResOut').textContent)); }catch(e){ return false; }
+}
+$('#apiToAxiosBtn').addEventListener('click', showAxiosModal);
+
+/* ================= 12. AES 加解密（已用 Node crypto 交叉验证） ================= */
+const AES_SBOX = new Uint8Array([
+0x63,0x7c,0x77,0x7b,0xf2,0x6b,0x6f,0xc5,0x30,0x01,0x67,0x2b,0xfe,0xd7,0xab,0x76,
+0xca,0x82,0xc9,0x7d,0xfa,0x59,0x47,0xf0,0xad,0xd4,0xa2,0xaf,0x9c,0xa4,0x72,0xc0,
+0xb7,0xfd,0x93,0x26,0x36,0x3f,0xf7,0xcc,0x34,0xa5,0xe5,0xf1,0x71,0xd8,0x31,0x15,
+0x04,0xc7,0x23,0xc3,0x18,0x96,0x05,0x9a,0x07,0x12,0x80,0xe2,0xeb,0x27,0xb2,0x75,
+0x09,0x83,0x2c,0x1a,0x1b,0x6e,0x5a,0xa0,0x52,0x3b,0xd6,0xb3,0x29,0xe3,0x2f,0x84,
+0x53,0xd1,0x00,0xed,0x20,0xfc,0xb1,0x5b,0x6a,0xcb,0xbe,0x39,0x4a,0x4c,0x58,0xcf,
+0xd0,0xef,0xaa,0xfb,0x43,0x4d,0x33,0x85,0x45,0xf9,0x02,0x7f,0x50,0x3c,0x9f,0xa8,
+0x51,0xa3,0x40,0x8f,0x92,0x9d,0x38,0xf5,0xbc,0xb6,0xda,0x21,0x10,0xff,0xf3,0xd2,
+0xcd,0x0c,0x13,0xec,0x5f,0x97,0x44,0x17,0xc4,0xa7,0x7e,0x3d,0x64,0x5d,0x19,0x73,
+0x60,0x81,0x4f,0xdc,0x22,0x2a,0x90,0x88,0x46,0xee,0xb8,0x14,0xde,0x5e,0x0b,0xdb,
+0xe0,0x32,0x3a,0x0a,0x49,0x06,0x24,0x5c,0xc2,0xd3,0xac,0x62,0x91,0x95,0xe4,0x79,
+0xe7,0xc8,0x37,0x6d,0x8d,0xd5,0x4e,0xa9,0x6c,0x56,0xf4,0xea,0x65,0x7a,0xae,0x08,
+0xba,0x78,0x25,0x2e,0x1c,0xa6,0xb4,0xc6,0xe8,0xdd,0x74,0x1f,0x4b,0xbd,0x8b,0x8a,
+0x70,0x3e,0xb5,0x66,0x48,0x03,0xf6,0x0e,0x61,0x35,0x57,0xb9,0x86,0xc1,0x1d,0x9e,
+0xe1,0xf8,0x98,0x11,0x69,0xd9,0x8e,0x94,0x9b,0x1e,0x87,0xe9,0xce,0x55,0x28,0xdf,
+0x8c,0xa1,0x89,0x0d,0xbf,0xe6,0x42,0x68,0x41,0x99,0x2d,0x0f,0xb0,0x54,0xbb,0x16]);
+const AES_INV_SBOX = new Uint8Array(256);
+for(let i = 0; i < 256; i++) AES_INV_SBOX[AES_SBOX[i]] = i;
+const AES_RCON = [0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x1b,0x36];
+function aesKeyExpansion(key){
+  const nk = key.length / 4, nr = nk + 6;
+  const w = new Uint8Array(16 * (nr + 1));
+  w.set(key);
+  for(let i = nk; i < 4 * (nr + 1); i++){
+    let t = [w[(i-1)*4], w[(i-1)*4+1], w[(i-1)*4+2], w[(i-1)*4+3]];
+    if(i % nk === 0){
+      t = [AES_SBOX[t[1]] ^ AES_RCON[i/nk - 1], AES_SBOX[t[2]], AES_SBOX[t[3]], AES_SBOX[t[0]]];
+    } else if(nk > 6 && i % nk === 4){
+      t = [AES_SBOX[t[0]], AES_SBOX[t[1]], AES_SBOX[t[2]], AES_SBOX[t[3]]];
+    }
+    for(let j = 0; j < 4; j++) w[i*4 + j] = w[(i-nk)*4 + j] ^ t[j];
+  }
+  return {w, nr};
+}
+function gmul(a, b){
+  let p = 0;
+  for(let i = 0; i < 8; i++){
+    if(b & 1) p ^= a;
+    const hi = a & 0x80;
+    a = (a << 1) & 0xff;
+    if(hi) a ^= 0x1b;
+    b >>= 1;
+  }
+  return p;
+}
+function aesAddRoundKey(s, w, r){ for(let i = 0; i < 16; i++) s[i] ^= w[r*16 + i]; }
+function aesSubBytes(s, box){ for(let i = 0; i < 16; i++) s[i] = box[s[i]]; }
+function aesShiftRows(s){
+  const t = Uint8Array.from(s);
+  for(let r = 1; r < 4; r++) for(let c = 0; c < 4; c++) s[c*4 + r] = t[((c + r) % 4)*4 + r];
+}
+function aesInvShiftRows(s){
+  const t = Uint8Array.from(s);
+  for(let r = 1; r < 4; r++) for(let c = 0; c < 4; c++) s[((c + r) % 4)*4 + r] = t[c*4 + r];
+}
+function aesMixColumns(s){
+  for(let c = 0; c < 4; c++){
+    const i = c*4, a0 = s[i], a1 = s[i+1], a2 = s[i+2], a3 = s[i+3];
+    s[i]   = gmul(a0,2) ^ gmul(a1,3) ^ a2 ^ a3;
+    s[i+1] = a0 ^ gmul(a1,2) ^ gmul(a2,3) ^ a3;
+    s[i+2] = a0 ^ a1 ^ gmul(a2,2) ^ gmul(a3,3);
+    s[i+3] = gmul(a0,3) ^ a1 ^ a2 ^ gmul(a3,2);
+  }
+}
+function aesInvMixColumns(s){
+  for(let c = 0; c < 4; c++){
+    const i = c*4, a0 = s[i], a1 = s[i+1], a2 = s[i+2], a3 = s[i+3];
+    s[i]   = gmul(a0,14) ^ gmul(a1,11) ^ gmul(a2,13) ^ gmul(a3,9);
+    s[i+1] = gmul(a0,9) ^ gmul(a1,14) ^ gmul(a2,11) ^ gmul(a3,13);
+    s[i+2] = gmul(a0,13) ^ gmul(a1,9) ^ gmul(a2,14) ^ gmul(a3,11);
+    s[i+3] = gmul(a0,11) ^ gmul(a1,13) ^ gmul(a2,9) ^ gmul(a3,14);
+  }
+}
+function aesEncBlock(blk, w, nr){
+  const s = Uint8Array.from(blk);
+  aesAddRoundKey(s, w, 0);
+  for(let r = 1; r < nr; r++){ aesSubBytes(s, AES_SBOX); aesShiftRows(s); aesMixColumns(s); aesAddRoundKey(s, w, r); }
+  aesSubBytes(s, AES_SBOX); aesShiftRows(s); aesAddRoundKey(s, w, nr);
+  return s;
+}
+function aesDecBlock(blk, w, nr){
+  const s = Uint8Array.from(blk);
+  aesAddRoundKey(s, w, nr);
+  for(let r = nr - 1; r >= 1; r--){ aesInvShiftRows(s); aesSubBytes(s, AES_INV_SBOX); aesAddRoundKey(s, w, r); aesInvMixColumns(s); }
+  aesInvShiftRows(s); aesSubBytes(s, AES_INV_SBOX); aesAddRoundKey(s, w, 0);
+  return s;
+}
+function pkcs7Pad(bytes){
+  const pad = 16 - (bytes.length % 16);
+  const out = new Uint8Array(bytes.length + pad);
+  out.set(bytes); out.fill(pad, bytes.length);
+  return out;
+}
+function pkcs7Unpad(bytes){
+  if(!bytes.length || bytes.length % 16) throw new Error('数据长度不是 16 的倍数');
+  const pad = bytes[bytes.length - 1];
+  if(pad < 1 || pad > 16) throw new Error('填充校验失败（密钥或密文可能不对）');
+  for(let i = bytes.length - pad; i < bytes.length; i++) if(bytes[i] !== pad) throw new Error('填充校验失败（密钥或密文可能不对）');
+  return bytes.slice(0, bytes.length - pad);
+}
+function aesEncryptBytes(data, key, mode, iv){
+  const {w, nr} = aesKeyExpansion(key);
+  const padded = pkcs7Pad(data);
+  const out = new Uint8Array(padded.length);
+  let prev = iv || new Uint8Array(16);
+  for(let off = 0; off < padded.length; off += 16){
+    let blk = padded.slice(off, off + 16);
+    if(mode === 'CBC') for(let i = 0; i < 16; i++) blk[i] ^= prev[i];
+    const enc = aesEncBlock(blk, w, nr);
+    out.set(enc, off);
+    prev = mode === 'CBC' ? enc : null;
+  }
+  return out;
+}
+function aesDecryptBytes(data, key, mode, iv){
+  const {w, nr} = aesKeyExpansion(key);
+  const out = new Uint8Array(data.length);
+  let prev = iv || new Uint8Array(16);
+  for(let off = 0; off < data.length; off += 16){
+    const blk = data.slice(off, off + 16);
+    const dec = aesDecBlock(blk, w, nr);
+    if(mode === 'CBC') for(let i = 0; i < 16; i++) out[off + i] = dec[i] ^ prev[i];
+    else out.set(dec, off);
+    prev = blk;
+  }
+  return pkcs7Unpad(out);
+}
+function hexToBytes(hex){
+  const h = hex.replace(/[^0-9a-fA-F]/g, '');
+  if(h.length % 2) throw new Error('Hex 长度应为偶数');
+  return Uint8Array.from({length: h.length / 2}, (_, i) => parseInt(h.substr(i * 2, 2), 16));
+}
+function bytesToHex(b){ return Array.from(b, x => x.toString(16).padStart(2, '0')).join(''); }
+function aesInputBytes(str, enc){
+  if(enc === 'Hex') return hexToBytes(str);
+  if(enc === 'Base64'){
+    const bin = atob(str.replace(/\s+/g, ''));
+    return Uint8Array.from(bin, c => c.charCodeAt(0));
+  }
+  return new TextEncoder().encode(str);
+}
+function aesGetConfig(){
+  const mode = $('#aesMode').value;
+  const keyLen = +$('#aesKeyLen').value / 8;
+  const key = aesInputBytes($('#aesKey').value, $('#aesKeyEnc').value);
+  if(key.length !== keyLen) throw new Error('密钥长度应为 ' + keyLen + ' 字节，当前 ' + key.length + ' 字节');
+  let iv = null;
+  if(mode === 'CBC'){
+    iv = aesInputBytes($('#aesIv').value, $('#aesIvEnc').value);
+    if(iv.length !== 16) throw new Error('IV 长度应为 16 字节，当前 ' + iv.length + ' 字节');
+  }
+  return {mode, key, iv};
+}
+function aesRun(isEnc){
+  const out = $('#aesOut'); const card = $('#aesOutCard');
+  card.style.display = ''; out.classList.remove('err-box');
+  try{
+    const {mode, key, iv} = aesGetConfig();
+    let result, label;
+    if(isEnc){
+      const plain = new TextEncoder().encode($('#aesPlain').value);
+      const enc = aesEncryptBytes(plain, key, mode, iv);
+      const outEnc = document.querySelector('input[name=aesOutEnc]:checked').value;
+      let text;
+      if(outEnc === 'b64'){ text = btoa(String.fromCharCode.apply(null, enc)); label = 'Base64'; }
+      else { text = bytesToHex(enc); label = 'Hex'; }
+      let show = text;
+      if($('#aesPadBlock').checked){
+        show = (text.match(/.{1,32}/g) || []).join('\n');
+      }
+      result = '🔒 加密成功（' + mode + ' · ' + $('#aesKeyLen').value + '位 · ' + label + '）\n' + show;
+      $('#aesCipher').value = text;
+    } else {
+      const cipherBytes = aesInputBytes($('#aesCipher').value,
+        /^[0-9a-fA-F\s]+$/.test($('#aesCipher').value.trim()) && $('#aesCipher').value.trim().length % 2 === 0 ? 'Hex' : 'Base64');
+      const dec = aesDecryptBytes(cipherBytes, key, mode, iv);
+      const text = new TextDecoder().decode(dec);
+      $('#aesPlain').value = text;
+      result = '🔓 解密成功（' + mode + ' · ' + $('#aesKeyLen').value + '位）\n' + text;
+    }
+    out.textContent = result;
+  }catch(e){
+    out.textContent = '❌ ' + e.message;
+    out.classList.add('err-box');
+  }
+}
+$('#aesEncBtn').addEventListener('click', () => aesRun(true));
+$('#aesDecBtn').addEventListener('click', () => aesRun(false));
+$('#aesSwapBtn').addEventListener('click', () => {
+  $('#aesPlain').value = $('#aesCipher').value;
+  $('#aesCipher').value = '';
+  toast('已将密文转明文（用于重放解密流程）');
+});
+$('#aesCopyBtn').addEventListener('click', function(){ copyText($('#aesCipher').value, this); });
+$('#aesMode').addEventListener('change', () => {
+  const isCbc = $('#aesMode').value === 'CBC';
+  $('#aesIvField').style.display = isCbc ? '' : 'none';
+  $('#aesIvEncField').style.display = isCbc ? '' : 'none';
+});
+$('#aesMode').dispatchEvent(new Event('change'));
+
+/* ================= 13. WebSocket 调试台 ================= */
+let wsSock = null, wsHbTimer = null, wsUptimeTimer = null, wsConnectedAt = 0;
+let wsSent = 0, wsRecv = 0, wsAutoScroll = true, wsManualClose = false, wsRetryTimer = null;
+function wsSetState(state, color){
+  const dot = $('#wsDot'), txt = $('#wsState');
+  dot.className = 'ws-dot' + (color ? ' ' + color : '');
+  txt.textContent = state;
+}
+function wsEntry(dir, body){
+  const log = $('#wsLog');
+  const div = document.createElement('div');
+  div.className = 'ws-entry';
+  let show = body;
+  if(dir === 'recv' && $('#wsPretty').checked){
+    try{ show = JSON.stringify(JSON.parse(body), null, 2); }catch(e){}
+  }
+  div.innerHTML = '<div class="ws-meta"><span class="ws-dir ' + dir + '">'
+    + (dir === 'sent' ? '↑ 发送' : dir === 'recv' ? '↓ 接收' : '● 事件')
+    + '</span><span>' + fmtDate(new Date()) + '</span>'
+    + (body.length > 2048 ? '<span>' + (body.length / 1024).toFixed(1) + 'KB</span>' : '')
+    + '</div><div class="ws-body">' + escapeHtml(show.length > 8192 ? show.slice(0, 8192) + '\n…（截断，全量 ' + show.length + ' 字符）' : show) + '</div>';
+  log.insertBefore(div, log.firstChild);
+  while(log.children.length > 200) log.removeChild(log.lastChild);
+}
+function wsStopTimers(){
+  clearInterval(wsHbTimer); wsHbTimer = null;
+  clearInterval(wsUptimeTimer); wsUptimeTimer = null;
+}
+function wsUpdateStats(){
+  $('#wsSentCount').textContent = wsSent;
+  $('#wsRecvCount').textContent = wsRecv;
+}
+function wsConnect(){
+  let url = $('#wsUrl').value.trim();
+  if(!url){ toast('请输入 ws:// 或 wss:// 地址'); return; }
+  url = envResolve(url).replace(/^http(s)?:/i, (m, s) => s ? 'wss:' : 'ws:');
+  wsManualClose = false;
+  clearTimeout(wsRetryTimer);
+  try{ wsSock && wsSock.close(); }catch(e){}
+  wsSetState('连接中…', 'warn');
+  wsEntry('evt', '→ 连接 ' + url);
+  let sock;
+  try{ sock = new WebSocket(url); }
+  catch(err){ wsEntry('evt', '✗ 地址无效：' + err.message); wsSetState('未连接', 'err'); return; }
+  wsSock = sock;
+  sock.onopen = () => {
+    if(wsSock !== sock) return;
+    wsSetState('已连接', 'ok');
+    wsConnectedAt = Date.now();
+    wsEntry('evt', '✓ 连接成功');
+    if($('#wsHeartbeat').checked){
+      wsHbTimer = setInterval(() => {
+        if(sock.readyState === 1){ wsSendRaw('ping'); wsEntry('sent', 'ping'); wsSent++; wsUpdateStats(); }
+      }, 30000);
+    }
+    wsUptimeTimer = setInterval(() => {
+      const s = Math.floor((Date.now() - wsConnectedAt) / 1000);
+      $('#wsUptime').textContent = s < 3600
+        ? Math.floor(s / 60) + 'm' + (s % 60) + 's'
+        : Math.floor(s / 3600) + 'h' + Math.floor((s % 3600) / 60) + 'm';
+    }, 1000);
+  };
+  sock.onmessage = ev => {
+    if(wsSock !== sock) return;
+    wsRecv++; wsUpdateStats();
+    wsEntry('recv', typeof ev.data === 'string' ? ev.data : '(二进制数据 ' + ev.data.size + ' bytes)');
+  };
+  sock.onclose = ev => {
+    if(wsSock !== sock) return;
+    wsStopTimers();
+    wsEntry('evt', '✕ 连接关闭 code=' + ev.code + (ev.reason ? ' reason=' + ev.reason : ''));
+    wsSetState('已断开 (code ' + ev.code + ')', 'err');
+    if($('#wsAutoReconnect').checked && !wsManualClose){
+      wsEntry('evt', '… 3 秒后自动重连');
+      wsRetryTimer = setTimeout(wsConnect, 3000);
+    }
+  };
+  sock.onerror = () => {
+    if(wsSock !== sock) return;
+    wsEntry('evt', '✗ WebSocket 错误（常见：地址错误 / 服务未启动 / 跨域握手被拒）');
+  };
+}
+function wsSendRaw(data){
+  if(!wsSock || wsSock.readyState !== 1){ toast('未连接'); return false; }
+  wsSock.send(data);
+  return true;
+}
+$('#wsConnBtn').addEventListener('click', function(){
+  if(wsSock && wsSock.readyState <= 1){
+    wsManualClose = true;
+    clearTimeout(wsRetryTimer);
+    try{ wsSock.close(); }catch(e){}
+    wsSetState('已手动断开', '');
+    this.textContent = '🔌 连接';
+    return;
+  }
+  this.textContent = '⏹ 断开';
+  wsConnect();
+});
+$('#wsSendBtn').addEventListener('click', () => {
+  const v = $('#wsSend').value;
+  if(!v.trim()){ toast('发送内容为空'); return; }
+  if(wsSendRaw(v)){ wsEntry('sent', v); wsSent++; wsUpdateStats(); }
+});
+$('#wsSendPingBtn').addEventListener('click', () => {
+  if(wsSendRaw('ping')){ wsEntry('sent', 'ping'); wsSent++; wsUpdateStats(); }
+});
+$('#wsClearLogBtn').addEventListener('click', () => { $('#wsLog').innerHTML = ''; });
+$('#wsLog').addEventListener('click', () => {
+  wsAutoScroll = !wsAutoScroll;
+  $('#wsAutoScrollState').textContent = wsAutoScroll ? '开启' : '暂停';
+});
+// ============ 国密 SM3 / SM4 纯 JS 实现（待校验后嵌入 HTML） ============
+
+/* ---------- SM4 专用 S 盒（非 AES S 盒；取值 GB/T 32907 / IETF draft-ribose-cfrg-sm4-03 §4.1） ---------- */
+const SM4_S = new Uint8Array([
+  0xD6,0x90,0xE9,0xFE,0xCC,0xE1,0x3D,0xB7,0x16,0xB6,0x14,0xC2,0x28,0xFB,0x2C,0x05,
+  0x2B,0x67,0x9A,0x76,0x2A,0xBE,0x04,0xC3,0xAA,0x44,0x13,0x26,0x49,0x86,0x06,0x99,
+  0x9C,0x42,0x50,0xF4,0x91,0xEF,0x98,0x7A,0x33,0x54,0x0B,0x43,0xED,0xCF,0xAC,0x62,
+  0xE4,0xB3,0x1C,0xA9,0xC9,0x08,0xE8,0x95,0x80,0xDF,0x94,0xFA,0x75,0x8F,0x3F,0xA6,
+  0x47,0x07,0xA7,0xFC,0xF3,0x73,0x17,0xBA,0x83,0x59,0x3C,0x19,0xE6,0x85,0x4F,0xA8,
+  0x68,0x6B,0x81,0xB2,0x71,0x64,0xDA,0x8B,0xF8,0xEB,0x0F,0x4B,0x70,0x56,0x9D,0x35,
+  0x1E,0x24,0x0E,0x5E,0x63,0x58,0xD1,0xA2,0x25,0x22,0x7C,0x3B,0x01,0x21,0x78,0x87,
+  0xD4,0x00,0x46,0x57,0x9F,0xD3,0x27,0x52,0x4C,0x36,0x02,0xE7,0xA0,0xC4,0xC8,0x9E,
+  0xEA,0xBF,0x8A,0xD2,0x40,0xC7,0x38,0xB5,0xA3,0xF7,0xF2,0xCE,0xF9,0x61,0x15,0xA1,
+  0xE0,0xAE,0x5D,0xA4,0x9B,0x34,0x1A,0x55,0xAD,0x93,0x32,0x30,0xF5,0x8C,0xB1,0xE3,
+  0x1D,0xF6,0xE2,0x2E,0x82,0x66,0xCA,0x60,0xC0,0x29,0x23,0xAB,0x0D,0x53,0x4E,0x6F,
+  0xD5,0xDB,0x37,0x45,0xDE,0xFD,0x8E,0x2F,0x03,0xFF,0x6A,0x72,0x6D,0x6C,0x5B,0x51,
+  0x8D,0x1B,0xAF,0x92,0xBB,0xDD,0xBC,0x7F,0x11,0xD9,0x5C,0x41,0x1F,0x10,0x5A,0xD8,
+  0x0A,0xC1,0x31,0x88,0xA5,0xCD,0x7B,0xBD,0x2D,0x74,0xD0,0x12,0xB8,0xE5,0xB4,0xB0,
+  0x89,0x69,0x97,0x4A,0x0C,0x96,0x77,0x7E,0x65,0xB9,0xF1,0x09,0xC5,0x6E,0xC6,0x84,
+  0x18,0xF0,0x7D,0xEC,0x3A,0xDC,0x4D,0x20,0x79,0xEE,0x5F,0x3E,0xD7,0xCB,0x39,0x48
+]);
+
+/* ===================== SM3 ===================== */
+const SM3_IV = [0x7380166f,0x4914b2b9,0x172442d7,0xda8a0600,0xa96f30bc,0x163138aa,0xe38dee4d,0xb0fb0e4e];
+function rotl32(x, n){ n &= 31; return ((x << n) | (x >>> (32 - n))) >>> 0; }
+function sm3FF(x, y, z, j){ return j < 16 ? (x ^ y ^ z) : ((x & y) | (x & z) | (y & z)); }
+function sm3GG(x, y, z, j){ return j < 16 ? (x ^ y ^ z) : ((x & y) | ((~x >>> 0) & z)); }
+function sm3P0(x){ return (x ^ rotl32(x, 9) ^ rotl32(x, 17)) >>> 0; }
+function sm3P1(x){ return (x ^ rotl32(x, 15) ^ rotl32(x, 23)) >>> 0; }
+function sm3Compress(V, B){
+  const W = new Array(68), W1 = new Array(64);
+  for(let i = 0; i < 16; i++) W[i] = B[i];
+  for(let i = 16; i < 68; i++) W[i] = sm3P1(W[i-16] ^ W[i-9] ^ rotl32(W[i-3], 15)) ^ rotl32(W[i-13], 7) ^ W[i-6];
+  for(let i = 0; i < 64; i++) W1[i] = (W[i] ^ W[i+4]) >>> 0;
+  let A = V[0], Bb = V[1], C = V[2], D = V[3], E = V[4], F = V[5], G = V[6], H = V[7];
+  for(let j = 0; j < 64; j++){
+    const Tj = (j < 16) ? 0x79cc4519 : 0x7a879d8a;
+    const SS1 = rotl32((rotl32(A, 12) + E + rotl32(Tj, j)) >>> 0, 7);
+    const SS2 = (SS1 ^ rotl32(A, 12)) >>> 0;
+    const TT1 = (sm3FF(A, Bb, C, j) + D + SS2 + W1[j]) >>> 0;
+    const TT2 = (sm3GG(E, F, G, j) + H + SS1 + W[j]) >>> 0;
+    D = C; C = rotl32(Bb, 9); Bb = A; A = TT1;
+    H = G; G = rotl32(F, 19); F = E; E = sm3P0(TT2);
+  }
+  return [ (V[0]^A)>>>0,(V[1]^Bb)>>>0,(V[2]^C)>>>0,(V[3]^D)>>>0,(V[4]^E)>>>0,(V[5]^F)>>>0,(V[6]^G)>>>0,(V[7]^H)>>>0 ];
+}
+function sm3Bytes(msg){
+  let V = SM3_IV.slice();
+  const l = msg.length;
+  const bitlen = l * 8;
+  const k = (56 - ((l + 1) % 64) + 64) % 64;
+  const total = l + 1 + k + 8;
+  const buf = new Uint8Array(total);
+  buf.set(msg);
+  buf[l] = 0x80;
+  const hi = Math.floor(bitlen / 0x100000000);
+  const lo = bitlen >>> 0;
+  buf[total-8] = (hi >>> 24) & 0xff; buf[total-7] = (hi >>> 16) & 0xff; buf[total-6] = (hi >>> 8) & 0xff; buf[total-5] = hi & 0xff;
+  buf[total-4] = (lo >>> 24) & 0xff; buf[total-3] = (lo >>> 16) & 0xff; buf[total-2] = (lo >>> 8) & 0xff; buf[total-1] = lo & 0xff;
+  for(let off = 0; off < total; off += 64){
+    const B = new Array(16);
+    for(let i = 0; i < 16; i++){
+      B[i] = (((buf[off+i*4] << 24) | (buf[off+i*4+1] << 16) | (buf[off+i*4+2] << 8) | buf[off+i*4+3]) >>> 0);
+    }
+    V = sm3Compress(V, B);
+  }
+  return V;
+}
+function sm3Hex(msgBytes){ return sm3Bytes(msgBytes).map(w => ('00000000' + (w >>> 0).toString(16)).slice(-8)).join(''); }
+const SM3 = { hashBytes: sm3Bytes, hex: sm3Hex };
+
+/* ===================== SM4 ===================== */
+const SM4_FK = [0xa3b1bac6, 0x56aa3350, 0x677d9197, 0xb27022dc];
+function sm4CK(){
+  const a = new Array(32);
+  for(let i = 0; i < 32; i++){
+    let w = 0;
+    for(let j = 0; j < 4; j++) w = (w << 8) | (((4 * i + j) * 7) % 256);
+    a[i] = w >>> 0;
+  }
+  return a;
+}
+const SM4_CK = sm4CK();
+function sm4Tau(x){
+  return ((SM4_S[(x >>> 24) & 0xff] << 24) | (SM4_S[(x >>> 16) & 0xff] << 16) |
+          (SM4_S[(x >>> 8) & 0xff] << 8) | SM4_S[x & 0xff]) >>> 0;
+}
+function sm4L(x){ return (x ^ rotl32(x, 2) ^ rotl32(x, 10) ^ rotl32(x, 18) ^ rotl32(x, 24)) >>> 0; }
+function sm4Lp(x){ return (x ^ rotl32(x, 13) ^ rotl32(x, 23)) >>> 0; }
+function sm4KeySchedule(mk){
+  const K = new Array(36);
+  for(let i = 0; i < 4; i++) K[i] = (mk[i] ^ SM4_FK[i]) >>> 0;
+  for(let i = 0; i < 32; i++){
+    const t = sm4Lp(sm4Tau(K[i+1] ^ K[i+2] ^ K[i+3] ^ SM4_CK[i]));
+    K[i+4] = (K[i] ^ t) >>> 0;
+  }
+  return K.slice(4, 36); // rk[0..31]
+}
+function sm4OneRound(rk, X){
+  const Xo = new Array(36);
+  for(let i = 0; i < 4; i++) Xo[i] = X[i] >>> 0;
+  for(let i = 0; i < 32; i++){
+    const t = sm4L(sm4Tau(Xo[i+1] ^ Xo[i+2] ^ Xo[i+3] ^ rk[i]));
+    Xo[i+4] = (Xo[i] ^ t) >>> 0;
+  }
+  return [Xo[35], Xo[34], Xo[33], Xo[32]];
+}
+function sm4EncBlock(mk, block){
+  const rk = sm4KeySchedule(mk);
+  return sm4OneRound(rk, block);
+}
+function sm4DecBlock(mk, block){
+  const rk = sm4KeySchedule(mk).reverse();
+  return sm4OneRound(rk, block);
+}
+function b2u32(buf){ const a = []; for(let i = 0; i < buf.length; i += 4){ a.push(((buf[i] << 24) | (buf[i+1] << 16) | (buf[i+2] << 8) | buf[i+3]) >>> 0); } return a; }
+function u32ToBytes(w){ return [(w >>> 24) & 0xff, (w >>> 16) & 0xff, (w >>> 8) & 0xff, w & 0xff]; }
+function bufXor(a, b){ const r = new Uint8Array(a.length); for(let i = 0; i < a.length; i++) r[i] = a[i] ^ b[i]; return r; }
+
+// ECB
+function sm4Ecb(mk, data, decrypt){
+  const out = new Uint8Array(data.length);
+  for(let off = 0; off < data.length; off += 16){
+    const blk = decrypt ? sm4DecBlock(mk, b2u32(data.subarray(off, off+16))) : sm4EncBlock(mk, b2u32(data.subarray(off, off+16)));
+    const b = blk.flatMap(u32ToBytes);
+    out.set(b, off);
+  }
+  return out;
+}
+// CBC
+function sm4Cbc(mk, iv, data, decrypt){
+  const out = new Uint8Array(data.length);
+  if(!decrypt){
+    let prev = iv.slice();
+    for(let off = 0; off < data.length; off += 16){
+      const inBlk = bufXor(data.subarray(off, off+16), prev);
+      const enc = sm4EncBlock(mk, b2u32(inBlk));
+      const b = enc.flatMap(u32ToBytes);
+      out.set(b, off); prev = b;
+    }
+  } else {
+    let prev = iv.slice();
+    for(let off = 0; off < data.length; off += 16){
+      const dec = sm4DecBlock(mk, b2u32(data.subarray(off, off+16)));
+      const b = dec.flatMap(u32ToBytes);
+      out.set(bufXor(b, prev), off); prev = data.subarray(off, off+16);
+    }
+  }
+  return out;
+}
+const SM4 = { ecb: sm4Ecb, cbc: sm4Cbc };
+
+/* ===================== SM2 ===================== */
+const SM2_P  = 0xFFFFFFFEFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000FFFFFFFFFFFFFFFFn;
+const SM2_A  = 0xFFFFFFFEFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000FFFFFFFFFFFFFFFCn;
+const SM2_B  = 0x28E9FA9E9D9F5E344D5A9E4BCF6509A7F39789F515AB8F92DDBCBD414D940E93n;
+const SM2_GX = 0x32C4AE2C1F1981195F9904466A39C9948FE30BBFF2660BE1715A4589334C74C7n;
+const SM2_GY = 0xBC3736A2F4F6779C59BDCEE36B692153D0A9877CC62A474002DF32E52139F0A0n;
+const SM2_N  = 0xFFFFFFFEFFFFFFFFFFFFFFFFFFFFFFFF7203DF6B21C6052B53BBF40939D54123n;
+function mod2(a, m){ a %= m; if(a < 0n) a += m; return a; }
+function modpow(a, e, m){ a %= m; let r = 1n; while(e > 0n){ if(e & 1n) r = (r * a) % m; a = (a * a) % m; e >>= 1n; } return r; }
+function invMod(a, m){ return modpow(mod2(a, m), m - 2n, m); }
+function i2b(v, len){ const u = new Uint8Array(len); let x = mod2(v, SM2_P); for(let i = len - 1; i >= 0; i--){ u[i] = Number(x & 0xffn); x >>= 8n; } return u; }
+function bytesToBigInt(u){ let x = 0n; for(let i = 0; i < u.length; i++) x = (x << 8n) | BigInt(u[i]); return x; }
+function concatArr(arrs){ let n = 0; arrs.forEach(a => n += a.length); const o = new Uint8Array(n); let p = 0; arrs.forEach(a => { o.set(a, p); p += a.length; }); return o; }
+function wordsToBytes(w){ const u = new Uint8Array(w.length * 4); for(let i = 0; i < w.length; i++){ u[i*4] = (w[i] >>> 24) & 0xff; u[i*4+1] = (w[i] >>> 16) & 0xff; u[i*4+2] = (w[i] >>> 8) & 0xff; u[i*4+3] = w[i] & 0xff; } return u; }
+function ecAdd(P, Q){
+  if(!P) return Q; if(!Q) return P;
+  if(P.x === Q.x && mod2(P.y + Q.y, SM2_P) === 0n) return null;
+  let lam;
+  if(P.x === Q.x && P.y === Q.y) lam = mod2((3n*P.x*P.x + SM2_A) * invMod(2n*P.y, SM2_P), SM2_P);
+  else lam = mod2((Q.y - P.y) * invMod(Q.x - P.x, SM2_P), SM2_P);
+  const x3 = mod2(lam*lam - P.x - Q.x, SM2_P);
+  const y3 = mod2(lam*(P.x - x3) - P.y, SM2_P);
+  return { x: x3, y: y3 };
+}
+function ecMul(k, P){
+  k = mod2(k, SM2_N);
+  if(k === 0n) return null;
+  let R = null, Q = P;
+  while(k > 0n){ if(k & 1n) R = ecAdd(R, Q); Q = ecAdd(Q, Q); k >>= 1n; }
+  return R;
+}
+function sm2ZA(idBytes, Px, Py){
+  const entl = idBytes.length * 8;
+  const head = new Uint8Array([(entl >>> 8) & 0xff, entl & 0xff]);
+  return sm3Bytes(concatArr([head, idBytes, i2b(SM2_A,32), i2b(SM2_B,32), i2b(SM2_GX,32), i2b(SM2_GY,32), i2b(Px,32), i2b(Py,32)]));
+}
+function sm2E(ZAwords, Mbytes){ return sm3Bytes(concatArr([wordsToBytes(ZAwords), Mbytes])); }
+function rand256(){ const u = new Uint8Array(32); (globalThis.crypto || globalThis.msCrypto).getRandomValues(u); return bytesToBigInt(u); }
+function sm2KDF(z, klenBits){
+  const klBytes = Math.ceil(klenBits / 8); const out = []; let ct = 1;
+  while(out.length < klBytes){
+    const buf = new Uint8Array(z.length + 4); buf.set(z);
+    buf[z.length] = (ct >>> 24) & 0xff; buf[z.length+1] = (ct >>> 16) & 0xff; buf[z.length+2] = (ct >>> 8) & 0xff; buf[z.length+3] = ct & 0xff;
+    out.push(...wordsToBytes(sm3Bytes(buf))); ct++;
+  }
+  return out.slice(0, klBytes);
+}
+function sm2Sign(d, idBytes, Mbytes, fixedK){
+  const PA = ecMul(d, { x: SM2_GX, y: SM2_GY });
+  const ZA = sm2ZA(idBytes, PA.x, PA.y);
+  const eBar = bytesToBigInt(wordsToBytes(sm2E(ZA, Mbytes)));
+  let k, r, s, C1;
+  while(true){
+    k = (fixedK != null) ? fixedK : (rand256() % SM2_N);
+    if(k <= 0n || k >= SM2_N) continue;
+    C1 = ecMul(k, { x: SM2_GX, y: SM2_GY });
+    r = mod2(eBar + C1.x, SM2_N);
+    if(r === 0n || r + k === SM2_N) continue;
+    s = mod2(invMod(1n + d, SM2_N) * mod2(k - r*d, SM2_N), SM2_N);
+    if(s === 0n) continue;
+    return { r, s };
+  }
+}
+function sm2Verify(Px, Py, idBytes, Mbytes, r, s){
+  if(r < 1n || r >= SM2_N || s < 1n || s >= SM2_N) return false;
+  const ZA = sm2ZA(idBytes, Px, Py);
+  const eBar = bytesToBigInt(wordsToBytes(sm2E(ZA, Mbytes)));
+  const t = mod2(r + s, SM2_N);
+  if(t === 0n) return false;
+  const R = ecAdd(ecMul(s, { x: SM2_GX, y: SM2_GY }), ecMul(t, { x: Px, y: Py }));
+  if(!R) return false;
+  return mod2(eBar + R.x, SM2_N) === r;
+}
+function sm2Encrypt(Px, Py, Mbytes){
+  const klen = Mbytes.length * 8;
+  while(true){
+    const k = rand256() % SM2_N; if(k <= 0n || k >= SM2_N) continue;
+    const C1 = ecMul(k, { x: SM2_GX, y: SM2_GY });
+    const S = ecMul(k, { x: Px, y: Py });
+    const t = sm2KDF(concatArr([i2b(S.x,32), i2b(S.y,32)]), klen);
+    if(t.every(b => b === 0)) continue;
+    const C2 = Mbytes.map((b, i) => b ^ t[i]);
+    const C3 = sm3Bytes(concatArr([i2b(S.x,32), Mbytes, i2b(S.y,32)]));
+    return concatArr([new Uint8Array([0x04]), i2b(C1.x,32), i2b(C1.y,32), wordsToBytes(C3), new Uint8Array(C2)]);
+  }
+}
+function sm2Decrypt(d, cipher){
+  const off = (cipher[0] === 0x04) ? 1 : 0; // 兼容带/不带 0x04 前缀两种密文格式
+  const C1 = { x: bytesToBigInt(cipher.slice(off, off+32)), y: bytesToBigInt(cipher.slice(off+32, off+64)) };
+  const C3 = cipher.slice(off+64, off+96);
+  const C2 = cipher.slice(off+96);
+  const S = ecMul(d, C1);
+  const t = sm2KDF(concatArr([i2b(S.x,32), i2b(S.y,32)]), C2.length * 8);
+  const M = C2.map((b, i) => b ^ t[i]);
+  const C3chk = wordsToBytes(sm3Bytes(concatArr([i2b(S.x,32), M, i2b(S.y,32)])));
+  for(let i = 0; i < 32; i++) if(C3chk[i] !== C3[i]) return null;
+  return M;
+}
+const SM2 = { sign: sm2Sign, verify: sm2Verify, encrypt: sm2Encrypt, decrypt: sm2Decrypt, mul: ecMul, params: { P: SM2_P, A: SM2_A, B: SM2_B, GX: SM2_GX, GY: SM2_GY, N: SM2_N } };
+
+
+
+
+/* ============================================================
+   前端瑞士军刀 v1.5 —— 新增模块 UI 逻辑
+   v1.4：国密库（SM3 / SM4 / SM2）+ 请求集合 / SSE / 凭证扫描
+   v1.5：文件 Base64 & multipart 构造（mod-b64）、Cookie/请求头解析（mod-hdrs）、px/rem/vw
+   复用工具：$, $$, escapeHtml, toast, copyText, q1 等
+   ============================================================ */
+
+/* ---------------- 通用小工具 ---------------- */
+function bytesToB64(u){
+  let s = '';
+  for(let i = 0; i < u.length; i += 0x8000){
+    s += btoa(String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)));
+  }
+  return s;
+}
+function gmInputBytes(str, enc){
+  if(enc === 'Hex') return hexToBytes(str);
+  if(enc === 'Base64'){ const bin = atob(str.replace(/\s+/g, '')); return Uint8Array.from(bin, c => c.charCodeAt(0)); }
+  return new TextEncoder().encode(str);
+}
+
+/* ================= 14. 国密 SM2 / SM3 / SM4 ================= */
+/* 子标签切换 */
+$$('#mod-gm .panel-tab').forEach(t => t.addEventListener('click', () => {
+  $$('#mod-gm .panel-tab').forEach(x => x.classList.remove('active'));
+  t.classList.add('active');
+  $$('#mod-gm .api-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + t.dataset.p));
+}));
+
+/* SM3 */
+$('#gmSm3Btn').addEventListener('click', () => {
+  const out = $('#gmSm3Out'); out.classList.remove('empty', 'err-box');
+  try{
+    const enc = $('#gmSm3Enc').value;
+    let bytes;
+    if(enc === 'Hex') bytes = hexToBytes($('#gmSm3In').value);
+    else if(enc === 'Base64'){ const bin = atob($('#gmSm3In').value.replace(/\s+/g, '')); bytes = Uint8Array.from(bin, c => c.charCodeAt(0)); }
+    else bytes = new TextEncoder().encode($('#gmSm3In').value);
+    out.textContent = SM3.hex(bytes);
+  }catch(e){ out.textContent = '❌ ' + e.message; out.classList.add('err-box'); }
+});
+$('#gmSm3CopyBtn').addEventListener('click', function(){ copyText($('#gmSm3Out').textContent, this); });
+
+/* SM4 */
+$('#gmSm4Mode').addEventListener('change', () => {
+  const cbc = $('#gmSm4Mode').value === 'CBC';
+  $('#gmSm4IvField').style.display = cbc ? '' : 'none';
+  $('#gmSm4IvEncField').style.display = cbc ? '' : 'none';
+});
+function gmSm4Run(isEnc){
+  const out = $('#gmSm4Out'); const card = $('#gmSm4OutCard'); card.style.display = ''; out.classList.remove('err-box');
+  try{
+    const mode = $('#gmSm4Mode').value;
+    const key = gmInputBytes($('#gmSm4Key').value, $('#gmSm4KeyEnc').value);
+    if(key.length !== 16) throw new Error('SM4 密钥必须为 16 字节（128 位），当前 ' + key.length + ' 字节');
+    let iv = null;
+    if(mode === 'CBC'){
+      iv = gmInputBytes($('#gmSm4Iv').value, $('#gmSm4IvEnc').value);
+      if(iv.length !== 16) throw new Error('SM4 IV 必须为 16 字节，当前 ' + iv.length + ' 字节');
+    }
+    const outEnc = document.querySelector('input[name=gmSm4OutEnc]:checked').value;
+    if(isEnc){
+      const plain = gmInputBytes($('#gmSm4Plain').value, $('#gmSm4PlainEnc').value);
+      const data = pkcs7Pad(plain);
+      const enc = mode === 'CBC' ? SM4.cbc(key, iv, data, false) : SM4.ecb(key, data, false);
+      const text = outEnc === 'b64' ? bytesToB64(enc) : bytesToHex(enc);
+      $('#gmSm4Cipher').value = text;
+      out.textContent = '🔒 SM4-' + mode + ' 加密成功（' + (outEnc === 'b64' ? 'Base64' : 'Hex') + '）\n' + text;
+    } else {
+      const cipherEnc = /^[0-9a-fA-F\s]+$/.test($('#gmSm4Cipher').value.trim()) && $('#gmSm4Cipher').value.trim().length % 2 === 0 ? 'Hex' : 'Base64';
+      const data = gmInputBytes($('#gmSm4Cipher').value, cipherEnc);
+      if(data.length % 16) throw new Error('密文长度必须是 16 字节的整数倍');
+      const dec = mode === 'CBC' ? SM4.cbc(key, iv, data, true) : SM4.ecb(key, data, true);
+      const plain = pkcs7Unpad(dec);
+      const text = new TextDecoder().decode(plain);
+      $('#gmSm4Plain').value = text;
+      out.textContent = '🔓 SM4-' + mode + ' 解密成功\n' + text;
+    }
+  }catch(e){ out.textContent = '❌ ' + e.message; out.classList.add('err-box'); }
+}
+$('#gmSm4EncBtn').addEventListener('click', () => gmSm4Run(true));
+$('#gmSm4DecBtn').addEventListener('click', () => gmSm4Run(false));
+$('#gmSm4CopyBtn').addEventListener('click', function(){ copyText($('#gmSm4Cipher').value, this); });
+$('#gmSm4Mode').dispatchEvent(new Event('change'));
+
+/* SM2 辅助 */
+function gmHexToBN(hex){
+  const h = hex.replace(/[^0-9a-fA-F]/g, '');
+  let x = 0n;
+  for(let i = 0; i < h.length; i += 2) x = (x << 8n) | BigInt(parseInt(h.substr(i, 2), 16));
+  return x;
+}
+function gmBNToHex64(bn){ return bytesToHex(i2b(bn, 32)); }
+function gmPtToPubHex(P, with04){ return (with04 ? '04' : '') + bytesToHex(i2b(P.x, 32)) + bytesToHex(i2b(P.y, 32)); }
+function gmPubHexToPt(hex){
+  let h = hex.replace(/[^0-9a-fA-F]/g, '');
+  if(h.length === 128) h = '04' + h;
+  if(h.length !== 130) throw new Error('公钥应为 64 字节(无04)或 65 字节(含04)，当前 ' + (h.length / 2) + ' 字节');
+  if(h.substr(0, 2).toLowerCase() !== '04') throw new Error('公钥须以 04 开头（非压缩点）');
+  return { x: gmHexToBN(h.substr(2, 64)), y: gmHexToBN(h.substr(66, 64)) };
+}
+function gmSm2UserIdBytes(){ return new TextEncoder().encode($('#gmSm2UserId').value || '1234567812345678'); }
+function gmSm2MsgBytes(){
+  const enc = $('#gmSm2MsgEnc').value;
+  return enc === 'Hex' ? hexToBytes($('#gmSm2Msg').value) : new TextEncoder().encode($('#gmSm2Msg').value);
+}
+$('#gmSm2GenBtn').addEventListener('click', () => {
+  let d; do { d = rand256() % SM2_N; } while(d <= 0n || d >= SM2_N);
+  const P = ecMul(d, { x: SM2_GX, y: SM2_GY });
+  $('#gmSm2Priv').value = gmBNToHex64(d);
+  $('#gmSm2Pub').value = gmPtToPubHex(P, true);
+  toast('已生成 SM2 密钥对');
+});
+$('#gmSm2SignBtn').addEventListener('click', () => {
+  const out = $('#gmSm2Out'); const card = $('#gmSm2OutCard'); card.style.display = ''; out.classList.remove('err-box');
+  try{
+    const d = gmHexToBN($('#gmSm2Priv').value);
+    if(d <= 0n || d >= SM2_N) throw new Error('私钥超出范围 [1, n-1]');
+    const sig = SM2.sign(d, gmSm2UserIdBytes(), gmSm2MsgBytes());
+    const hex = gmBNToHex64(sig.r) + gmBNToHex64(sig.s);
+    $('#gmSm2Sig').value = hex;
+    out.textContent = '✅ 签名成功（r‖s，64 字节 Hex）\n' + hex;
+  }catch(e){ out.textContent = '❌ ' + e.message; out.classList.add('err-box'); }
+});
+$('#gmSm2VerifyBtn').addEventListener('click', () => {
+  const out = $('#gmSm2Out'); const card = $('#gmSm2OutCard'); card.style.display = ''; out.classList.remove('err-box');
+  try{
+    const P = gmPubHexToPt($('#gmSm2Pub').value);
+    const sigHex = $('#gmSm2Sig').value.replace(/[^0-9a-fA-F]/g, '');
+    if(sigHex.length !== 128) throw new Error('签名应为 64 字节(128 hex)');
+    const r = gmHexToBN(sigHex.substr(0, 64)), s = gmHexToBN(sigHex.substr(64, 64));
+    const ok = SM2.verify(P.x, P.y, gmSm2UserIdBytes(), gmSm2MsgBytes(), r, s);
+    out.textContent = ok ? '✅ 验签通过' : '❌ 验签失败（签名/公钥/明文/UserId 不匹配）';
+    out.classList.toggle('err-box', !ok);
+  }catch(e){ out.textContent = '❌ ' + e.message; out.classList.add('err-box'); }
+});
+$('#gmSm2EncBtn').addEventListener('click', () => {
+  const out = $('#gmSm2Out'); const card = $('#gmSm2OutCard'); card.style.display = ''; out.classList.remove('err-box');
+  try{
+    const P = gmPubHexToPt($('#gmSm2Pub').value);
+    const ct = SM2.encrypt(P.x, P.y, gmSm2MsgBytes());
+    const hex = bytesToHex($('#gmSm2C104').checked ? ct : ct.slice(1));
+    $('#gmSm2Cipher').value = hex;
+    out.textContent = '🔒 加密成功（C1C3C2' + ($('#gmSm2C104').checked ? '，含 04 前缀' : '，无 04 前缀') + '）\n' + hex;
+  }catch(e){ out.textContent = '❌ ' + e.message; out.classList.add('err-box'); }
+});
+$('#gmSm2DecBtn').addEventListener('click', () => {
+  const out = $('#gmSm2Out'); const card = $('#gmSm2OutCard'); card.style.display = ''; out.classList.remove('err-box');
+  try{
+    const d = gmHexToBN($('#gmSm2Priv').value);
+    if(d <= 0n || d >= SM2_N) throw new Error('私钥超出范围 [1, n-1]');
+    const ct = hexToBytes($('#gmSm2Cipher').value);
+    const dec = SM2.decrypt(d, ct);
+    if(!dec) throw new Error('解密失败：C3 校验不通过（密钥或密文不正确）');
+    const enc = $('#gmSm2MsgEnc').value;
+    const text = enc === 'Hex' ? bytesToHex(dec) : new TextDecoder().decode(dec);
+    $('#gmSm2Msg').value = text;
+    out.textContent = '🔓 解密成功\n' + text;
+  }catch(e){ out.textContent = '❌ ' + e.message; out.classList.add('err-box'); }
+});
+
+/* ================= 15. 请求集合 ================= */
+const COLL_KEY = 'dsk-coll';
+function collLoad(){ try{ return JSON.parse(localStorage.getItem(COLL_KEY)) || []; }catch(e){ return []; } }
+function collSave(l){ try{ localStorage.setItem(COLL_KEY, JSON.stringify(l)); }catch(e){} }
+function collParseHeaders(text){
+  return text.split('\n').map(l => l.trim()).filter(Boolean).map(l => {
+    const i = l.indexOf(':'); if(i < 0) return null;
+    return { k: l.slice(0, i).trim(), v: l.slice(i + 1).trim() };
+  }).filter(Boolean);
+}
+function collRender(){
+  const list = collLoad();
+  const el = $('#collList');
+  if(!list.length){ el.innerHTML = '<div class="muted" style="font-size:12.5px">暂无保存的请求。点「＋ 新建」或从 API 调试台导入。</div>'; return; }
+  const groups = {};
+  list.forEach((r, i) => { (groups[r.project || '默认'] = groups[r.project || '默认'] || []).push([r, i]); });
+  let html = '';
+  Object.keys(groups).forEach(g => {
+    html += '<div class="muted" style="font-size:12px;margin:8px 0 4px;font-weight:600">📁 ' + escapeHtml(g) + ' (' + groups[g].length + ')</div>';
+    groups[g].forEach(([r, i]) => {
+      html += '<div class="hist-item" style="cursor:pointer" data-i="' + i + '">'
+        + '<span class="m ' + (r.method === 'GET' ? 'stat-ok' : r.method === 'POST' ? 'stat-warn' : 'stat-err') + '">' + escapeHtml(r.method) + '</span>'
+        + '<span class="u" title="' + escapeHtml(r.url) + '">' + escapeHtml(r.name || r.url) + '</span></div>';
+    });
+  });
+  el.innerHTML = html;
+  el.querySelectorAll('.hist-item').forEach(it => it.addEventListener('click', () => collLoadInto(+it.dataset.i)));
+}
+let collCurIdx = -1;
+function collLoadInto(i){
+  const r = collLoad()[i]; if(!r) return;
+  collCurIdx = i;
+  $('#collName').value = r.name || '';
+  $('#collProject').value = r.project || '';
+  $('#collMethod').value = r.method || 'GET';
+  $('#collUrl').value = r.url || '';
+  $('#collHeaders').value = (r.headers || []).map(h => h.k + ': ' + h.v).join('\n');
+  $('#collBody').value = r.body || '';
+  toast('已载入：' + (r.name || r.url));
+}
+$('#collNewBtn').addEventListener('click', () => {
+  collCurIdx = -1;
+  ['collName', 'collProject', 'collUrl', 'collHeaders', 'collBody'].forEach(id => $('#' + id).value = '');
+  $('#collMethod').value = 'GET';
+  toast('已清空编辑区，填好后点「保存」');
+});
+$('#collImportApiBtn').addEventListener('click', () => {
+  $('#collUrl').value = envResolve($('#apiUrl').value);
+  $('#collMethod').value = $('#apiMethod').value;
+  $('#collBody').value = $('#apiBody').value;
+  $('#collHeaders').value = kvCollect(headerEditor.wrap).map(h => h.k + ': ' + envResolve(h.v)).join('\n');
+  toast('已从 API 调试台导入（保存前请填名称/项目）');
+});
+$('#collSaveBtn').addEventListener('click', () => {
+  const url = $('#collUrl').value.trim();
+  if(!url){ toast('请填写 URL'); return; }
+  const list = collLoad();
+  const rec = {
+    id: Date.now(),
+    name: $('#collName').value.trim() || url,
+    project: $('#collProject').value.trim() || '默认',
+    method: $('#collMethod').value,
+    url,
+    headers: collParseHeaders($('#collHeaders').value),
+    body: $('#collBody').value,
+    ts: Date.now()
+  };
+  if(collCurIdx >= 0 && list[collCurIdx]){ list[collCurIdx] = Object.assign(list[collCurIdx], rec); }
+  else { list.push(rec); collCurIdx = list.length - 1; }
+  collSave(list); collRender();
+  toast('已保存：' + rec.name);
+});
+$('#collDelBtn').addEventListener('click', () => {
+  if(collCurIdx < 0){ toast('请先选择一个请求'); return; }
+  const list = collLoad(); list.splice(collCurIdx, 1); collSave(list); collCurIdx = -1; collRender();
+  toast('已删除');
+});
+$('#collClearBtn').addEventListener('click', () => {
+  if(!confirm('确定清空全部请求集合？此操作不可恢复。')) return;
+  collSave([]); collCurIdx = -1; collRender(); toast('已清空');
+});
+$('#collCurlBtn').addEventListener('click', function(){
+  const r = collCurIdx >= 0 ? collLoad()[collCurIdx] : null;
+  if(!r){ toast('请先保存/载入一个请求'); return; }
+  copyText(collToCurl(r), this);
+});
+function collToCurl(r){
+  let s = 'curl -X ' + r.method + ' ' + q1(envResolve(r.url));
+  (r.headers || []).forEach(h => s += ' \\\n  -H ' + q1(h.k + ': ' + envResolve(h.v)));
+  if(r.body && r.method !== 'GET' && r.method !== 'HEAD') s += ' \\\n  -d ' + q1(envResolve(r.body));
+  return s;
+}
+$('#collSendBtn').addEventListener('click', async () => {
+  const url = envResolve($('#collUrl').value.trim());
+  if(!/^https?:\/\//i.test(url)){ toast('❌ 请输入完整 http(s) URL'); return; }
+  const headers = {};
+  collParseHeaders($('#collHeaders').value).forEach(h => headers[h.k] = envResolve(h.v));
+  const method = $('#collMethod').value;
+  const be = (method === 'GET' || method === 'HEAD') ? false : $('#collBody').value.trim().length > 0;
+  const opts = { method, headers };
+  if(be) opts.body = envResolve($('#collBody').value);
+  const out = $('#collResult'); out.classList.remove('empty', 'err-box');
+  const t0 = performance.now();
+  out.textContent = '请求中…';
+  try{
+    const res = await fetch(url, opts);
+    const ms = Math.round(performance.now() - t0);
+    let text = await res.text(); let pretty = text;
+    try{ pretty = JSON.stringify(JSON.parse(text), null, 2); }catch(e){}
+    out.textContent = (res.ok ? '✅ ' : '⚠️ ') + res.status + ' · ' + ms + 'ms · ' + (text.length / 1024).toFixed(1) + 'KB\n\n' + pretty;
+  }catch(e){
+    out.textContent = '❌ ' + e.message + '\n\n（浏览器 CORS 拦截时请用 API 调试台生成 Node 脚本重放）';
+    out.classList.add('err-box');
+  }
+});
+collRender();
+
+/* ================= 16. SSE 调试台 ================= */
+let sseState = { es: null, reader: null, abort: null, count: 0 };
+function sseLog(kind, text, tag){
+  const log = $('#sseLog');
+  const div = document.createElement('div');
+  div.className = 'ws-entry';
+  div.innerHTML = '<div class="ws-meta"><span class="ws-dir ' + (kind === 'sent' ? 'sent' : 'recv') + '">'
+    + (kind === 'sent' ? '↑ ' + (tag || '发送') : '↓ ' + (tag || 'event')) + '</span><span>' + fmtDate(new Date()) + '</span></div>'
+    + '<div class="ws-body">' + escapeHtml(text.length > 8192 ? text.slice(0, 8192) + '\n…（截断，全量 ' + text.length + ' 字符）' : text) + '</div>';
+  log.insertBefore(div, log.firstChild);
+  while(log.children.length > 300) log.removeChild(log.lastChild);
+}
+function sseSetStatus(text, cls){
+  const el = $('#sseStatus');
+  el.textContent = text; el.className = 'tag ' + (cls || '');
+}
+function sseDisconnect(){
+  if(sseState.es){ try{ sseState.es.close(); }catch(e){} sseState.es = null; }
+  if(sseState.reader){ try{ sseState.reader.cancel(); }catch(e){} sseState.reader = null; }
+  if(sseState.abort){ try{ sseState.abort.abort(); }catch(e){} sseState.abort = null; }
+}
+function sseDispatchChunk(chunk){
+  const lines = chunk.split('\n');
+  let event = 'message', id = null, retry = null; const data = [];
+  for(const line of lines){
+    if(line === '') continue;
+    if(line.startsWith(':')) continue;
+    let k = 'data', v = line;
+    const i = line.indexOf(':');
+    if(i >= 0){ k = line.slice(0, i); v = line.slice(i + 1); if(v.startsWith(' ')) v = v.slice(1); }
+    if(k === 'data') data.push(v);
+    else if(k === 'event') event = v;
+    else if(k === 'id') id = v;
+    else if(k === 'retry') retry = v;
+  }
+  const payload = data.join('\n');
+  if(payload === '' && !id && !retry) return;
+  sseState.count++; $('#sseCount').textContent = sseState.count;
+  let pretty = payload;
+  try{ pretty = JSON.stringify(JSON.parse(payload), null, 2); }catch(e){}
+  sseLog('recv', pretty, event + (id ? (' #' + id) : ''));
+}
+async function sseFetchStream(url){
+  sseDisconnect();
+  const ctrl = new AbortController();
+  sseState.abort = ctrl;
+  const headers = {};
+  collParseHeaders($('#sseHeader').value).forEach(h => headers[h.k] = h.v);
+  const method = $('#sseMethod').value;
+  const opts = { method, headers, signal: ctrl.signal };
+  if(method !== 'GET' && method !== 'HEAD' && $('#sseBody').value.trim()) opts.body = $('#sseBody').value;
+  sseSetStatus('连接中…', 'tag-warn');
+  sseLog('evt', '→ 连接(fetch) ' + method + ' ' + url);
+  try{
+    const res = await fetch(url, opts);
+    sseSetStatus('已连接 ' + res.status, 'tag-ok');
+    sseLog('evt', '← HTTP ' + res.status + (res.headers.get('content-type') ? ' · ' + res.headers.get('content-type') : ''));
+    const reader = res.body.getReader();
+    sseState.reader = reader;
+    const dec = new TextDecoder();
+    let buf = '';
+    while(true){
+      const { done, value } = await reader.read();
+      if(done) break;
+      buf += dec.decode(value, { stream: true });
+      let idx;
+      while((idx = buf.indexOf('\n\n')) >= 0){
+        const chunk = buf.slice(0, idx);
+        buf = buf.slice(idx + 2);
+        sseDispatchChunk(chunk);
+      }
+    }
+    sseLog('evt', '✓ 流结束');
+    sseSetStatus('已结束', '');
+  }catch(e){
+    if(e.name === 'AbortError'){ sseLog('evt', '✕ 已断开'); return; }
+    sseLog('evt', '✗ 错误：' + e.message);
+    sseSetStatus('错误', 'tag-err');
+    if($('#sseAuto').checked){ sseLog('evt', '… 3 秒后自动重连'); setTimeout(() => { if(sseState.abort === ctrl) sseFetchStream(url); }, 3000); }
+  }finally{
+    sseState.reader = null; sseState.abort = null;
+  }
+}
+function sseConnect(){
+  const rawUrl = $('#sseUrl').value.trim();
+  if(!rawUrl){ toast('请输入 SSE URL'); return; }
+  const url = envResolve(rawUrl);
+  sseState.count = 0; $('#sseCount').textContent = '0';
+  if($('#sseMode').value === 'es'){
+    if(!/^https?:/i.test(url)){ toast('EventSource 需要 http(s) URL'); return; }
+    if($('#sseHeader').value.trim() || ($('#sseBody').value.trim() && $('#sseMethod').value !== 'GET')){ toast('⚠️ EventSource 仅支持 GET 且不能带自定义头/请求体，已忽略（用「fetch 流」模式可携带）'); }
+    sseDisconnect();
+    sseLog('evt', '→ 连接(EventSource) ' + url);
+    const es = new EventSource(url);
+    sseState.es = es;
+    es.onopen = () => { sseSetStatus('已连接', 'tag-ok'); sseLog('evt', '✓ EventSource 已连接'); };
+    es.onmessage = ev => { sseState.count++; $('#sseCount').textContent = sseState.count; sseLog('recv', ev.data, 'message'); };
+    es.onerror = () => { sseSetStatus('重连中', 'tag-warn'); sseLog('evt', '✗ EventSource 错误（浏览器按协议自动重连）'); };
+  } else {
+    sseFetchStream(url);
+  }
+}
+$('#sseConnBtn').addEventListener('click', sseConnect);
+$('#sseDiscBtn').addEventListener('click', () => { sseDisconnect(); sseSetStatus('未连接', ''); sseLog('evt', '✕ 已断开'); });
+$('#sseClearBtn').addEventListener('click', () => { $('#sseLog').innerHTML = ''; sseState.count = 0; $('#sseCount').textContent = '0'; });
+
+/* ================= 17. 凭证泄露扫描 ================= */
+const SEC_RULES = [
+  { name: 'AWS Access Key ID', sev: 'High', re: /\bAKIA[0-9A-Z]{16}\b/g },
+  { name: 'AWS Secret Access Key', sev: 'High', re: /(?:aws_secret_access_key|awsSecretKey|aws_access_secret)\s*[:=]\s*["']?([A-Za-z0-9/+]{40})["']?/gi, grp: 1 },
+  { name: 'GitHub Token', sev: 'High', re: /\b(?:gh[pousr]_[0-9A-Za-z]{36}|github_pat_[0-9A-Za-z_]{22,})\b/g },
+  { name: 'Private Key Block', sev: 'High', re: /-----BEGIN (?:RSA |EC |OPENSSH |DSA |PGP )?PRIVATE KEY-----/g },
+  { name: 'JSON Web Token (JWT)', sev: 'High', re: /\beyJ[A-Za-z0-9_-]+\.eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g },
+  { name: 'Google API Key', sev: 'High', re: /\bAIza[0-9A-Za-z_-]{35}\b/g },
+  { name: 'Slack Token', sev: 'High', re: /\bxox[baprs]-[0-9A-Za-z-]{10,}\b/g },
+  { name: 'Stripe Live Key', sev: 'High', re: /\b(?:sk_live|rk_live|pk_live)_[0-9a-zA-Z]{16,}\b/g },
+  { name: 'Twilio API Key (SK)', sev: 'Medium', re: /\bSK[0-9a-fA-F]{32}\b/g },
+  { name: 'URL 中嵌入的密码', sev: 'Medium', re: /[a-zA-Z][a-zA-Z0-9+.\-]*:\/\/[^:\/\s]+:[^@\s]+@/g },
+  { name: 'Session Cookie', sev: 'Medium', re: /(?:sessionid|PHPSESSID|JSESSIONID)\s*=\s*[0-9A-Za-z]{16,}/gi },
+  { name: '疑似密钥赋值 (key/secret/token/password)', sev: 'Medium', re: /(?:api[_-]?key|secret|token|passwd|password)\s*[:=]\s*["']([A-Za-z0-9_\-]{12,})["']/gi, grp: 1 },
+];
+function secLineOf(text, idx){ let n = 1, i = text.indexOf('\n'); while(i >= 0 && i < idx){ n++; i = text.indexOf('\n', i + 1); } return n; }
+function secEntropy(s){ const f = {}; for(const c of s) f[c] = (f[c] || 0) + 1; let e = 0; for(const k in f){ const p = f[k] / s.length; e -= p * Math.log2(p); } return e; }
+function maskHit(s){ if(s.length <= 8) return s.slice(0, 2) + '••••' + s.slice(-2); return s.slice(0, 4) + '••••••' + s.slice(-4); }
+function secScan(){
+  const text = $('#secIn').value;
+  const out = $('#secOut'); out.classList.remove('err-box');
+  if(!text.trim()){ toast('请粘贴待扫描文本'); return; }
+  const findings = [];
+  const ranges = [];
+  for(const rule of SEC_RULES){
+    rule.re.lastIndex = 0; let m;
+    while((m = rule.re.exec(text))){
+      const val = m[rule.grp != null ? rule.grp : 0] || m[0];
+      findings.push({ line: secLineOf(text, m.index), name: rule.name, sev: rule.sev, hit: val });
+      ranges.push([m.index, m.index + m[0].length]);
+      if(m.index === rule.re.lastIndex) rule.re.lastIndex++;
+    }
+  }
+  if($('#secEntropy').checked){
+    const tokRe = /[A-Za-z0-9+/=]{32,}|[0-9a-fA-F]{32,}/g; let t;
+    while((t = tokRe.exec(text))){
+      const tok = t[0]; if(ranges.some(r => t.index < r[1] && t.index + tok.length > r[0])) continue;
+      const isHex = /^[0-9a-fA-F]+$/.test(tok);
+      const e = secEntropy(tok); const thr = isHex ? 3.8 : 4.2;
+      if(e >= thr) findings.push({ line: secLineOf(text, t.index), name: '高熵字符串' + (isHex ? '（Hex）' : '（Base64/文本）'), sev: 'Medium', hit: tok });
+    }
+  }
+  const seen = new Set(); const uniq = [];
+  findings.forEach(f => { const k = f.name + '|' + f.hit; if(!seen.has(k)){ seen.add(k); uniq.push(f); } });
+  if(!uniq.length){ out.innerHTML = '<div class="hint" style="margin:0">✅ 未发现明显凭证 / 密钥泄露风险。</div>'; return; }
+  const sc = { High: 'tag-err', Medium: 'tag-warn', Low: 'tag-blue' };
+  let html = '<div style="margin-bottom:8px">共发现 <b>' + uniq.length + '</b> 处可疑项（高 ' + uniq.filter(f => f.sev === 'High').length + ' / 中 ' + uniq.filter(f => f.sev === 'Medium').length + '）</div>';
+  html += '<table class="data"><tr><th>行</th><th>类型</th><th>严重</th><th>命中（已脱敏）</th></tr>';
+  uniq.forEach(f => {
+    html += '<tr><td class="mono">' + f.line + '</td><td>' + escapeHtml(f.name) + '</td>'
+      + '<td><span class="tag ' + (sc[f.sev] || 'tag-blue') + '">' + f.sev + '</span></td>'
+      + '<td class="mono">' + escapeHtml(maskHit(f.hit)) + '</td></tr>';
+  });
+  html += '</table>';
+  out.innerHTML = html;
+}
+$('#secScanBtn').addEventListener('click', secScan);
+$('#secClearBtn').addEventListener('click', () => { $('#secIn').value = ''; $('#secOut').innerHTML = '<div class="hint" style="margin:0">点击「开始扫描」查看结果。</div>'; });
+
+/* ================= 18. 文件 Base64 & multipart ================= */
+let b64Cur = null; // {name, mime, dataUrl}
+function b64MimeFromDataUrl(d){ const m = /^data:([^;,]+)/.exec(d); return m ? m[1] : ''; }
+function b64ReadFile(file){
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = () => rej(r.error);
+    r.readAsDataURL(file);
+  });
+}
+async function b64HandleFile(file){
+  if(!file) return;
+  const dataUrl = await b64ReadFile(file);
+  b64Cur = { name: file.name, mime: file.type || b64MimeFromDataUrl(dataUrl), dataUrl };
+  $('#b64FileMeta').textContent = file.name + ' · ' + (file.type || '未知类型') + ' · ' + (file.size / 1024).toFixed(1) + ' KB';
+  $('#b64Out').value = dataUrl; $('#b64Out').classList.remove('empty');
+  if(/^image\//.test(file.type || '')){ $('#b64PrevWrap').style.display = ''; $('#b64Prev').src = dataUrl; }
+  else { $('#b64PrevWrap').style.display = 'none'; }
+  toast('已生成 Data URL');
+}
+const b64Drop = $('#b64Drop');
+b64Drop.addEventListener('dragover', e => { e.preventDefault(); b64Drop.style.borderColor = 'var(--primary)'; });
+b64Drop.addEventListener('dragleave', () => { b64Drop.style.borderColor = 'var(--border)'; });
+b64Drop.addEventListener('drop', e => { e.preventDefault(); b64Drop.style.borderColor = 'var(--border)'; b64HandleFile(e.dataTransfer.files[0]); });
+$('#b64File').addEventListener('change', e => b64HandleFile(e.target.files[0]));
+$('#b64CopyBtn').addEventListener('click', function(){ copyText($('#b64Out').value, this); });
+$('#b64DownloadBtn').addEventListener('click', () => {
+  if(!b64Cur){ toast('请先选择文件'); return; }
+  const a = document.createElement('a'); a.href = b64Cur.dataUrl; a.download = b64Cur.name; a.click();
+});
+$('#b64ToFileBtn').addEventListener('click', () => {
+  const raw = $('#b64In').value.trim();
+  if(!raw){ toast('请粘贴 Base64 内容'); return; }
+  let dataUrl = raw, fname = $('#b64FileName').value.trim();
+  if(!/^data:/.test(raw)){ dataUrl = 'data:application/octet-stream;base64,' + raw; }
+  const mime = b64MimeFromDataUrl(dataUrl) || 'application/octet-stream';
+  if(!fname){ const ext = mime.includes('/') ? mime.split('/')[1] : 'bin'; fname = 'file.' + ext; }
+  const a = document.createElement('a'); a.href = dataUrl; a.download = fname; a.click();
+  toast('已下载：' + fname);
+});
+$('#b64InClear').addEventListener('click', () => { $('#b64In').value = ''; $('#b64FileName').value = ''; });
+
+/* multipart 构造 */
+let mpRowsData = [];
+function mpRender(){
+  const wrap = $('#mpRows'); wrap.innerHTML = '';
+  if(!mpRowsData.length){ wrap.innerHTML = '<div class="hint" style="margin:0">还没有字段，点下方「＋ 文本字段 / ＋ 文件字段」添加。</div>'; return; }
+  mpRowsData.forEach((r, i) => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;gap:6px;align-items:center;margin:6px 0;flex-wrap:wrap';
+    if(r.type === 'text'){
+      row.innerHTML = '<select class="mp-type" data-i="' + i + '" style="flex:0 0 auto"><option value="text" selected>文本</option><option value="file">文件</option></select>'
+        + '<input class="mp-name" data-i="' + i + '" placeholder="字段名" value="' + escapeHtml(r.name) + '" style="flex:1 1 80px;min-width:70px">'
+        + '<input class="mp-val" data-i="' + i + '" placeholder="值" value="' + escapeHtml(r.val) + '" style="flex:2 1 120px;min-width:90px">'
+        + '<button class="mp-del del" data-i="' + i + '" title="删除">×</button>';
+    } else {
+      row.innerHTML = '<select class="mp-type" data-i="' + i + '" style="flex:0 0 auto"><option value="text">文本</option><option value="file" selected>文件</option></select>'
+        + '<input class="mp-name" data-i="' + i + '" placeholder="字段名" value="' + escapeHtml(r.name) + '" style="flex:1 1 80px;min-width:70px">'
+        + '<label class="btn btn-sm" style="flex:0 0 auto;margin:0">选择文件<input class="mp-file" data-i="' + i + '" type="file" hidden>' + (r.fileName ? escapeHtml(r.fileName) : '未选') + '</label>'
+        + '<button class="mp-del del" data-i="' + i + '" title="删除">×</button>';
+    }
+    wrap.appendChild(row);
+  });
+  wrap.querySelectorAll('.mp-type').forEach(s => s.addEventListener('change', function(){ mpRowsData[+this.dataset.i].type = this.value; mpRender(); mpBuild(); }));
+  wrap.querySelectorAll('.mp-name').forEach(s => s.addEventListener('input', function(){ mpRowsData[+this.dataset.i].name = this.value; mpBuild(); }));
+  wrap.querySelectorAll('.mp-val').forEach(s => s.addEventListener('input', function(){ mpRowsData[+this.dataset.i].val = this.value; mpBuild(); }));
+  wrap.querySelectorAll('.mp-file').forEach(s => s.addEventListener('change', function(){
+    const f = this.files[0]; if(!f) return;
+    mpRowsData[+this.dataset.i].file = f; mpRowsData[+this.dataset.i].fileName = f.name; mpRowsData[+this.dataset.i].mime = f.type;
+    mpRender(); mpBuild();
+  }));
+  wrap.querySelectorAll('.mp-del').forEach(s => s.addEventListener('click', function(){ mpRowsData.splice(+this.dataset.i, 1); mpRender(); mpBuild(); }));
+}
+$('#mpAddText').addEventListener('click', () => { mpRowsData.push({ type: 'text', name: '', val: '' }); mpRender(); mpBuild(); });
+$('#mpAddFile').addEventListener('click', () => { mpRowsData.push({ type: 'file', name: 'file', fileName: '', mime: '' }); mpRender(); mpBuild(); });
+function mpBoundary(){ return '----DSKBoundary' + Math.random().toString(36).slice(2, 12); }
+function mpBuild(){
+  if(!mpRowsData.length){ $('#mpOut').textContent = '--'; $('#mpOut').classList.add('empty'); return; }
+  const bd = mpBoundary();
+  let body = '';
+  mpRowsData.forEach(r => {
+    const name = r.name || 'field';
+    if(r.type === 'file' && r.file){
+      body += '--' + bd + '\r\nContent-Disposition: form-data; name="' + name + '"; filename="' + r.fileName + '"\r\nContent-Type: ' + (r.mime || 'application/octet-stream') + '\r\n\r\n<二进制数据 ' + r.fileName + '，' + r.file.size + ' 字节>\r\n';
+    } else if(r.type === 'file'){
+      body += '--' + bd + '\r\nContent-Disposition: form-data; name="' + name + '"; filename=""\r\nContent-Type: application/octet-stream\r\n\r\n<未选择文件>\r\n';
+    } else {
+      body += '--' + bd + '\r\nContent-Disposition: form-data; name="' + name + '"\r\n\r\n' + (r.val || '') + '\r\n';
+    }
+  });
+  body += '--' + bd + '--\r\n';
+  $('#mpOut').textContent = body; $('#mpOut').classList.remove('empty');
+}
+function mpFetchCode(){
+  let code = "const fd = new FormData();\n";
+  mpRowsData.forEach(r => {
+    const name = r.name || 'field';
+    if(r.type === 'file' && r.file){ code += "fd.append(" + q1(name) + ", fileInput.files[0], " + q1(r.fileName) + "); // 文件字段：把 fileInput 换成你的 <input type=file>\n"; }
+    else if(r.type === 'file'){ code += "fd.append(" + q1(name) + ", fileBlob, " + q1(r.fileName || 'file') + "); // 文件字段\n"; }
+    else { code += "fd.append(" + q1(name) + ", " + q1(r.val || '') + ");\n"; }
+  });
+  code += "fetch('https://your-api.example/upload', { method: 'POST', body: fd })\n  .then(r => r.text()).then(console.log);";
+  return code;
+}
+function mpCurlCode(){
+  let s = "curl -X POST 'https://your-api.example/upload'";
+  mpRowsData.forEach(r => {
+    const name = r.name || 'field';
+    if(r.type === 'file'){ s += " \\\n  -F " + q1(name + "=@/path/to/" + (r.fileName || 'file')); }
+    else { s += " \\\n  -F " + q1(name + "=" + (r.val || '')); }
+  });
+  return s;
+}
+$('#mpCopyBtn').addEventListener('click', function(){ copyText($('#mpOut').textContent, this); });
+$('#mpCodeBtn').addEventListener('click', () => {
+  $('#mpCodeWrap').style.display = '';
+  $('#mpCode').textContent = '/* fetch（用 FormData，浏览器自动加 boundary） */\n' + mpFetchCode() + '\n\n/* cURL */\n' + mpCurlCode();
+  $('#mpCode').classList.remove('empty');
+});
+mpRender();
+
+/* ================= 19. Cookie / 请求头解析 ================= */
+function hdrsParse(text){
+  const raw = String(text).trim();
+  if(!raw) return [];
+  const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  if(lines.length === 1 && /^[^\s:]+=/.test(raw) && raw.includes(';')){
+    const out = [];
+    raw.split(';').forEach(p => {
+      const i = p.indexOf('='); if(i < 0) return;
+      out.push({ k: p.slice(0, i).trim(), v: p.slice(i + 1).trim(), kind: 'cookie' });
+    });
+    return out;
+  }
+  const out = [];
+  lines.forEach(l => {
+    const i = l.indexOf(':'); if(i < 0) return;
+    const k = l.slice(0, i).trim(); const v = l.slice(i + 1).trim();
+    if(/^cookie$/i.test(k)){
+      v.split(';').forEach(p => {
+        const j = p.indexOf('='); if(j < 0) return;
+        out.push({ k: p.slice(0, j).trim(), v: p.slice(j + 1).trim(), kind: 'cookie' });
+      });
+    } else {
+      out.push({ k, v, kind: 'header' });
+    }
+  });
+  return out;
+}
+let hdrsData = [];
+function hdrsRender(){
+  if(!hdrsData.length){ $('#hdrsOut').innerHTML = '<div class="hint" style="margin:0">未解析到内容。</div>'; $('#hdrsExportCard').style.display = 'none'; return; }
+  let html = '<div style="margin-bottom:6px">共 <b>' + hdrsData.length + '</b> 项（Cookie ' + hdrsData.filter(d => d.kind === 'cookie').length + ' / 其他请求头 ' + hdrsData.filter(d => d.kind === 'header').length + '）</div>';
+  html += '<table class="data"><tr><th>类型</th><th>名称</th><th>值</th></tr>';
+  hdrsData.forEach(d => {
+    html += '<tr><td><span class="tag ' + (d.kind === 'cookie' ? 'tag-warn' : 'tag-blue') + '">' + (d.kind === 'cookie' ? 'Cookie' : 'Header') + '</span></td>'
+      + '<td class="mono">' + escapeHtml(d.k) + '</td><td class="mono">' + escapeHtml(d.v) + '</td></tr>';
+  });
+  html += '</table>';
+  $('#hdrsOut').innerHTML = html;
+  $('#hdrsExportCard').style.display = '';
+}
+$('#hdrsParseBtn').addEventListener('click', () => {
+  hdrsData = hdrsParse($('#hdrsIn').value);
+  hdrsRender();
+  if(hdrsData.length) toast('已解析 ' + hdrsData.length + ' 项');
+});
+$('#hdrsClearBtn').addEventListener('click', () => { $('#hdrsIn').value = ''; hdrsData = []; hdrsRender(); $('#hdrsExport').innerHTML = '<div class="hint" style="margin:0">点击「解析」查看结果。</div>'; });
+function hdrsExport(fmt){
+  if(!hdrsData.length){ toast('请先解析'); return ''; }
+  if(fmt === 'table'){
+    let h = '<table class="data"><tr><th>类型</th><th>名称</th><th>值</th></tr>';
+    hdrsData.forEach(d => h += '<tr><td>' + (d.kind === 'cookie' ? 'Cookie' : 'Header') + '</td><td>' + escapeHtml(d.k) + '</td><td>' + escapeHtml(d.v) + '</td></tr>');
+    return h + '</table>';
+  }
+  const obj = {}; hdrsData.forEach(d => obj[d.k] = d.v);
+  if(fmt === 'json') return JSON.stringify(obj, null, 2);
+  if(fmt === 'js') return 'const headers = ' + JSON.stringify(obj, null, 2) + ';';
+  if(fmt === 'curl') return hdrsData.map(d => '-H ' + q1(d.k + ': ' + d.v)).join(' \\\n  ');
+  if(fmt === 'env'){
+    const e = {}; hdrsData.forEach(d => { e[d.k.replace(/[^A-Za-z0-9]/g, '_').toUpperCase()] = d.v; });
+    return JSON.stringify(e, null, 2);
+  }
+  return '';
+}
+$$('[data-hdrs-exp]').forEach(btn => btn.addEventListener('click', function(){
+  const fmt = this.dataset.hdrsExp;
+  const res = hdrsExport(fmt);
+  if(fmt === 'table'){ $('#hdrsExport').innerHTML = res; }
+  else { $('#hdrsExport').textContent = res; $('#hdrsExport').classList.remove('empty'); copyText(res, this); }
+}));
+
+</script>
+</body>
+</html>
