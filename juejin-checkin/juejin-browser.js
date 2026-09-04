@@ -57,13 +57,34 @@ function parseCookieString(str) {
 
     // Cookie 注入（必须先处于掘金域下）
     const page = await context.newPage();
-    console.log('[api:juejin-browser] goto', JUEJIN_URL);
-    await page.goto(JUEJIN_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    // 禁图提速（海外 runner 访问掘金较慢）
+    await context.route('**/*', (route) => {
+      try {
+        if (route.request().resourceType() === 'image') return route.abort();
+        return route.continue();
+      } catch { /* 忽略路由竞态 */ }
+    });
+
+    // goto 带重试：GitHub Actions（海外）访问 juejin.cn 偶发超时
+    const gotoWithRetry = async (url, tries = 3) => {
+      for (let i = 1; i <= tries; i++) {
+        try {
+          console.log(`[api:juejin-browser] goto ${url}（第 ${i}/${tries} 次）`);
+          await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+          return;
+        } catch (e) {
+          console.log(`[juejin-browser] 第 ${i} 次加载失败: ${e.message.split('\n')[0]}`);
+          if (i === tries) throw e;
+          await page.waitForTimeout(5000);
+        }
+      }
+    };
+
+    await gotoWithRetry(JUEJIN_URL);
     await context.addCookies(parseCookieString(COOKIE));
     console.log(`[api:juejin-browser] 已注入 ${parseCookieString(COOKIE).length} 条 cookie`);
 
-    console.log('[api:juejin-browser] goto', SIGNIN_URL);
-    await page.goto(SIGNIN_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await gotoWithRetry(SIGNIN_URL);
 
     // 等页面就绪（签到统计出现）
     try {
