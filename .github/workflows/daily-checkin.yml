@@ -30,9 +30,9 @@ jobs:
       - name: 随机抽签
         id: dice
         run: |
-          H=$(date -u +%H)
-          if [ "$H" = "01" ]; then
-            echo "北京时间 9:00 兜底时段，必跑"
+          BJ=$(TZ=Asia/Shanghai date +%H)
+          if [ $((10#$BJ)) -ge 9 ]; then
+            echo "北京时间已到 ${BJ} 点（>=9 点兜底时段，含触发被延迟的情况），必跑"
             echo "go=true" >> "$GITHUB_OUTPUT"
           elif [ $(( RANDOM % 100 )) -lt 40 ]; then
             echo "抽中（40% 概率），本次执行"
