@@ -11,7 +11,7 @@ const path = require('path');
 
 const tasks = [
   { name: 'ikuuu 签到', script: path.join(__dirname, 'ikuuu-checkin', 'ikuuu-checkin.js') },
-  { name: '掘金签到', script: path.join(__dirname, 'juejin-checkin', 'juejin-checkin.js') },
+  { name: '掘金签到(浏览器)', script: path.join(__dirname, 'juejin-checkin', 'juejin-browser.js') },
 ];
 
 const results = [];

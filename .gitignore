@@ -5,6 +5,9 @@ node_modules/
 __pycache__/
 *.log
 
+# 浏览器签到失败时的调试截图
+juejin-checkin/failure.debug.png
+
 # WorkBuddy 工作区数据
 .workbuddy/
 

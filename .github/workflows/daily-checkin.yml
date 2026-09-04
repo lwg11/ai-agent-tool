@@ -21,7 +21,7 @@ concurrency:
 jobs:
   checkin:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
 
     steps:
       - name: 检出代码
@@ -47,6 +47,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
+
+      - name: 安装 Playwright 与 Chromium（掘金浏览器签到用）
+        if: steps.dice.outputs.go == 'true'
+        run: |
+          npm install playwright --no-fund --no-audit
+          npx playwright install --with-deps chromium
 
       - name: 写入 ikuuu 配置（来自 Secret）
         if: steps.dice.outputs.go == 'true'
