@@ -1,0 +1,21 @@
+[
+  {
+    "date": "2026-09-04",
+    "runAt": "2026-09-04T05:59:45.099Z",
+    "allOk": true,
+    "tools": [
+      {
+        "key": "ikuuu",
+        "label": "ikuuu 签到",
+        "ok": true,
+        "message": "[ikuuu] 今日已签到，无需重复操作（服务端返回: 您似乎已经签到过了...）"
+      },
+      {
+        "key": "juejin",
+        "label": "掘金签到(浏览器)",
+        "ok": true,
+        "message": "[juejin-browser] ✅ 签到成功（状态已变更为\"今日已签到\"）"
+      }
+    ]
+  }
+]
