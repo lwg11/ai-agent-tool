@@ -20,7 +20,7 @@
   },
   {
     "date": "2026-09-05",
-    "runAt": "2026-09-05T00:32:04.862Z",
+    "runAt": "2026-09-05T03:51:52.588Z",
     "allOk": true,
     "tools": [
       {
@@ -33,7 +33,7 @@
         "key": "juejin",
         "label": "掘金签到(浏览器)",
         "ok": true,
-        "message": "[juejin-browser] ✅ 签到成功"
+        "message": "[juejin-browser] ✅ 签到成功（状态已变更为\"今日已签到\"）"
       }
     ]
   }
