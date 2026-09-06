@@ -39,20 +39,20 @@
   },
   {
     "date": "2026-09-06",
-    "runAt": "2026-09-06T00:28:28.338Z",
-    "allOk": false,
+    "runAt": "2026-09-06T03:56:00.386Z",
+    "allOk": true,
     "tools": [
       {
         "key": "ikuuu",
         "label": "ikuuu 签到",
         "ok": true,
-        "message": "[ikuuu] 签到成功: 你获得了 2868 MB流量"
+        "message": "[ikuuu] 今日已签到，无需重复操作（服务端返回: 您似乎已经签到过了...）"
       },
       {
         "key": "juejin",
         "label": "掘金签到(浏览器)",
-        "ok": false,
-        "message": "[juejin-browser] ❌ 失败: 点击后未见签到结果（弹窗未出现且状态未变更），附失败截图 failure.debug.png"
+        "ok": true,
+        "message": "[juejin-browser] ✅ 签到成功"
       }
     ]
   }
