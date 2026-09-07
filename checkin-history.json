@@ -58,14 +58,14 @@
   },
   {
     "date": "2026-09-07",
-    "runAt": "2026-09-07T00:35:32.977Z",
+    "runAt": "2026-09-07T03:55:25.390Z",
     "allOk": true,
     "tools": [
       {
         "key": "ikuuu",
         "label": "ikuuu 签到",
         "ok": true,
-        "message": "[ikuuu] 签到成功: 你获得了 2342 MB流量"
+        "message": "[ikuuu] 今日已签到，无需重复操作（服务端返回: 您似乎已经签到过了...）"
       },
       {
         "key": "juejin",
