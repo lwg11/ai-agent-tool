@@ -55,5 +55,24 @@
         "message": "[juejin-browser] ✅ 签到成功（状态已变更为\"今日已签到\"）"
       }
     ]
+  },
+  {
+    "date": "2026-09-07",
+    "runAt": "2026-09-07T00:35:32.977Z",
+    "allOk": true,
+    "tools": [
+      {
+        "key": "ikuuu",
+        "label": "ikuuu 签到",
+        "ok": true,
+        "message": "[ikuuu] 签到成功: 你获得了 2342 MB流量"
+      },
+      {
+        "key": "juejin",
+        "label": "掘金签到(浏览器)",
+        "ok": true,
+        "message": "[juejin-browser] ✅ 签到成功（状态已变更为\"今日已签到\"）"
+      }
+    ]
   }
 ]
