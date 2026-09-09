@@ -13,6 +13,15 @@ on:
     - cron: '0 0 * * *'  # 北京 8:00 抽签
     - cron: '0 1 * * *'  # 北京 9:00 兜底必跑
   workflow_dispatch: # 支持在 Actions 页面手动触发（用于测试，必跑）
+    inputs:
+      only:
+        description: 执行范围（控制台「执行签到」按钮也走这里）
+        type: choice
+        options:
+          - all
+          - ikuuu
+          - juejin
+        default: all
 
 concurrency:
   group: daily-checkin
@@ -33,9 +42,11 @@ jobs:
       - name: 随机抽签
         id: dice
         run: |
-          BJ=$(TZ=Asia/Shanghai date +%H)
-          if [ $((10#$BJ)) -ge 9 ]; then
-            echo "北京时间已到 ${BJ} 点（>=9 点兜底时段，含触发被延迟的情况），必跑"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "手动/控制台触发，必跑"
+            echo "go=true" >> "$GITHUB_OUTPUT"
+          elif [ $((10#$(TZ=Asia/Shanghai date +%H))) -ge 9 ]; then
+            echo "北京时间已到 9 点以后（兜底时段，含触发被延迟的情况），必跑"
             echo "go=true" >> "$GITHUB_OUTPUT"
           elif [ $(( RANDOM % 100 )) -lt 40 ]; then
             echo "抽中（40% 概率），本次执行"
@@ -83,7 +94,12 @@ jobs:
         if: steps.dice.outputs.go == 'true'
         run: |
           set -o pipefail
-          node run-all.js 2>&1 | tee checkin.log
+          ONLY="${{ github.event.inputs.only || 'all' }}"
+          if [ "$ONLY" = "all" ]; then
+            node run-all.js 2>&1 | tee checkin.log
+          else
+            node run-all.js --only="$ONLY" 2>&1 | tee checkin.log
+          fi
           exit ${PIPESTATUS[0]}
 
       - name: 生成运行摘要（显示在 Summary 页）

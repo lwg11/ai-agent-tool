@@ -17,10 +17,18 @@ const tasks = [
   { key: 'juejin', label: '掘金签到(浏览器)', script: path.join(__dirname, 'juejin-checkin', 'juejin-browser.js') },
 ];
 
+// 支持单工具执行：--only=ikuuu / --only=juejin（控制台按钮触发用）
+const onlyArg = process.argv.slice(2).map((a) => a.match(/^--only=([\w,]+)$/)).filter(Boolean)[0];
+const activeTasks = onlyArg ? tasks.filter((t) => onlyArg[1].split(',').includes(t.key)) : tasks;
+if (!activeTasks.length) {
+  console.error(`[run-all] 未找到匹配的签到任务: ${onlyArg ? onlyArg[1] : '(无)'}`);
+  process.exit(1);
+}
+
 const results = [];
 let hasFail = false;
 
-for (const t of tasks) {
+for (const t of activeTasks) {
   console.log(`\n========== ${t.label} ==========`);
   const r = spawnSync(process.execPath, [t.script], { encoding: 'utf8' });
   const out = ((r.stdout || '') + (r.stderr || '')).trim();
