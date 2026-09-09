@@ -96,14 +96,14 @@
   },
   {
     "date": "2026-09-09",
-    "runAt": "2026-09-09T00:57:44.069Z",
-    "allOk": false,
+    "runAt": "2026-09-09T02:09:06.437Z",
+    "allOk": true,
     "tools": [
       {
         "key": "ikuuu",
         "label": "ikuuu 签到",
-        "ok": false,
-        "message": "[ikuuu] 失败: 返回内容不是 JSON（HTTP 200）。多半是 Cookie 失效/被重定向到登录页，请到 https://ikuuu.foo 重新登录后更新 config.json 的 ikuuu.cookie。返回片段:  "
+        "ok": true,
+        "message": "[ikuuu] 签到成功: 你获得了 1492 MB流量"
       },
       {
         "key": "juejin",
