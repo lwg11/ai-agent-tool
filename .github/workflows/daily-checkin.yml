@@ -2,9 +2,10 @@ name: daily-checkin
 
 # 每日定时签到（ikuuu + 稀土掘金）
 # 触发策略：北京时间 6:00 / 7:00 / 8:00 各抽签一次（40% 概率执行），
-#          9:00 兜底必跑 —— 实际执行时间随机落在 6:00-9:59 之间，且保证不漏签。
+#          9:00 兜底必跑 —— 保证不漏签；当天已有成功记录时，后续触发（含 cron
+#          延迟导致的迟到触发）一律跳过，保证每天只跑一次。
 # 时区说明：GitHub Actions cron 只支持 UTC（北京 = UTC+8）。
-# 注意：GitHub 定时任务可能有 0~30 分钟的触发延迟，属正常现象。
+# 注意：GitHub 定时任务可能有 0~2 小时的触发延迟，幂等检查可兜住迟到触发。
 
 on:
   schedule:
@@ -39,14 +40,33 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
 
-      - name: 随机抽签
+      - name: 随机抽签（含当日幂等检查）
         id: dice
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "手动/控制台触发，必跑"
             echo "go=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # 幂等保护：GitHub cron 延迟会让 6/7/8/9 点的触发全部迟到，
+          # 若今天已有成功的签到记录，迟到的触发一律跳过（当天全部失败时仍会重试）
+          TODAY=$(TZ=Asia/Shanghai date +%F)
+          HIST=$(curl -sf --max-time 20 -H "Accept: application/vnd.github.raw" \
+            "https://api.github.com/repos/${{ github.repository }}/contents/checkin-history.json?ref=main" || echo "")
+          ALREADY=$(printf '%s' "$HIST" | node -e '
+            let s = "";
+            process.stdin.on("data", d => s += d).on("end", () => {
+              let h = [];
+              try { h = JSON.parse(s); } catch (e) {}
+              const today = process.argv[1];
+              console.log(Array.isArray(h) && h.some(r => r && r.date === today && r.allOk === true) ? "yes" : "no");
+            });
+          ' "$TODAY")
+          if [ "$ALREADY" = "yes" ]; then
+            echo "今天（$TODAY）已有成功的签到记录，本次为 cron 延迟的迟到触发，跳过"
+            echo "go=false" >> "$GITHUB_OUTPUT"
           elif [ $((10#$(TZ=Asia/Shanghai date +%H))) -ge 9 ]; then
-            echo "北京时间已到 9 点以后（兜底时段，含触发被延迟的情况），必跑"
+            echo "已过 9 点且今天尚未成功签到，兜底必跑"
             echo "go=true" >> "$GITHUB_OUTPUT"
           elif [ $(( RANDOM % 100 )) -lt 40 ]; then
             echo "抽中（40% 概率），本次执行"
