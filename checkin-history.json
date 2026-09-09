@@ -112,5 +112,49 @@
         "message": "[juejin-browser] ✅ 签到成功（状态已变更为\"今日已签到\"）"
       }
     ]
+  },
+  {
+    "date": "2026-09-09",
+    "bjTime": "12:03:36",
+    "runAt": "2026-09-09T04:03:36.452Z",
+    "allOk": true,
+    "tools": [
+      {
+        "key": "ikuuu",
+        "label": "ikuuu 签到",
+        "ok": true,
+        "message": "[ikuuu] 今日已签到，无需重复操作（服务端返回: 您似乎已经签到过了...）"
+      },
+      {
+        "key": "juejin",
+        "label": "掘金签到(浏览器)",
+        "ok": true,
+        "message": "[juejin-browser] ✅ 签到成功（状态已变更为\"今日已签到\"）"
+      }
+    ],
+    "id": "2026-09-09T04:03:36.452Z-rul9",
+    "trigger": "schedule"
+  },
+  {
+    "date": "2026-09-09",
+    "bjTime": "13:25:36",
+    "runAt": "2026-09-09T05:25:36.433Z",
+    "allOk": true,
+    "tools": [
+      {
+        "key": "ikuuu",
+        "label": "ikuuu 签到",
+        "ok": true,
+        "message": "[ikuuu] 今日已签到，无需重复操作（服务端返回: 您似乎已经签到过了...）"
+      },
+      {
+        "key": "juejin",
+        "label": "掘金签到(浏览器)",
+        "ok": true,
+        "message": "[juejin-browser] ✅ 签到成功（状态已变更为\"今日已签到\"）"
+      }
+    ],
+    "id": "2026-09-09T05:25:36.433Z-99lp",
+    "trigger": "schedule"
   }
 ]
