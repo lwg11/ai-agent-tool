@@ -103,6 +103,8 @@ jobs:
 
       - name: 写回签到历史（供控制台页面展示）
         if: always() && steps.dice.outputs.go == 'true'
+        env:
+          CHECKIN_TRIGGER: ${{ github.event_name }} # schedule / workflow_dispatch
         run: |
           node scripts/merge-history.js
           git config user.name "github-actions[bot]"

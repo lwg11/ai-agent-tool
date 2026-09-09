@@ -37,11 +37,15 @@ for (const t of tasks) {
 console.log('\n========== 汇总 ==========');
 results.forEach((x) => console.log(`${x.ok ? '✅' : '❌'} ${x.label} ${x.message}`));
 
-// 机器可读结果（日期为北京时间）
-const bjDate = new Date(Date.now() + 8 * 3600 * 1000).toISOString().slice(0, 10);
+// 机器可读结果（日期与时间为北京时间）
+const now = new Date();
+const bj = new Date(now.getTime() + 8 * 3600 * 1000);
+const bjDate = bj.toISOString().slice(0, 10);
+const bjTime = bj.toISOString().slice(11, 19);
 const result = {
   date: bjDate,
-  runAt: new Date().toISOString(),
+  bjTime,
+  runAt: now.toISOString(),
   allOk: !hasFail,
   tools: results.map(({ key, label, ok, message }) => ({ key, label, ok, message })),
 };
