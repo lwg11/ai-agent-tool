@@ -17,5 +17,100 @@
         "message": "[juejin-browser] ✅ 签到成功（状态已变更为\"今日已签到\"）"
       }
     ]
+  },
+  {
+    "date": "2026-09-05",
+    "runAt": "2026-09-05T05:00:20.874Z",
+    "allOk": true,
+    "tools": [
+      {
+        "key": "ikuuu",
+        "label": "ikuuu 签到",
+        "ok": true,
+        "message": "[ikuuu] 今日已签到，无需重复操作（服务端返回: 您似乎已经签到过了...）"
+      },
+      {
+        "key": "juejin",
+        "label": "掘金签到(浏览器)",
+        "ok": true,
+        "message": "[juejin-browser] ✅ 签到成功（状态已变更为\"今日已签到\"）"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-06",
+    "runAt": "2026-09-06T05:12:19.952Z",
+    "allOk": true,
+    "tools": [
+      {
+        "key": "ikuuu",
+        "label": "ikuuu 签到",
+        "ok": true,
+        "message": "[ikuuu] 今日已签到，无需重复操作（服务端返回: 您似乎已经签到过了...）"
+      },
+      {
+        "key": "juejin",
+        "label": "掘金签到(浏览器)",
+        "ok": true,
+        "message": "[juejin-browser] ✅ 签到成功（状态已变更为\"今日已签到\"）"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-07",
+    "runAt": "2026-09-07T05:20:08.162Z",
+    "allOk": true,
+    "tools": [
+      {
+        "key": "ikuuu",
+        "label": "ikuuu 签到",
+        "ok": true,
+        "message": "[ikuuu] 今日已签到，无需重复操作（服务端返回: 您似乎已经签到过了...）"
+      },
+      {
+        "key": "juejin",
+        "label": "掘金签到(浏览器)",
+        "ok": true,
+        "message": "[juejin-browser] ✅ 签到成功（状态已变更为\"今日已签到\"）"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-08",
+    "runAt": "2026-09-08T05:23:52.476Z",
+    "allOk": true,
+    "tools": [
+      {
+        "key": "ikuuu",
+        "label": "ikuuu 签到",
+        "ok": true,
+        "message": "[ikuuu] 今日已签到，无需重复操作（服务端返回: 您似乎已经签到过了...）"
+      },
+      {
+        "key": "juejin",
+        "label": "掘金签到(浏览器)",
+        "ok": true,
+        "message": "[juejin-browser] ✅ 签到成功（状态已变更为\"今日已签到\"）"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-09",
+    "runAt": "2026-09-09T02:09:06.437Z",
+    "allOk": true,
+    "tools": [
+      {
+        "key": "ikuuu",
+        "label": "ikuuu 签到",
+        "ok": true,
+        "message": "[ikuuu] 签到成功: 你获得了 1492 MB流量"
+      },
+      {
+        "key": "juejin",
+        "label": "掘金签到(浏览器)",
+        "ok": true,
+        "message": "[juejin-browser] ✅ 签到成功（状态已变更为\"今日已签到\"）"
+      }
+    ]
   }
 ]
