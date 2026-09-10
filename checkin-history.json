@@ -156,5 +156,27 @@
     ],
     "id": "2026-09-09T05:25:36.433Z-99lp",
     "trigger": "schedule"
+  },
+  {
+    "date": "2026-09-10",
+    "bjTime": "09:35:54",
+    "runAt": "2026-09-10T01:35:54.239Z",
+    "allOk": true,
+    "tools": [
+      {
+        "key": "ikuuu",
+        "label": "ikuuu 签到",
+        "ok": true,
+        "message": "[ikuuu] 今日已签到，无需重复操作（服务端返回: 您似乎已经签到过了...）"
+      },
+      {
+        "key": "juejin",
+        "label": "掘金签到(浏览器)",
+        "ok": true,
+        "message": "[juejin-browser] ✅ 今日已签到（免重复操作）"
+      }
+    ],
+    "id": "2026-09-10T01:35:54.239Z-jlk7",
+    "trigger": "local"
   }
 ]
