@@ -156,5 +156,27 @@
     ],
     "id": "2026-09-09T05:25:36.433Z-99lp",
     "trigger": "schedule"
+  },
+  {
+    "date": "2026-09-10",
+    "bjTime": "08:45:15",
+    "runAt": "2026-09-10T00:45:15.448Z",
+    "allOk": false,
+    "tools": [
+      {
+        "key": "ikuuu",
+        "label": "ikuuu 签到",
+        "ok": true,
+        "message": "[ikuuu] 签到成功: 你获得了 2178 MB流量"
+      },
+      {
+        "key": "juejin",
+        "label": "掘金签到(浏览器)",
+        "ok": false,
+        "message": "[juejin-browser] ❌ 失败: 点击后未见签到结果（弹窗未出现且状态未变更），附失败截图 failure.debug.png"
+      }
+    ],
+    "id": "2026-09-10T00:45:15.448Z-92ei",
+    "trigger": "schedule"
   }
 ]
