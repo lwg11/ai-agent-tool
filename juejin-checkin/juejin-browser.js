@@ -57,6 +57,22 @@ function parseCookieString(str) {
 
     // Cookie 注入（必须先处于掘金域下）
     const page = await context.newPage();
+    // 网络监听：捕获 check_in 接口的真实响应——签到成败以接口为准（UI 弹窗偶发不出现，不可靠）
+    let lastCheckin = null; // { errNo, point }
+    page.on('response', async (resp) => {
+      try {
+        const u = resp.url();
+        if (u.includes('/growth_api/v1/check_in')) {
+          let body = '';
+          try { body = (await resp.text()) || ''; } catch { body = ''; }
+          console.log(`[api:juejin-check_in] HTTP ${resp.status()} ${body.slice(0, 200)}`);
+          try {
+            const j = JSON.parse(body);
+            lastCheckin = { errNo: j.err_no, point: j.data && typeof j.data.incr_point === 'number' ? j.data.incr_point : null };
+          } catch { lastCheckin = { errNo: -1, point: null }; }
+        }
+      } catch { /* 忽略监听竞态 */ }
+    });
     // 禁图提速（海外 runner 访问掘金较慢）
     await context.route('**/*', (route) => {
       try {
@@ -142,27 +158,43 @@ function parseCookieString(str) {
       }
       throw new Error('未找到签到按钮（页面结构可能变化），附失败截图 failure.debug.png');
     }
-    await btn.click();
-    console.log('[api:juejin-browser] 已点击签到按钮');
-
-    // 等结果弹窗
+    // 点击签到（最多 3 次尝试）：掘金前端偶发点击无反应（签到请求未发出），
+    // 服务端幂等（已签再点无害），无反应时自动重试
     let reward = '签到成功';
-    try {
-      const popup = await page.waitForSelector('text=/签到成功|获得\\s*\\d+/', { timeout: 8000 });
-      const txt = (await popup.innerText().catch(() => '')) || '';
-      const m = txt.match(/(\d+)/);
-      if (m) reward = `签到成功，获得 ${m[1]} 矿石`;
-    } catch {
-      // 弹窗没等到也不判定失败：以页面状态二次确认
-      await page.waitForTimeout(3000);
-      const t2 = (await page.locator('body').innerText().catch(() => '')) || '';
-      if (t2.includes('今日已签到')) {
-        console.log('[juejin-browser] ✅ 签到成功（状态已变更为"今日已签到"）');
-        await browser.close();
-        process.exit(0);
+    let signed = false;
+    for (let attempt = 1; attempt <= 3 && !signed; attempt++) {
+      if (attempt > 1) console.log(`[juejin-browser] 点击无反应，第 ${attempt}/3 次重试`);
+      await btn.click({ timeout: 5000 }).catch(() => {});
+      console.log(`[api:juejin-browser] 已点击签到按钮（第 ${attempt} 次）`);
+      lastCheckin = null;
+      // 每次点击后观察 ~8 秒：接口响应 / 页面状态 / 弹窗，任一出现即判定
+      for (let i = 0; i < 8 && !signed; i++) {
+        await page.waitForTimeout(1000);
+        if (lastCheckin && (lastCheckin.errNo === 0 || lastCheckin.errNo === 15001)) {
+          reward = lastCheckin.errNo === 15001
+            ? '今日已签到（接口 err_no=15001）'
+            : `签到成功，获得 ${lastCheckin.point} 矿石`;
+          signed = true;
+          break;
+        }
+        const t = (await page.locator('body').innerText().catch(() => '')) || '';
+        if (t.includes('今日已签到')) {
+          reward = '签到成功（状态已变更为"今日已签到"）';
+          signed = true;
+          break;
+        }
+        const pop = page.locator('text=/签到成功|获得\\s*\\d+/').first();
+        if ((await pop.count()) > 0 && (await pop.isVisible().catch(() => false))) {
+          const txt = (await pop.innerText().catch(() => '')) || '';
+          const m = txt.match(/(\d+)/);
+          reward = `签到成功，获得 ${m ? m[1] : '?'} 矿石（弹窗确认）`;
+          signed = true;
+          break;
+        }
       }
-      throw new Error('点击后未见签到结果（弹窗未出现且状态未变更），附失败截图 failure.debug.png');
     }
+    if (!signed) throw new Error('连续 3 次点击后均未见签到结果（接口无响应、状态未变更），附失败截图 failure.debug.png');
+    console.log(`[juejin-browser] ✅ ${reward}`);
 
     // 统计信息（尽力而为）
     const t3 = (await page.locator('body').innerText().catch(() => '')) || '';
@@ -171,7 +203,6 @@ function parseCookieString(str) {
     if (cont) console.log(`[juejin-browser] 连续签到: ${cont[1]} 天`);
     if (total) console.log(`[juejin-browser] 累计签到: ${total[1]} 天`);
 
-    console.log(`[juejin-browser] ✅ ${reward}`);
     await browser.close();
     process.exit(0);
   } catch (err) {
