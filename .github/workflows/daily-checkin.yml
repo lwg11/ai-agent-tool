@@ -43,14 +43,17 @@ jobs:
       - name: 随机抽签（含当日幂等检查）
         id: dice
         run: |
+          # 时间统一按北京时间计算：date -u -d '+8 hours' 不依赖 TZ 环境变量
+          # （TZ=Asia/Shanghai 写法在部分环境会失效退回 UTC，导致日期/小时全错）
+          BJ_DATE=$(date -u -d '+8 hours' +%F)
+          BJ_HOUR=$(date -u -d '+8 hours' +%H)
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "手动/控制台触发，必跑"
             echo "go=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           # 幂等保护：GitHub cron 延迟会让 6/7/8/9 点的触发全部迟到，
-          # 若今天已有成功的签到记录，迟到的触发一律跳过（当天全部失败时仍会重试）
-          TODAY=$(TZ=Asia/Shanghai date +%F)
+          # 若今天（北京时间）已有成功的签到记录，迟到的触发一律跳过（当天全部失败时仍会重试）
           HIST=$(curl -sf --max-time 20 -H "Accept: application/vnd.github.raw" \
             "https://api.github.com/repos/${{ github.repository }}/contents/checkin-history.json?ref=main" || echo "")
           ALREADY=$(printf '%s' "$HIST" | node -e '
@@ -61,11 +64,11 @@ jobs:
               const today = process.argv[1];
               console.log(Array.isArray(h) && h.some(r => r && r.date === today && r.allOk === true) ? "yes" : "no");
             });
-          ' "$TODAY")
+          ' "$BJ_DATE")
           if [ "$ALREADY" = "yes" ]; then
-            echo "今天（$TODAY）已有成功的签到记录，本次为 cron 延迟的迟到触发，跳过"
+            echo "今天（$BJ_DATE）已有成功的签到记录，本次为 cron 延迟的迟到触发，跳过"
             echo "go=false" >> "$GITHUB_OUTPUT"
-          elif [ $((10#$(TZ=Asia/Shanghai date +%H))) -ge 9 ]; then
+          elif [ $((10#$BJ_HOUR)) -ge 9 ]; then
             echo "已过 9 点且今天尚未成功签到，兜底必跑"
             echo "go=true" >> "$GITHUB_OUTPUT"
           elif [ $(( RANDOM % 100 )) -lt 40 ]; then
