@@ -2,13 +2,15 @@ name: daily-checkin
 
 # 每日定时签到（ikuuu + 稀土掘金）
 # 触发策略：北京时间 6:07 / 7:23 各抽签一次（40% 概率执行），
-#          8:07 / 8:23 两个保底点必跑（防其中一个触发被 GitHub 丢弃），
-#          目标：每天 9 点前完成签到；
-#          当天已有成功记录时，后续触发（含 cron 延迟导致的迟到触发）一律跳过，
-#          保证每天只跑一次。
+#          8:07 / 8:23 / 8:39 保底必跑（防其中某个触发被 GitHub 丢弃），
+#          20:07 晚间兜底必跑（上午触发全被丢弃或签到全失败时的最后一道网）；
+#          当天已有成功记录时，后续触发（含 cron 延迟导致的迟到触发）一律秒退跳过，
+#          保证每天只记一次。
 # 时区说明：GitHub Actions cron 只支持 UTC（北京 = UTC+8）。
 # 延迟优化：整点（minute=0）是全 GitHub 排队高峰，实测延迟可达 1~3 小时；
-#          全部改为非整点分钟（7/23），保底点提前到 8:07，即使迟到约 50 分钟仍在 9 点前。
+#          全部改为非整点分钟（7/23/39），保底点提前到 8:07，即使迟到约 50 分钟仍在 9 点前。
+# 失败重试：执行签到步骤最多尝试 3 次（间隔 60 秒），只重试失败的工具，
+#          已成功的工具不再重复提交签到请求（结果按工具合并，任一次成功即计成功）。
 on:
   schedule:
     - cron: '7 22 * * *'  # 北京 6:07 抽签
@@ -16,7 +18,7 @@ on:
     - cron: '7 0 * * *'   # 北京 8:07 保底必跑
     - cron: '23 0 * * *'  # 北京 8:23 保底必跑（备用）
     - cron: '39 0 * * *'  # 北京 8:39 保底必跑（第三备点）
-    - cron: '12 6 11 9 *' # 【临时】2026-09-11 14:12 一次性兜底，跑完删除
+    - cron: '7 12 * * *'  # 北京 20:07 晚间兜底必跑（当天未成功时补签；已成功则幂等秒退）
   workflow_dispatch: # 支持在 Actions 页面手动触发（用于测试，必跑）
     inputs:
       only:
@@ -38,7 +40,7 @@ permissions:
 jobs:
   checkin:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 15 # 预留 3 次尝试（含 60 秒间隔）+ Playwright 安装的余量
 
     steps:
       - name: 检出代码
@@ -73,7 +75,7 @@ jobs:
             echo "今天（$BJ_DATE）已有成功的签到记录，本次为 cron 延迟的迟到触发，跳过"
             echo "go=false" >> "$GITHUB_OUTPUT"
           elif [ $((10#$BJ_HOUR)) -ge 8 ]; then
-            echo "已到 8 点且今天尚未成功签到，保底必跑（目标 9 点前完成）"
+            echo "已过北京 8 点且今天尚未成功签到，保底必跑（上午保底目标 9 点前完成；晚间 20:07 为最后一道网）"
             echo "go=true" >> "$GITHUB_OUTPUT"
           elif [ $(( RANDOM % 100 )) -lt 40 ]; then
             echo "抽中（40% 概率），本次执行"
@@ -117,17 +119,64 @@ jobs:
           fi
           printf '%s' "$JUEJIN_CONFIG" > juejin-checkin/config.json
 
-      - name: 执行签到
+      - name: 执行签到（失败自动重试，只重试失败项）
         if: steps.dice.outputs.go == 'true'
         run: |
           set -o pipefail
           ONLY="${{ github.event.inputs.only || 'all' }}"
-          if [ "$ONLY" = "all" ]; then
-            node run-all.js 2>&1 | tee checkin.log
-          else
-            node run-all.js --only="$ONLY" 2>&1 | tee checkin.log
-          fi
-          exit ${PIPESTATUS[0]}
+          : > checkin.log
+          attempt=1; max=3; rc=1; range="$ONLY"
+          while [ "$attempt" -le "$max" ]; do
+            echo "" | tee -a checkin.log
+            echo "===== 第 $attempt/$max 次执行（范围: $range）=====" | tee -a checkin.log
+            if [ "$range" = "all" ]; then
+              node run-all.js 2>&1 | tee -a checkin.log; rc=${PIPESTATUS[0]}
+            else
+              node run-all.js --only="$range" 2>&1 | tee -a checkin.log; rc=${PIPESTATUS[0]}
+            fi
+            cp checkin-result.json "checkin-result-try${attempt}.json" 2>/dev/null || true
+            [ "$rc" -eq 0 ] && break
+            [ "$attempt" -eq "$max" ] && break
+            # 计算下次重试范围：只跑失败的工具，上次成功的不再重复提交签到请求
+            next=""
+            if [ -f checkin-result.json ]; then
+              next=$(node -e '
+                try {
+                  const r = require("./checkin-result.json");
+                  console.log((r.tools || []).filter(t => !t.ok).map(t => t.key).join(","));
+                } catch (e) { console.log(""); }
+              ')
+            fi
+            if [ -z "$next" ]; then
+              if [ -f checkin-result.json ] && node -e 'process.exit(require("./checkin-result.json").allOk ? 0 : 1)'; then
+                echo "上一次尝试已全部成功，无需重试" | tee -a checkin.log
+                rc=0; break
+              fi
+              next="$range" # 结果文件缺失（run-all 未写出）时整体重试
+            fi
+            echo ">>> 失败项: $next —— 60 秒后仅重试失败项（已成功项不再提交请求）" | tee -a checkin.log
+            sleep 60
+            attempt=$((attempt + 1)); range="$next"
+          done
+          # 合并各次尝试结果：每个工具取任一次成功即为成功；时间取最后一次执行（完成时刻）
+          node -e '
+            const fs = require("fs");
+            const files = fs.readdirSync(".").filter(f => /^checkin-result-try\d+\.json$/.test(f)).sort();
+            if (!files.length) process.exit(0);
+            const first = JSON.parse(fs.readFileSync(files[0], "utf8"));
+            const last = JSON.parse(fs.readFileSync(files[files.length - 1], "utf8"));
+            const tools = {};
+            for (const f of files) {
+              const r = JSON.parse(fs.readFileSync(f, "utf8"));
+              for (const t of r.tools || []) if (!tools[t.key] || t.ok) tools[t.key] = t;
+            }
+            first.tools = Object.values(tools);
+            first.allOk = first.tools.length > 0 && first.tools.every(t => t.ok);
+            first.runAt = last.runAt; first.bjTime = last.bjTime;
+            fs.writeFileSync("checkin-result.json", JSON.stringify(first, null, 2) + "\n");
+            console.log("[retry-merge] 合并 " + files.length + " 次尝试结果，allOk=" + first.allOk);
+          '
+          exit "$rc"
 
       - name: 生成运行摘要（显示在 Summary 页）
         if: always() && steps.dice.outputs.go == 'true'
@@ -162,4 +211,4 @@ jobs:
 
       - name: 清理凭证文件
         if: always()
-        run: rm -f ikuuu-checkin/config.json juejin-checkin/config.json checkin.log checkin-result.json
+        run: rm -f ikuuu-checkin/config.json juejin-checkin/config.json checkin.log checkin-result.json checkin-result-try*.json
