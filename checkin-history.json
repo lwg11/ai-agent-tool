@@ -244,5 +244,27 @@
     ],
     "id": "2026-09-11T19:12:01.022Z-grcl",
     "trigger": "schedule"
+  },
+  {
+    "date": "2026-09-12",
+    "bjTime": "12:22:48",
+    "runAt": "2026-09-12T04:22:48.137Z",
+    "allOk": true,
+    "tools": [
+      {
+        "key": "ikuuu",
+        "label": "ikuuu 签到",
+        "ok": true,
+        "message": "[ikuuu] 今日已签到，无需重复操作（服务端返回: 您似乎已经签到过了...）"
+      },
+      {
+        "key": "juejin",
+        "label": "掘金签到(浏览器)",
+        "ok": true,
+        "message": "[juejin-browser] 累计签到: 741 天"
+      }
+    ],
+    "id": "2026-09-12T04:22:48.137Z-w9xq",
+    "trigger": "schedule"
   }
 ]
