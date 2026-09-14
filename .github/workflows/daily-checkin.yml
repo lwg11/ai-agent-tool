@@ -3,7 +3,7 @@ name: daily-checkin
 # 每日定时签到（ikuuu + 稀土掘金）
 # 触发策略：北京时间 0:05 / 0:23 各抽签一次（40% 概率执行，全天最早机会），
 #          8:07 / 8:23 / 8:39 保底必跑（防其中某个触发被 GitHub 丢弃），
-#          20:07 晚间兜底必跑（白天触发全被丢弃或签到全失败时的最后一道网）；
+#          20:07 / 21:23 / 22:39 晚间兜底必跑（白天触发全被丢弃或签到全失败时的最后一道网，共三点）；
 #          当天已有成功记录时，后续触发（含 cron 延迟导致的迟到触发）一律秒退跳过，
 #          保证每天只记一次。
 # 时区说明：GitHub Actions cron 只支持 UTC（北京 = UTC+8）。
@@ -19,6 +19,8 @@ on:
     - cron: '23 0 * * *'  # 北京 8:23 保底必跑（备用）
     - cron: '39 0 * * *'  # 北京 8:39 保底必跑（第三备点）
     - cron: '7 12 * * *'  # 北京 20:07 晚间兜底必跑（当天未成功时补签；已成功则幂等秒退）
+    - cron: '23 13 * * *' # 北京 21:23 晚间兜底（第二点，防 20:07 被 GitHub 丢弃）
+    - cron: '39 14 * * *' # 北京 22:39 晚间兜底（第三点，最后一道网）
   workflow_dispatch: # 支持在 Actions 页面手动触发（用于测试，必跑）
     inputs:
       only:
@@ -32,7 +34,11 @@ on:
 
 concurrency:
   group: daily-checkin
-  cancel-in-progress: false
+  # 必须可顶替：GitHub cron 延迟会让多个触发在队列里堆积，若一个 run 卡在
+  # queued（2026-09-13 实测卡死 20+ 小时），cancel-in-progress:false 会让后续
+  # 触发全部被 cancel / 永久 pending，全天停摆且无任何记录。改为 true 后新触发
+  # 自动顶掉卡死 run；重复执行无害（当天已成功时抽签步骤幂等秒退）。
+  cancel-in-progress: true
 
 permissions:
   contents: write # 写回 checkin-history.json 供控制台页面展示

@@ -193,7 +193,21 @@ function parseCookieString(str) {
         }
       }
     }
-    if (!signed) throw new Error('连续 3 次点击后均未见签到结果（接口无响应、状态未变更），附失败截图 failure.debug.png');
+    // 点击均未见结果 → reload 复核：点击可能已在服务端生效（签到请求实际发出并成功），
+    // 但 UI 弹窗与接口监听都没捕捉到；以 reload 后页面真实状态为准，避免误报失败
+    if (!signed) {
+      console.log('[juejin-browser] 点击均未见签到结果，reload 页面复核实际签到状态...');
+      try {
+        await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(3000);
+        const t2 = (await page.locator('body').innerText().catch(() => '')) || '';
+        if (t2.includes('今日已签到')) {
+          reward = '签到成功（reload 后状态为"今日已签到"）';
+          signed = true;
+        }
+      } catch { /* reload 失败按原失败路径处理 */ }
+    }
+    if (!signed) throw new Error('连续 3 次点击后均未见签到结果（接口无响应、状态未变更、reload 复核仍未签到），附失败截图 failure.debug.png');
     console.log(`[juejin-browser] ✅ ${reward}`);
 
     // 统计信息（尽力而为）
