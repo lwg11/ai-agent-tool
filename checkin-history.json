@@ -434,5 +434,27 @@
     ],
     "id": "2026-09-16T02:39:22.785Z-dh83",
     "trigger": "workflow_dispatch"
+  },
+  {
+    "date": "2026-09-17",
+    "bjTime": "02:25:26",
+    "runAt": "2026-09-16T18:25:26.104Z",
+    "allOk": false,
+    "tools": [
+      {
+        "key": "ikuuu",
+        "label": "ikuuu 签到",
+        "ok": false,
+        "message": "Node.js v24.20.0"
+      },
+      {
+        "key": "juejin",
+        "label": "掘金签到(浏览器)",
+        "ok": false,
+        "message": "[juejin-browser] ❌ 失败: 连续 3 次点击后均未见签到结果（接口无响应、状态未变更、reload 复核仍未签到），附失败截图 failure.debug.png"
+      }
+    ],
+    "id": "2026-09-16T18:25:26.104Z-l298",
+    "trigger": "schedule"
   }
 ]
