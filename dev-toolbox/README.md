@@ -4,6 +4,17 @@
 
 专为前端日常联调场景设计：cURL 转代码、接口日志解析、JSON 对比、API 调试、Mock 生成、AES / 国密加解密、请求集合收藏、SSE 流式调试、凭证泄露扫描、文件 Base64 互转与 multipart 构造、Cookie / 请求头解析、px/rem/vw 单位换算、内置 JS 控制台（F12 式直执行）……
 
+## 🧰 前端百宝箱 v2.0（antd 版，与 v1 并存）
+
+`dev-toolbox-v2.html` —— 同样 20 个模块的 **React 17 + antd 4.24 全量重写版**：
+
+- **单文件、零构建、离线可用**：React / ReactDOM / moment / antd（JS+CSS）/ htm 全部 UMD 内嵌（约 1.8MB），双击即用，数据不出浏览器
+- **UI 全套 antd 组件**：Layout / Menu / Card / Table / Tabs / Select / Modal / Alert / Tag / message 等
+- **数据与 v1 互通**：请求集合（`dsk-coll`）、环境变量（`dsk-env`）共用同一 localStorage，两边可无缝切换
+- **核心逻辑零改动移植**：cURL 解析（tokenizeCurl/parseCurl）、国密库（SM3/SM4/SM2，已交叉验证）、凭证扫描规则（SEC_RULES）、请求头解析（hdrsParse）、JS 控制台（REPL 末行返回 + console 捕获）均取自 v1 已验证实现
+- **构建可复现**：源码在 `v2-build/`（app-src.js + parts/ + build.py），`python3 v2-build/build.py` 一键重新生成（UMD 库缺失时自动下载）；`v2-build/smoke.js` 为 Playwright 冒烟测试（20 模块渲染 + 切换 + SM3 标准向量断言）
+- v1 原生版 `dev-toolbox.html` 继续保留，两版独立迭代
+
 ## ✨ 功能模块（20 个）
 
 | # | 模块 | 功能 |

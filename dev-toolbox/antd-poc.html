@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>antd PoC · 前端瑞士军刀壳（可行性验证）</title>
+<link rel="stylesheet" href="https://unpkg.com/antd@4.24.16/dist/antd.min.css">
+<script src="https://unpkg.com/react@17.0.2/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@17.0.2/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/moment@2.29.4/min/moment.min.js"></script>
+<script src="https://unpkg.com/antd@4.24.16/dist/antd.min.js"></script>
+<style>
+  body{margin:0}
+  .shell{display:flex;min-height:100vh}
+  .side{width:220px;flex:none;border-right:1px solid #f0f0f0}
+  .main{flex:1;min-width:0;padding:20px 26px}
+  .brand{font-weight:700;font-size:16px;padding:14px 16px;border-bottom:1px solid #f0f0f0}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+const { useState } = React;
+const { Menu, Card, Button, Table, Input, Tag, Space, message, Switch, theme } = antd;
+
+const MODULES = [
+  { key:'curl',  icon:'🌀', label:'cURL 转换器' },
+  { key:'json',  icon:'🧱', label:'JSON + TS 生成' },
+  { key:'api',   icon:'📡', label:'API 调试台' },
+  { key:'aes',   icon:'🛡️', label:'AES 加解密' },
+  { key:'gm',    icon:'🔏', label:'国密 SM2/SM3/SM4' },
+  { key:'coll',  icon:'📚', label:'请求集合' },
+  { key:'console', icon:'🖥️', label:'JS 控制台' },
+];
+
+function App(){
+  const [mod, setMod] = useState('curl');
+  const [dark, setDark] = useState(false);
+  const [url, setUrl] = useState('https://shlt.uat3.qgutech.com/api/order/list');
+
+  const rows = [
+    { key:1, name:'接受头', value:'application/json', danger:false },
+    { key:2, name:'x-xsrf-token', value:'e10a1c2d-…-3a4b', danger:true },
+    { key:3, name:'cookie', value:'XSRF-TOKEN=…; SESSION=…', danger:true },
+  ];
+
+  return (
+    <div className="shell" style={{background: dark ? '#141414' : '#fff', color: dark ? '#fff' : 'inherit'}}>
+      <div className="side" style={{borderColor: dark ? '#303030' : '#f0f0f0'}}>
+        <div className="brand" style={{borderColor: dark ? '#303030' : '#f0f0f0'}}>🇨🇭 前端瑞士军刀</div>
+        <Menu mode="inline" selectedKeys={[mod]} onClick={e => setMod(e.key)}
+              style={{border:'none', background:'transparent'}} theme={dark ? 'dark' : 'light'}>
+          {MODULES.map(m => <Menu.Item key={m.key}>{m.icon} {m.label}</Menu.Item>)}
+        </Menu>
+      </div>
+      <div className="main">
+        <Space style={{marginBottom:16}}>
+          <Button type="primary" onClick={() => message.success('antd 运行正常 ✓')}>antd 组件可用性测试</Button>
+          <Switch checkedChildren="🌙" unCheckedChildren="☀️" checked={dark} onChange={setDark}/>
+          <Tag color="blue">当前模块：{(MODULES.find(m => m.key === mod) || {}).label}</Tag>
+        </Space>
+        <Card title="API 调试台（示意）" size="small" style={{marginBottom:14}}>
+          <Space.Compact style={{width:'100%'}}>
+            <Input value={url} onChange={e => setUrl(e.target.value)} placeholder="请求 URL"/>
+            <Button type="primary" onClick={() => message.info('发送：' + url)}>🚀 发送</Button>
+          </Space.Compact>
+        </Card>
+        <Card title="Headers（antd Table 示意）" size="small">
+          <Table size="small" pagination={false} dataSource={rows}
+                 columns={[
+                   { title:'名称', dataIndex:'name', width:160 },
+                   { title:'值', dataIndex:'value' },
+                   { title:'禁用头', dataIndex:'danger', width:90,
+                     render: v => v ? <Tag color="red">browser 禁用</Tag> : <Tag color="green">可发送</Tag> },
+                 ]}/>
+        </Card>
+        <div style={{marginTop:14, color:'#999', fontSize:12}}>
+          本页为可行性 PoC：单 HTML + React 17 + antd 4 UMD（CDN），零构建。
+        </div>
+      </div>
+    </div>
+  );
+}
+ReactDOM.render(<App/>, document.getElementById('root'));
+</script>
+</body>
+</html>
