@@ -354,5 +354,21 @@
     ],
     "id": "2026-09-15T18:29:17.638Z-b8sv",
     "trigger": "schedule"
+  },
+  {
+    "date": "2026-09-16",
+    "bjTime": "09:39:04",
+    "runAt": "2026-09-16T01:39:04.670Z",
+    "allOk": false,
+    "tools": [
+      {
+        "key": "ikuuu",
+        "label": "ikuuu 签到",
+        "ok": false,
+        "message": "[ikuuu] 失败: 返回内容不是 JSON（HTTP 200）。多半是 Cookie 失效/被重定向到登录页，请到 https://ikuuu.top 重新登录后更新 config.json 的 ikuuu.cookie。返回片段:  "
+      }
+    ],
+    "id": "2026-09-16T01:39:04.670Z-05m7",
+    "trigger": "workflow_dispatch"
   }
 ]
