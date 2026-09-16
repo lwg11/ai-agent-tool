@@ -2,13 +2,13 @@
 
 一个**单文件、零依赖、纯本地**运行的前端开发工具集 —— 双击 `dev-toolbox.html` 即用，数据不出浏览器。
 
-专为前端日常联调场景设计：cURL 转代码、接口日志解析、JSON 对比、API 调试、Mock 生成、AES / 国密加解密、请求集合收藏、SSE 流式调试、凭证泄露扫描、文件 Base64 互转与 multipart 构造、Cookie / 请求头解析、px/rem/vw 单位换算……
+专为前端日常联调场景设计：cURL 转代码、接口日志解析、JSON 对比、API 调试、Mock 生成、AES / 国密加解密、请求集合收藏、SSE 流式调试、凭证泄露扫描、文件 Base64 互转与 multipart 构造、Cookie / 请求头解析、px/rem/vw 单位换算、内置 JS 控制台（F12 式直执行）……
 
-## ✨ 功能模块（19 个）
+## ✨ 功能模块（20 个）
 
 | # | 模块 | 功能 |
 |---|------|------|
-| 1 | 🌀 cURL 转换器 | DevTools「Copy as cURL」→ fetch / axios / Console 即贴代码，支持 `$'...'` 转义、续行符、query 展开 |
+| 1 | 🌀 cURL 转换器 | DevTools「Copy as cURL」→ fetch / axios / Console 即贴代码，支持 `$'...'` 转义、续行符、query 展开；解析后可**一键直接发起请求**看响应 |
 | 2 | 🧱 JSON + TS 生成 | 格式化 / 压缩 / 校验（尾逗号容错），一键生成 TypeScript interface（数组合并采样，null 自动标 `?`） |
 | 3 | 🧾 接口日志解析 | 按 `[api:xxx]` 标记切分控制台日志、提取格式化 JSON；无标记时降级提取行内 JSON |
 | 4 | 🔀 JSON 对比 | 两个 JSON 递归对比，按路径标出新增 / 删除 / 修改 —— 联调时对比文档示例与真实返回 |
@@ -22,11 +22,12 @@
 | 12 | 🛡️ AES 加解密 | AES-128/192/256 · ECB/CBC · PKCS7，纯本地实现（已用 Node crypto 交叉验证），密钥/IV 支持 Text/Hex/Base64 |
 | 13 | 🔌 WebSocket 调试台 | 连接 / 收发日志（JSON 自动美化）/ ping 心跳保活 / 断线自动重连 / 消息计数 / http(s)→ws(s) 自动转换 |
 | 14 | 🔏 国密 SM2/SM3/SM4 | 纯 JS 国密套件：SM3 哈希、SM4 ECB/CBC 加解密、SM2 签名验签与公钥加密/私钥解密（已用 Node crypto + sm-crypto 交叉验证） |
-| 15 | 📚 请求集合 | 接口收藏：按项目分组、localStorage 持久化、一键重放、复制 cURL、从 API 调试台导入 |
+| 15 | 📚 请求集合 | 接口收藏：按项目分组、localStorage 持久化、一键重放、复制 cURL、**从 API 调试台导入**、**从 cURL 粘贴导入** |
 | 16 | 🌊 SSE 调试台 | Server-Sent Events 流式调试：EventSource(GET) 与 fetch 流双模式，自动解析 data/event/id/retry，JSON 自动美化 |
 | 17 | 🕵️ 凭证泄露扫描 | 代码/日志扫描 AWS/GitHub/Slack/Stripe/Google Token、私钥、JWT、URL 密码与高熵疑似密钥，命中自动脱敏 |
 | 18 | 📎 文件 Base64 & multipart | 图片/文件 ⇄ Base64 互转（FileReader，可预览/下载），构造 multipart/form-data 请求体（文本/文件字段，生成原始体 + fetch(FormData)/cURL -F 代码） |
 | 19 | 🍪 Cookie / 请求头解析 | 粘贴 Cookie 串或 DevTools 请求头 dump，解析为结构化 KV（Cookie: 自动展开），导出 表格/JSON/JS 对象/cURL -H/环境变量 |
+| 20 | 🖥️ JS 控制台 | 内置 F12 式控制台：直接写 JS 并执行，捕获 console.log/info/warn/error 与表达式返回值（支持 top-level await，循环引用安全） |
 
 ## 🚀 使用
 
@@ -52,6 +53,7 @@ npx serve .
 - `Alt + X`：凭证泄露扫描
 - `Alt + B`：文件 Base64 & multipart
 - `Alt + H`：Cookie / 请求头解析
+- `Alt + J`：JS 控制台（F12 式）
 - `Esc`：关闭所有弹窗
 - `Enter`（URL 框内）：API 调试台直接发送
 
