@@ -35,10 +35,17 @@ for (const t of activeTasks) {
   if (out) console.log(out);
   const ok = r.status === 0;
   if (!ok) hasFail = true;
-  // 提取结果摘要：优先取带 ✅/❌ 标记的最后一行，否则取最后一行（脚本输出已含脱敏处理）
+  // 提取结果摘要：优先带 ✅/❌ 标记的行；崩溃堆栈时 "Node.js vXX" 固定是最后一行、
+  // 无信息量，改为优先捞含 Error/[工具名]/失败/异常 的行（通常是真实报错），否则取最后一行
   const lines = out.split('\n').map((s) => s.trim()).filter(Boolean);
   const marked = lines.filter((l) => l.startsWith('✅') || l.startsWith('❌'));
-  const message = (marked[marked.length - 1] || lines[lines.length - 1] || (ok ? '成功' : '失败（无输出）')).slice(0, 120);
+  const errLike = lines.filter((l) => /(\[(ikuuu|juejin|run-all)\]|Error|失败|异常)/i.test(l));
+  const message = (
+    marked[marked.length - 1] ||
+    errLike[errLike.length - 1] ||
+    lines[lines.length - 1] ||
+    (ok ? '成功' : '失败（无输出）')
+  ).slice(0, 200);
   results.push({ key: t.key, label: t.label, ok, message });
 }
 

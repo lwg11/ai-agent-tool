@@ -20,10 +20,22 @@ function fail(msg, extra) {
 (async () => {
   const cfgPath = path.join(__dirname, 'config.json');
   if (!fs.existsSync(cfgPath)) fail('找不到配置文件 ' + cfgPath);
-  const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
-
-  if (!cfg.baseUrl) fail('config.json 中缺少 baseUrl');
-  if (!cfg.cookie || !cfg.cookie.trim()) fail('config.json 中缺少 cookie，请填入登录后的 Cookie');
+  const raw = fs.readFileSync(cfgPath, 'utf8');
+  let cfg;
+  try {
+    cfg = JSON.parse(raw);
+  } catch (e) {
+    // Secret 内容不完整/不是 JSON 时在此崩溃（此前直接裸崩，日志只剩 "Node.js vXX"）
+    const head = raw.replace(/\s+/g, ' ').trim().slice(0, 60);
+    fail(
+      `config.json 不是合法 JSON（${e.message}）。开头内容: "${head}"。` +
+      '请检查 Secret IKUUU_CONFIG_JSON 是否为完整的 config.json 内容（含 baseUrl/cookie 字段的 JSON 对象），而不是纯 cookie 字符串'
+    );
+  }
+  if (!cfg.baseUrl) fail('config.json 中缺少 baseUrl（现有字段: ' + Object.keys(cfg).join(', ') + '）');
+  if (typeof cfg.cookie !== 'string')
+    fail(`config.json 中 cookie 字段类型错误（期望 string，实际 ${typeof cfg.cookie}）`);
+  if (!cfg.cookie.trim()) fail('config.json 中缺少 cookie，请填入登录后的 Cookie');
 
   const url = cfg.baseUrl.replace(/\/+$/, '') + '/user/checkin';
   const headers = {
@@ -46,7 +58,12 @@ function fail(msg, extra) {
     fail('请求异常: ' + e.message);
   }
 
-  const text = await res.text();
+  let text;
+  try {
+    text = await res.text();
+  } catch (e) {
+    fail('读取响应体异常: ' + e.message);
+  }
   console.log('[api:ikuuu-checkin] HTTP', res.status);
 
   // 正常应返回 JSON: {"ret":1,"msg":"获得了 xxx MB 流量"}
@@ -75,4 +92,7 @@ function fail(msg, extra) {
   }
 
   fail('响应 JSON 中没有 ret 字段，请人工确认接口返回结构: ' + text.slice(0, 300));
-})();
+})().catch((e) => {
+  // 兜底：任何未捕获异常（含堆栈）以受控方式输出，避免日志只剩 "Node.js vXX"
+  fail('脚本异常: ' + ((e && e.stack) || e));
+});
