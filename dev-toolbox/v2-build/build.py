@@ -59,12 +59,12 @@ html = u"""<!DOCTYPE html>
 <title>前端百宝箱</title>
 <style>__ANTD_CSS__</style>
 <style>
-/* 前端百宝箱 v2.0 追加样式（antd 之外的代码输出区/日志区） */
+/* 前端百宝箱 v2.0 追加样式（antd 之外的代码输出区/日志区）—— 白色简约风 */
 body{margin:0}
-.code-out{background:#0b1021;color:#d6e4ff;border-radius:8px;padding:10px 12px;font:12.5px/1.6 Consolas,Menlo,monospace;white-space:pre-wrap;word-break:break-all;margin:0 0 10px;max-height:420px;overflow:auto}
-.ws-log{background:#0b1021;border-radius:8px;padding:8px 10px;max-height:380px;overflow:auto;font:12.5px/1.7 Consolas,Menlo,monospace}
-.ws-line{padding:1px 0;color:#d6e4ff}
-.ws-t{color:#6b7db3;margin-right:6px}
+.code-out{background:#f6f8fa;color:#24292f;border:1px solid #e8eaed;border-radius:8px;padding:10px 12px;font:12.5px/1.6 Consolas,Menlo,monospace;white-space:pre-wrap;word-break:break-all;margin:0 0 10px;max-height:420px;overflow:auto}
+.ws-log{background:#f6f8fa;border:1px solid #e8eaed;border-radius:8px;padding:8px 10px;max-height:380px;overflow:auto;font:12.5px/1.7 Consolas,Menlo,monospace}
+.ws-line{padding:1px 0;color:#24292f}
+.ws-t{color:#8c8c8c;margin-right:6px}
 pre.code-out{margin:0 0 10px}
 details summary{color:#555}
 </style>

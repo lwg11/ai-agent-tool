@@ -1127,7 +1127,7 @@ function ConsoleMod(){
     <//>`}>
       <${TextArea} rows="7" value=${code} onChange=${e => setCode(e.target.value)}
         onKeyDown=${e => { if((e.ctrlKey || e.metaKey) && e.key === 'Enter'){ e.preventDefault(); run(); } }}
-        placeholder="支持 top-level await / 循环引用安全 / console.log 捕获&#10;Ctrl(⌘)+Enter 运行" />
+        placeholder="支持 top-level await / 循环引用安全 / console.log 捕获\nCtrl(⌘)+Enter 运行" />
       <div className="ws-log" style=${{ marginTop: 10 }}>
         ${entries.map(en => html`<div key=${en.key} className="ws-line" style=${{ color: en.lvl === 'error' ? '#cf1322' : en.lvl === 'warn' ? '#d46b08' : en.lvl === 'info' ? '#1668dc' : en.lvl === 'ret' ? '#722ed1' : 'inherit' }}>
           <span className="ws-t">${en.lvl === 'error' ? '⛔' : en.lvl === 'warn' ? '⚠' : en.lvl === 'info' ? 'ℹ' : en.lvl === 'ret' ? '↩' : '›'}</span>
@@ -1169,15 +1169,15 @@ function App(){
   useEffect(() => { localStorage.setItem('dsk2-cur', cur); }, [cur]);
   return html`
     <${Layout} style=${{ minHeight: '100vh' }}>
-      <${Header} style=${{ background: '#001529', display: 'flex', alignItems: 'center', gap: 12, padding: '0 16px', position: 'sticky', top: 0, zIndex: 100 }}>
-        <span style=${{ color: '#fff', fontSize: 17, fontWeight: 700 }}>🧰 前端百宝箱</span>
-        <span style=${{ color: 'rgba(255,255,255,.55)', fontSize: 12 }}>v2.0 · antd 版 · 单文件 · 离线可用 · 数据不出浏览器</span>
+      <${Header} style=${{ background: '#fff', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: 12, padding: '0 16px', position: 'sticky', top: 0, zIndex: 100 }}>
+        <span style=${{ fontSize: 17, fontWeight: 700, color: 'rgba(0,0,0,.85)' }}>🧰 前端百宝箱</span>
+        <span style=${{ color: 'rgba(0,0,0,.45)', fontSize: 12 }}>v2.0 · antd 版 · 单文件 · 离线可用 · 数据不出浏览器</span>
         <span style=${{ flex: 1 }}></span>
-        <${Button} ghost size="small" style=${{ color: '#fff' }} onClick=${() => setAbout(true)}>关于</${Button}>
+        <${Button} size="small" onClick=${() => setAbout(true)}>关于</${Button}>
       <//>
       <${Layout}>
-        <${Sider} theme="dark" width=${210} collapsible collapsed=${collapsed} onCollapse=${setCollapsed} style=${{ position: 'sticky', top: 64, height: 'calc(100vh - 64px)', overflow: 'auto' }}>
-          <${Menu} theme="dark" mode="inline" selectedKeys=${[cur]} onClick=${e => setCur(e.key)} style=${{ borderRight: 0 }}>
+        <${Sider} theme="light" width=${210} collapsible collapsed=${collapsed} onCollapse=${setCollapsed} style=${{ position: 'sticky', top: 64, height: 'calc(100vh - 64px)', overflow: 'auto' }}>
+          <${Menu} theme="light" mode="inline" selectedKeys=${[cur]} onClick=${e => setCur(e.key)} style=${{ borderRight: 0, paddingBottom: 48 }}>
             ${MODS.map(m => html`<${Menu.Item} key=${m.k}>${m.icon}${collapsed ? '' : ' ' + m.label}<//>`)}
           <//>
         <//>
