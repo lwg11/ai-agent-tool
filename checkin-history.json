@@ -500,5 +500,27 @@
     ],
     "id": "2026-09-17T01:53:31.587Z-hr5b",
     "trigger": "workflow_dispatch"
+  },
+  {
+    "date": "2026-09-18",
+    "bjTime": "02:32:16",
+    "runAt": "2026-09-17T18:32:16.961Z",
+    "allOk": false,
+    "tools": [
+      {
+        "key": "ikuuu",
+        "label": "ikuuu 签到",
+        "ok": true,
+        "message": "[ikuuu] 签到成功: 你获得了 1534 MB流量"
+      },
+      {
+        "key": "juejin",
+        "label": "掘金签到(浏览器)",
+        "ok": false,
+        "message": "[juejin-browser] ❌ 失败: 连续 3 次点击后均未见签到结果（接口无响应、状态未变更、reload 复核仍未签到），附失败截图 failure.debug.png"
+      }
+    ],
+    "id": "2026-09-17T18:32:16.961Z-q9ms",
+    "trigger": "schedule"
   }
 ]
