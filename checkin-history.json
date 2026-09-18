@@ -666,5 +666,33 @@
     ],
     "id": "2026-09-18T09:20:56.945Z-fp3r",
     "trigger": "workflow_dispatch"
+  },
+  {
+    "date": "2026-09-18",
+    "bjTime": "17:42:33",
+    "runAt": "2026-09-18T09:42:33.130Z",
+    "allOk": false,
+    "tools": [
+      {
+        "key": "ikuuu",
+        "label": "ikuuu 签到",
+        "ok": false,
+        "message": "[ikuuu] 失败: 返回内容不是 JSON（HTTP 200）。多半是 Cookie 失效/被重定向到登录页，请到 https://ikuuu.top 重新登录后更新 config.json 的 ikuuu.cookie。返回片段:  <!DOCTYPE html> <html lang=\"en\"> <head> <script> // polyfill for native atob, su"
+      },
+      {
+        "key": "juejin",
+        "label": "掘金签到(浏览器)",
+        "ok": true,
+        "message": "[juejin-draw] ℹ️ 今日免费次数已用完（free_count=0），跳过单抽"
+      },
+      {
+        "key": "juejin-draw",
+        "label": "掘金单抽",
+        "ok": true,
+        "message": "[juejin-browser] ✅ 今日免费次数已用完（free_count=0），跳过单抽"
+      }
+    ],
+    "id": "2026-09-18T09:42:33.130Z-2hxz",
+    "trigger": "workflow_dispatch"
   }
 ]
