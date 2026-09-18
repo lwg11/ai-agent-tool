@@ -588,5 +588,27 @@
     ],
     "id": "2026-09-18T04:53:33.241Z-0fbx",
     "trigger": "schedule"
+  },
+  {
+    "date": "2026-09-18",
+    "bjTime": "13:09:52",
+    "runAt": "2026-09-18T05:09:52.982Z",
+    "allOk": false,
+    "tools": [
+      {
+        "key": "ikuuu",
+        "label": "ikuuu 签到",
+        "ok": false,
+        "message": "[ikuuu] 失败: 返回内容不是 JSON（HTTP 200）。多半是 Cookie 失效/被重定向到登录页，请到 https://ikuuu.top 重新登录后更新 config.json 的 ikuuu.cookie。返回片段:  <!DOCTYPE html> <html lang=\"en\"> <head> <script> // polyfill for native atob, su"
+      },
+      {
+        "key": "juejin",
+        "label": "掘金签到(浏览器)",
+        "ok": true,
+        "message": "[juejin-browser] 累计签到: 747 天"
+      }
+    ],
+    "id": "2026-09-18T05:09:52.982Z-2tsa",
+    "trigger": "schedule"
   }
 ]
