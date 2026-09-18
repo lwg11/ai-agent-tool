@@ -10,6 +10,7 @@
  * 依赖：npm install playwright && npx playwright install chromium
  * 用法：node juejin-browser.js                # 签到 + 每日免费单抽
  *       node juejin-browser.js --draw-only    # 仅免费单抽（控制台「手动单抽」走这里）
+ *       node juejin-browser.js --ten-draw-only # 仅十连抽（手动触发专用，消耗 2000 矿石）
  */
 'use strict';
 
@@ -34,6 +35,9 @@ const SIGNIN_URL = 'https://juejin.cn/user/center/signin?from=main_page';
 const LOTTERY_URL = 'https://juejin.cn/user/center/lottery?from=lucky_lottery_menu_bar';
 // 仅单抽模式（跳过签到，直接进抽奖页）
 const DRAW_ONLY = process.argv.includes('--draw-only');
+// 仅十连抽模式（手动触发专用：十连抽无免费次数概念，每次消耗 2000 矿石，
+// 余额不足由服务端拒绝（err_no != 0），不会扣成负数）
+const TEN_DRAW_ONLY = process.argv.includes('--ten-draw-only');
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 
 function parseCookieString(str) {
@@ -69,6 +73,7 @@ function parseCookieString(str) {
     let lastCheckin = null; // { errNo, point }
     let lastLotteryConfig = null; // { errNo, freeCount } —— 免费次数以页面真实接口响应为准
     let lastDraw = null; // { errNo, msg, name }
+    let lastTenDraw = null; // { errNo, msg, names } —— 十连抽结果
     page.on('response', async (resp) => {
       try {
         const u = resp.url();
@@ -99,6 +104,17 @@ function parseCookieString(str) {
             const j = JSON.parse(body);
             lastDraw = { errNo: j.err_no, msg: j.err_msg || '', name: j.data && j.data.lottery_name ? j.data.lottery_name : null };
           } catch { lastDraw = { errNo: -1, msg: '', name: null }; }
+        }
+        // 十连抽接口（/lottery/ten_draw 与 /lottery/draw 子串不重叠，独立分支）
+        if (u.includes('/growth_api/v1/lottery/ten_draw')) {
+          let body = '';
+          try { body = (await resp.text()) || ''; } catch { body = ''; }
+          console.log(`[api:juejin-ten_draw] HTTP ${resp.status()} ${body.slice(0, 200)}`);
+          try {
+            const j = JSON.parse(body);
+            const list = j.data && Array.isArray(j.data.lottery_list) ? j.data.lottery_list.map((x) => (x && x.lottery_name) || '?') : null;
+            lastTenDraw = { errNo: j.err_no, msg: j.err_msg || '', names: list };
+          } catch { lastTenDraw = { errNo: -1, msg: '', names: null }; }
         }
       } catch { /* 忽略监听竞态 */ }
     });
@@ -174,10 +190,50 @@ function parseCookieString(str) {
       if (m) return `单抽成功: ${m[1]}（弹窗确认）`;
       throw new Error('点击后未见 draw 接口响应与结果弹窗，附失败截图 failure.debug.png');
     };
+
+    // ---- 手动十连抽（每次消耗 2000 矿石，无免费次数概念） ----
+    // 仅手动触发（--ten-draw-only / 控制台菜单），绝不接入自动流程；
+    // 余额不足由服务端拒绝（err_no != 0），脚本不额外拦截。
+    const doTenDraw = async () => {
+      await gotoWithRetry(LOTTERY_URL);
+      for (let i = 0; i < 10 && !lastLotteryConfig; i++) await page.waitForTimeout(1000);
+      const bt = (await page.locator('body').innerText().catch(() => '')) || '';
+      if (bt.includes('访问异常')) throw new Error('抽奖页触发掘金风控拦截页（"访问异常"）');
+      const balance = bt.match(/(\d+)\s*矿石/);
+      if (balance) console.log(`[juejin-ten-draw] 当前矿石余额（页面读取）: ${balance[1]}`);
+      console.log('[juejin-ten-draw] 点击十连抽（将消耗 2000 矿石）...');
+      const candidates = [
+        { name: 'text="十连抽"', label: '十连抽按钮' },
+        { name: 'text=/十连抽/', label: '十连抽按钮(正则)' },
+      ];
+      let tenBtn = null;
+      for (const s of candidates) {
+        const loc = page.locator(s.name).first();
+        if ((await loc.count()) > 0 && (await loc.isVisible().catch(() => false))) {
+          tenBtn = loc;
+          console.log(`[juejin-ten-draw] 找到${s.label}`);
+          break;
+        }
+      }
+      if (!tenBtn) throw new Error('未找到十连抽按钮（页面结构可能变化），附失败截图 failure.debug.png');
+      lastTenDraw = null;
+      await tenBtn.click({ timeout: 5000 }).catch(() => {});
+      console.log('[api:juejin-ten-draw] 已点击十连抽，等待 ten_draw 接口响应（动画最长 20 秒）...');
+      for (let i = 0; i < 20 && !lastTenDraw; i++) await page.waitForTimeout(1000);
+      if (lastTenDraw && lastTenDraw.errNo === 0) {
+        const names = Array.isArray(lastTenDraw.names) ? lastTenDraw.names.join('、') : '(未解析到奖品列表)';
+        return `十连抽成功: ${names}`;
+      }
+      if (lastTenDraw && lastTenDraw.errNo !== 0) {
+        if (/矿石|不足|余额/.test(lastTenDraw.msg)) return `矿石余额不足，未执行（服务端返回: ${lastTenDraw.msg}）`;
+        throw new Error(`ten_draw err_no=${lastTenDraw.errNo}, err_msg=${lastTenDraw.msg}`);
+      }
+      throw new Error('点击后未见 ten_draw 接口响应（20 秒），附失败截图 failure.debug.png');
+    };
     // 签到流程收尾（含尽力而为的单抽：单抽失败不影响签到结果记录）
     const finishSigned = async (msg) => {
       console.log(`[juejin-browser] ✅ ${msg}`);
-      if (!DRAW_ONLY) {
+      if (!DRAW_ONLY && !TEN_DRAW_ONLY) {
         try {
           const drawMsg = await doDraw();
           console.log(`[juejin-draw] ${drawMsg.startsWith('单抽成功') ? '✅' : 'ℹ️'} ${drawMsg}`);
@@ -188,6 +244,13 @@ function parseCookieString(str) {
       await browser.close();
       process.exit(0);
     };
+
+    if (TEN_DRAW_ONLY) {
+      const r = await doTenDraw();
+      console.log(`[juejin-ten-draw] ✅ ${r}`);
+      await browser.close();
+      process.exit(0);
+    }
 
     if (DRAW_ONLY) {
       const r = await doDraw();

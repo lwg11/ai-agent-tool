@@ -19,6 +19,9 @@ const tasks = [
   // 每日免费单抽：复用无头浏览器脚本 --draw-only 模式（页面自身生成风控参数，免抓取），
   // 独立任务、同样享受当日幂等（skip 已成功项）
   { key: 'juejin-draw', label: '掘金单抽', script: path.join(__dirname, 'juejin-checkin', 'juejin-browser.js'), args: ['--draw-only'] },
+  // 十连抽：每次消耗 2000 矿石，manualOnly——自动 all 流程永不执行，
+  // 仅控制台「手动十连抽」显式 --only 才跑；同样享受当日幂等（防止同日误点双倍扣矿石）
+  { key: 'juejin-ten-draw', label: '掘金十连抽(手动)', script: path.join(__dirname, 'juejin-checkin', 'juejin-browser.js'), args: ['--ten-draw-only'], manualOnly: true },
 ];
 
 // 支持单工具执行：--only=ikuuu / --only=juejin（控制台按钮触发用）
@@ -27,7 +30,9 @@ const tasks = [
 const onlyArg = process.argv.slice(2).map((a) => a.match(/^--only=([\w,]+)$/)).filter(Boolean)[0];
 const skipArg = process.argv.slice(2).map((a) => a.match(/^--skip=([\w,]*)$/)).filter(Boolean)[0];
 const skipSet = new Set(skipArg ? skipArg[1].split(',').filter(Boolean) : []);
-const activeTasks = onlyArg ? tasks.filter((t) => onlyArg[1].split(',').includes(t.key)) : tasks;
+const activeTasks = onlyArg
+  ? tasks.filter((t) => onlyArg[1].split(',').includes(t.key))
+  : tasks.filter((t) => !t.manualOnly); // 自动流程（无 --only）跳过 manualOnly 任务（十连抽扣矿石）
 if (!activeTasks.length) {
   console.error(`[run-all] 未找到匹配的签到任务: ${onlyArg ? onlyArg[1] : '(无)'}`);
   process.exit(1);

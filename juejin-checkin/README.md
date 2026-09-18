@@ -54,6 +54,14 @@ config.json 只需 `cookie`（与签到共用）；可选 `executablePath`（本
 
 API 直调版 `juejin-draw.js` 保留作参考：需要抓 msToken/aBogus（从 draw 请求）+ csrfToken，且与 URL 绑定、隔夜易失效，已不再接入 run-all。
 
+## 手动十连抽（已并入无头浏览器版，2026-09-18）
+
+- `node juejin-browser.js --ten-draw-only`：仅十连抽（run-all 的 `juejin-ten-draw` 任务、控制台「手动十连抽」走这里）
+- **每次消耗 2000 矿石**，无免费次数概念；任务标记 `manualOnly`，自动 `all` 流程永不执行，仅显式 `--only=juejin-ten-draw` 派发
+- 享受当日幂等（skip 已成功项）：同日重复点击会被跳过，防止误点双倍扣矿石
+- 余额不足由服务端拒绝（ten_draw err_no != 0，err_msg 含"矿石/不足/余额"时视为未执行、不报失败），不会扣成负数
+- 结果以 `lottery/ten_draw` 接口响应为准（等待最长 20 秒），成功时列出 `lottery_list` 全部奖品名
+
 ## 旧版 API 直调脚本（备用，已弃用）
 
 `juejin-checkin.js` 保留作参考：走 `growth_api/v1/get_today_status` + `check_in`，**需要手工抓 msToken/aBogus 且隔夜失效，仅 `get_today_status` 查询状态可用**。日常请用浏览器版。

@@ -27,13 +27,14 @@ on:
   workflow_dispatch: # 支持在 Actions 页面手动触发（用于测试，必跑）
         inputs:
           only:
-            description: 执行范围（控制台「执行签到」按钮也走这里；juejin-draw=仅掘金免费单抽）
+            description: 执行范围（juejin-draw=免费单抽；juejin-ten-draw=十连抽，消耗 2000 矿石）
         type: choice
         options:
           - all
           - ikuuu
           - juejin
           - juejin-draw
+          - juejin-ten-draw
         default: all
 
 concurrency:
