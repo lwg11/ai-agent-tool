@@ -41,21 +41,18 @@ node ../run-all.js         # 或一键全跑
 4. 等"签到成功 / 获得 N 矿石"弹窗，输出矿石数与连续/累计天数
 5. 失败时保存 `failure.debug.png` 截图辅助排查（已 gitignore）
 
-## 每日免费单抽（juejin-draw.js，2026-09-18 新增）
+## 每日免费单抽（已并入无头浏览器版，2026-09-18）
 
-走 API 直调 `growth_api/v1/lottery/draw`（已消融实测）：
+单抽集成在 `juejin-browser.js` 中，**页面自身生成风控参数，免抓取、不会隔夜失效**：
 
-| 要素 | 结论 |
-|---|---|
-| `msToken` + `a_bogus` | 必需，从 **draw** 请求抓取（与 URL 绑定，与 check_in 的是两对，别混用） |
-| `x-secsdk-csrf-token` 头 | **draw 必需**（check_in 不需要）；任一缺失返回 200 + 空 body |
-| 免费次数用尽 | 服务端 err_no != 0，脚本按 err_msg 判定并视为当日完成（幂等） |
+- 默认模式：签到成功后自动顺路单抽（单抽失败不影响签到结果记录）
+- `node juejin-browser.js --draw-only`：仅单抽（run-all 的 `juejin-draw` 任务、控制台「手动单抽」走这里）
+- **防误扣矿石**：先读页面真实接口 `lottery_config/get` 的 `free_count`，>0 才点击；=0 跳过。点击候选：`免费抽奖` → `单抽`
+- 结果以 `lottery/draw` 接口响应为准（转盘动画期间等待最长 15 秒），弹窗文本兜底
 
-config.json 在签到字段基础上追加：`uuid`、`msToken`、`aBogus`、`csrfToken`（请求头 x-secsdk-csrf-token 的值）。
+config.json 只需 `cookie`（与签到共用）；可选 `executablePath`（本地浏览器版本错位时手动指定，云端无需）。
 
-抓取步骤：浏览器打开 juejin.cn/user/center/lottery → F12 → Network → 点「免费抽奖」→ 找 `draw` 请求 → URL query 的 `msToken`/`a_bogus` 填回 `msToken`/`aBogus`，请求头 `x-secsdk-csrf-token` 填回 `csrfToken`。
-
-在 `run-all.js` 中注册为独立任务 `juejin-draw`（排掘金签到后），自动跑 `all` 时执行并享受当日幂等；控制台可单独手动触发。
+API 直调版 `juejin-draw.js` 保留作参考：需要抓 msToken/aBogus（从 draw 请求）+ csrfToken，且与 URL 绑定、隔夜易失效，已不再接入 run-all。
 
 ## 旧版 API 直调脚本（备用，已弃用）
 

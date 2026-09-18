@@ -8,7 +8,8 @@
  * 风控对与请求 URL/UA/时间强绑定且 <24h 失效）。
  *
  * 依赖：npm install playwright && npx playwright install chromium
- * 用法：node juejin-browser.js
+ * 用法：node juejin-browser.js                # 签到 + 每日免费单抽
+ *       node juejin-browser.js --draw-only    # 仅免费单抽（控制台「手动单抽」走这里）
  */
 'use strict';
 
@@ -30,6 +31,9 @@ if (!COOKIE || COOKIE.includes('在此粘贴')) {
 
 const JUEJIN_URL = 'https://juejin.cn/';
 const SIGNIN_URL = 'https://juejin.cn/user/center/signin?from=main_page';
+const LOTTERY_URL = 'https://juejin.cn/user/center/lottery?from=lucky_lottery_menu_bar';
+// 仅单抽模式（跳过签到，直接进抽奖页）
+const DRAW_ONLY = process.argv.includes('--draw-only');
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 
 function parseCookieString(str) {
@@ -48,7 +52,11 @@ function parseCookieString(str) {
   try {
     const { chromium } = require('playwright');
     console.log('[juejin-browser] 启动无头 Chromium...');
-    browser = await chromium.launch({ headless: HEADLESS });
+    browser = await chromium.launch(
+      cfg.executablePath
+        ? { headless: HEADLESS, executablePath: cfg.executablePath } // 本地版本错位时手动指定，云端无需配置
+        : { headless: HEADLESS }
+    );
     const context = await browser.newContext({ userAgent: UA, viewport: { width: 1280, height: 800 }, locale: 'zh-CN' });
     // 基础反检测
     await context.addInitScript(() => {
@@ -59,6 +67,8 @@ function parseCookieString(str) {
     const page = await context.newPage();
     // 网络监听：捕获 check_in 接口的真实响应——签到成败以接口为准（UI 弹窗偶发不出现，不可靠）
     let lastCheckin = null; // { errNo, point }
+    let lastLotteryConfig = null; // { errNo, freeCount } —— 免费次数以页面真实接口响应为准
+    let lastDraw = null; // { errNo, msg, name }
     page.on('response', async (resp) => {
       try {
         const u = resp.url();
@@ -70,6 +80,25 @@ function parseCookieString(str) {
             const j = JSON.parse(body);
             lastCheckin = { errNo: j.err_no, point: j.data && typeof j.data.incr_point === 'number' ? j.data.incr_point : null };
           } catch { lastCheckin = { errNo: -1, point: null }; }
+        }
+        if (u.includes('/growth_api/v1/lottery_config/get')) {
+          let body = '';
+          try { body = (await resp.text()) || ''; } catch { body = ''; }
+          console.log(`[api:juejin-lottery_config] HTTP ${resp.status()} ${body.slice(0, 120)}`);
+          try {
+            const j = JSON.parse(body);
+            const fc = j.data && typeof j.data.free_count === 'number' ? j.data.free_count : null;
+            lastLotteryConfig = { errNo: j.err_no, freeCount: fc };
+          } catch { lastLotteryConfig = { errNo: -1, freeCount: null }; }
+        }
+        if (u.includes('/growth_api/v1/lottery/draw')) {
+          let body = '';
+          try { body = (await resp.text()) || ''; } catch { body = ''; }
+          console.log(`[api:juejin-draw] HTTP ${resp.status()} ${body.slice(0, 200)}`);
+          try {
+            const j = JSON.parse(body);
+            lastDraw = { errNo: j.err_no, msg: j.err_msg || '', name: j.data && j.data.lottery_name ? j.data.lottery_name : null };
+          } catch { lastDraw = { errNo: -1, msg: '', name: null }; }
         }
       } catch { /* 忽略监听竞态 */ }
     });
@@ -100,6 +129,71 @@ function parseCookieString(str) {
     await context.addCookies(parseCookieString(COOKIE));
     console.log(`[api:juejin-browser] 已注入 ${parseCookieString(COOKIE).length} 条 cookie`);
 
+    // ---- 每日免费单抽（页面自身生成风控参数，免抓取） ----
+    // 安全前提：只有页面真实接口 lottery_config/get 返回 free_count > 0 才点击，
+    // 否则一律不点（点击无免费次数的单抽会扣 200 矿石）。
+    const doDraw = async () => {
+      await gotoWithRetry(LOTTERY_URL);
+      // 等待页面加载并发出 lottery_config/get（最多 10 秒）
+      for (let i = 0; i < 10 && !lastLotteryConfig; i++) await page.waitForTimeout(1000);
+      const bt = (await page.locator('body').innerText().catch(() => '')) || '';
+      if (bt.includes('访问异常')) throw new Error('抽奖页触发掘金风控拦截页（"访问异常"）');
+      if (!lastLotteryConfig || typeof lastLotteryConfig.freeCount !== 'number' || lastLotteryConfig.errNo !== 0) {
+        throw new Error('未捕获到 lottery_config/get 的 free_count（安全起见不点击，防止误扣矿石）');
+      }
+      if (lastLotteryConfig.freeCount <= 0) {
+        return '今日免费次数已用完（free_count=0），跳过单抽';
+      }
+      console.log(`[juejin-draw] 免费次数 ${lastLotteryConfig.freeCount} 次，点击单抽...`);
+      const candidates = [
+        { name: 'text="免费抽奖"', label: '免费抽奖按钮' },
+        { name: 'text="单抽"', label: '单抽按钮' },
+      ];
+      let drawBtn = null;
+      for (const s of candidates) {
+        const loc = page.locator(s.name).first();
+        if ((await loc.count()) > 0 && (await loc.isVisible().catch(() => false))) {
+          drawBtn = loc;
+          console.log(`[juejin-draw] 找到${s.label}`);
+          break;
+        }
+      }
+      if (!drawBtn) throw new Error('未找到单抽按钮（页面结构可能变化），附失败截图 failure.debug.png');
+      lastDraw = null;
+      await drawBtn.click({ timeout: 5000 }).catch(() => {});
+      console.log('[api:juejin-draw] 已点击单抽，等待抽奖接口响应（转盘动画最长 15 秒）...');
+      for (let i = 0; i < 15 && !lastDraw; i++) await page.waitForTimeout(1000);
+      if (lastDraw && lastDraw.errNo === 0) return `单抽成功: ${lastDraw.name || '(未知奖品)'}`;
+      if (lastDraw && lastDraw.errNo !== 0) {
+        if (/次数|用完|免费/.test(lastDraw.msg)) return `免费次数已用完（服务端返回: ${lastDraw.msg}）`;
+        throw new Error(`draw err_no=${lastDraw.errNo}, err_msg=${lastDraw.msg}`);
+      }
+      // 接口监听未命中时兜底看结果弹窗
+      const t = (await page.locator('body').innerText().catch(() => '')) || '';
+      const m = t.match(/恭喜[^。]{0,40}?获得\s*([^\s，。]{1,20})/);
+      if (m) return `单抽成功: ${m[1]}（弹窗确认）`;
+      throw new Error('点击后未见 draw 接口响应与结果弹窗，附失败截图 failure.debug.png');
+    };
+    // 签到流程收尾（含尽力而为的单抽：单抽失败不影响签到结果记录）
+    const finishSigned = async (msg) => {
+      console.log(`[juejin-browser] ✅ ${msg}`);
+      if (!DRAW_ONLY) {
+        try {
+          const drawMsg = await doDraw();
+          console.log(`[juejin-draw] ${drawMsg.startsWith('单抽成功') ? '✅' : 'ℹ️'} ${drawMsg}`);
+        } catch (e) {
+          console.log(`[juejin-draw] ⚠️ 单抽未完成（不影响签到结果）: ${e.message}`);
+        }
+      }
+      await browser.close();
+      process.exit(0);
+    };
+
+    if (DRAW_ONLY) {
+      const r = await doDraw();
+      await finishSigned(r);
+    }
+
     await gotoWithRetry(SIGNIN_URL);
 
     // 等页面就绪（签到统计出现）
@@ -120,9 +214,7 @@ function parseCookieString(str) {
 
     // 已签到检查
     if (bodyText.includes('今日已签到')) {
-      console.log('[juejin-browser] ✅ 今日已签到（免重复操作）');
-      await browser.close();
-      process.exit(0);
+      await finishSigned('今日已签到（免重复操作）');
     }
 
     // 找签到按钮（按优先级）
@@ -139,9 +231,7 @@ function parseCookieString(str) {
         const btnText = (await loc.innerText().catch(() => '')).trim();
         // 已签状态下按钮会变成"已签到"字样 —— 直接视为成功
         if (btnText.includes('已签')) {
-          console.log('[juejin-browser] ✅ 今日已签到（按钮状态为已签）');
-          await browser.close();
-          process.exit(0);
+          await finishSigned('今日已签到（按钮状态为已签）');
         }
         btn = loc;
         console.log(`[juejin-browser] 找到${s.label}: "${btnText}"`);
@@ -152,9 +242,7 @@ function parseCookieString(str) {
       // 兜底：找不到按钮但页面有"已签到"字样 → 视为已签成功
       const signedEl = page.locator('text=/已签/').first();
       if ((await signedEl.count()) > 0 && (await signedEl.isVisible().catch(() => false))) {
-        console.log('[juejin-browser] ✅ 今日已签到（页面含已签状态文本）');
-        await browser.close();
-        process.exit(0);
+        await finishSigned('今日已签到（页面含已签状态文本）');
       }
       throw new Error('未找到签到按钮（页面结构可能变化），附失败截图 failure.debug.png');
     }
@@ -208,7 +296,6 @@ function parseCookieString(str) {
       } catch { /* reload 失败按原失败路径处理 */ }
     }
     if (!signed) throw new Error('连续 3 次点击后均未见签到结果（接口无响应、状态未变更、reload 复核仍未签到），附失败截图 failure.debug.png');
-    console.log(`[juejin-browser] ✅ ${reward}`);
 
     // 统计信息（尽力而为）
     const t3 = (await page.locator('body').innerText().catch(() => '')) || '';
@@ -217,8 +304,7 @@ function parseCookieString(str) {
     if (cont) console.log(`[juejin-browser] 连续签到: ${cont[1]} 天`);
     if (total) console.log(`[juejin-browser] 累计签到: ${total[1]} 天`);
 
-    await browser.close();
-    process.exit(0);
+    await finishSigned(reward);
   } catch (err) {
     console.error('[juejin-browser] ❌ 失败:', err.message);
     // 失败截图便于排查

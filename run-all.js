@@ -16,8 +16,9 @@ const path = require('path');
 const tasks = [
   { key: 'ikuuu', label: 'ikuuu 签到', script: path.join(__dirname, 'ikuuu-checkin', 'ikuuu-checkin.js') },
   { key: 'juejin', label: '掘金签到(浏览器)', script: path.join(__dirname, 'juejin-checkin', 'juejin-browser.js') },
-  // 每日免费单抽：独立任务、同样享受当日幂等（skip 已成功项），自动跑 all 时排在掘金签到之后
-  { key: 'juejin-draw', label: '掘金单抽', script: path.join(__dirname, 'juejin-checkin', 'juejin-draw.js') },
+  // 每日免费单抽：复用无头浏览器脚本 --draw-only 模式（页面自身生成风控参数，免抓取），
+  // 独立任务、同样享受当日幂等（skip 已成功项）
+  { key: 'juejin-draw', label: '掘金单抽', script: path.join(__dirname, 'juejin-checkin', 'juejin-browser.js'), args: ['--draw-only'] },
 ];
 
 // 支持单工具执行：--only=ikuuu / --only=juejin（控制台按钮触发用）
@@ -42,7 +43,7 @@ for (const t of activeTasks) {
     results.push({ key: t.key, label: t.label, ok: true, message: '今日已成功签到，跳过本次执行（避免重复提交）' });
     continue;
   }
-  const r = spawnSync(process.execPath, [t.script], { encoding: 'utf8' });
+  const r = spawnSync(process.execPath, [t.script].concat(t.args || []), { encoding: 'utf8' });
   const out = ((r.stdout || '') + (r.stderr || '')).trim();
   if (out) console.log(out);
   const ok = r.status === 0;
