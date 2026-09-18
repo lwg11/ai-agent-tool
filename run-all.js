@@ -16,6 +16,8 @@ const path = require('path');
 const tasks = [
   { key: 'ikuuu', label: 'ikuuu 签到', script: path.join(__dirname, 'ikuuu-checkin', 'ikuuu-checkin.js') },
   { key: 'juejin', label: '掘金签到(浏览器)', script: path.join(__dirname, 'juejin-checkin', 'juejin-browser.js') },
+  // 每日免费单抽：独立任务、同样享受当日幂等（skip 已成功项），自动跑 all 时排在掘金签到之后
+  { key: 'juejin-draw', label: '掘金单抽', script: path.join(__dirname, 'juejin-checkin', 'juejin-draw.js') },
 ];
 
 // 支持单工具执行：--only=ikuuu / --only=juejin（控制台按钮触发用）
@@ -49,7 +51,7 @@ for (const t of activeTasks) {
   // 无信息量，改为优先捞含 Error/[工具名]/失败/异常 的行（通常是真实报错），否则取最后一行
   const lines = out.split('\n').map((s) => s.trim()).filter(Boolean);
   const marked = lines.filter((l) => l.startsWith('✅') || l.startsWith('❌'));
-  const errLike = lines.filter((l) => /(\[(ikuuu|juejin|run-all)\]|Error|失败|异常)/i.test(l));
+  const errLike = lines.filter((l) => /(\[(ikuuu|juejin[\w-]*|run-all)\]|Error|失败|异常)/i.test(l));
   const message = (
     marked[marked.length - 1] ||
     errLike[errLike.length - 1] ||

@@ -25,14 +25,15 @@ on:
     - cron: '23 13 * * *' # 北京 21:23 晚间兜底（第二点，防 20:07 被 GitHub 丢弃）
     - cron: '39 14 * * *' # 北京 22:39 晚间兜底（第三点，最后一道网）
   workflow_dispatch: # 支持在 Actions 页面手动触发（用于测试，必跑）
-    inputs:
-      only:
-        description: 执行范围（控制台「执行签到」按钮也走这里）
+        inputs:
+          only:
+            description: 执行范围（控制台「执行签到」按钮也走这里；juejin-draw=仅掘金免费单抽）
         type: choice
         options:
           - all
           - ikuuu
           - juejin
+          - juejin-draw
         default: all
 
 concurrency:

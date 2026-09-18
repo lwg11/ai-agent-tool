@@ -41,6 +41,22 @@ node ../run-all.js         # 或一键全跑
 4. 等"签到成功 / 获得 N 矿石"弹窗，输出矿石数与连续/累计天数
 5. 失败时保存 `failure.debug.png` 截图辅助排查（已 gitignore）
 
+## 每日免费单抽（juejin-draw.js，2026-09-18 新增）
+
+走 API 直调 `growth_api/v1/lottery/draw`（已消融实测）：
+
+| 要素 | 结论 |
+|---|---|
+| `msToken` + `a_bogus` | 必需，从 **draw** 请求抓取（与 URL 绑定，与 check_in 的是两对，别混用） |
+| `x-secsdk-csrf-token` 头 | **draw 必需**（check_in 不需要）；任一缺失返回 200 + 空 body |
+| 免费次数用尽 | 服务端 err_no != 0，脚本按 err_msg 判定并视为当日完成（幂等） |
+
+config.json 在签到字段基础上追加：`uuid`、`msToken`、`aBogus`、`csrfToken`（请求头 x-secsdk-csrf-token 的值）。
+
+抓取步骤：浏览器打开 juejin.cn/user/center/lottery → F12 → Network → 点「免费抽奖」→ 找 `draw` 请求 → URL query 的 `msToken`/`a_bogus` 填回 `msToken`/`aBogus`，请求头 `x-secsdk-csrf-token` 填回 `csrfToken`。
+
+在 `run-all.js` 中注册为独立任务 `juejin-draw`（排掘金签到后），自动跑 `all` 时执行并享受当日幂等；控制台可单独手动触发。
+
 ## 旧版 API 直调脚本（备用，已弃用）
 
 `juejin-checkin.js` 保留作参考：走 `growth_api/v1/get_today_status` + `check_in`，**需要手工抓 msToken/aBogus 且隔夜失效，仅 `get_today_status` 查询状态可用**。日常请用浏览器版。
