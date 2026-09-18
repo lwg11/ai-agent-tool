@@ -6,6 +6,9 @@ name: daily-checkin
 #          20:07 / 21:23 / 22:39 晚间兜底必跑（白天触发全被丢弃或签到全失败时的最后一道网，共三点）；
 #          当天已有成功记录时，后续触发（含 cron 延迟导致的迟到触发）一律秒退跳过，
 #          保证每天只记一次。
+#          幂等分两级（2026-09-18 起）：工具级——当天已成功的工具后续触发一律跳过、
+#          不发起任何请求（手动/控制台触发同样生效；ikuuu 重复提交有 cookie 失效风险）；
+#          整场级——当天全部成功时，schedule 迟到触发整场秒退。
 # 时区说明：GitHub Actions cron 只支持 UTC（北京 = UTC+8）。
 # 延迟优化：整点（minute=0）是全 GitHub 排队高峰，实测延迟可达 1~3 小时；
 #          全部改为非整点分钟（7/23/39），保底点提前到 8:07，即使迟到约 50 分钟仍在 9 点前。
@@ -52,36 +55,46 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
 
-      - name: 随机抽签（含当日幂等检查）
+      - name: 随机抽签（含当日幂等检查 + 按工具跳过列表）
         id: dice
         run: |
           # 时间统一按北京时间计算：date -u -d '+8 hours' 不依赖 TZ 环境变量
           # （TZ=Asia/Shanghai 写法在部分环境会失效退回 UTC，导致日期/小时全错）
           BJ_DATE=$(date -u -d '+8 hours' +%F)
           BJ_HOUR=$(date -u -d '+8 hours' +%H)
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "手动/控制台触发，必跑"
-            echo "go=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          # 幂等保护：GitHub cron 延迟会让 0 点抽签与 8 点保底的触发全部迟到，
-          # 若今天（北京时间）已有成功的签到记录，迟到的触发一律跳过（当天全部失败时仍会重试）
+          # 拉取当日历史：既判断"当天是否全部成功"（schedule 迟到触发整场跳过），
+          # 也计算"当天已成功的工具列表"（skip）——工具粒度幂等：已成功的工具
+          # 后续触发一律跳过、不发起任何请求（ikuuu 重复提交有 cookie 失效风险）。
+          # 手动/控制台触发同样应用 skip：只跑当天还没签到的工具。
           HIST=$(curl -sf --max-time 20 -H "Accept: application/vnd.github.raw" \
             "https://api.github.com/repos/${{ github.repository }}/contents/checkin-history.json?ref=main" || echo "")
-          ALREADY=$(printf '%s' "$HIST" | node -e '
+          OUT=$(printf '%s' "$HIST" | node -e '
             let s = "";
             process.stdin.on("data", d => s += d).on("end", () => {
               let h = [];
               try { h = JSON.parse(s); } catch (e) {}
               const today = process.argv[1];
-              console.log(Array.isArray(h) && h.some(r => r && r.date === today && r.allOk === true) ? "yes" : "no");
+              const rec = Array.isArray(h) ? h.filter(r => r && r.date === today) : [];
+              const okTools = {};
+              for (const r of rec) for (const t of (r.tools || [])) if (t && t.ok) okTools[t.key] = true;
+              const allOk = rec.some(r => r && r.allOk === true);
+              console.log((allOk ? "yes" : "no") + " " + Object.keys(okTools).join(","));
             });
           ' "$BJ_DATE")
+          ALREADY=${OUT%% *}
+          SKIP_TOOLS=${OUT#* }
+          echo "skip=$SKIP_TOOLS" >> "$GITHUB_OUTPUT"
+          echo "今日（$BJ_DATE）已成功工具: ${SKIP_TOOLS:-无}；当天全部成功: $ALREADY"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "手动/控制台触发，必跑（已成功的工具由 skip 列表跳过）"
+            echo "go=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           if [ "$ALREADY" = "yes" ]; then
-            echo "今天（$BJ_DATE）已有成功的签到记录，本次为 cron 延迟的迟到触发，跳过"
+            echo "今天（$BJ_DATE）已全部成功签到，本次为 cron 延迟的迟到触发，跳过"
             echo "go=false" >> "$GITHUB_OUTPUT"
           elif [ $((10#$BJ_HOUR)) -ge 8 ]; then
-            echo "已过北京 8 点且今天尚未成功签到，保底必跑（上午保底目标 9 点前完成；晚间 20:07 为最后一道网）"
+            echo "已过北京 8 点且今天尚未全部成功，保底必跑（上午保底目标 9 点前完成；晚间 20:07 为最后一道网）"
             echo "go=true" >> "$GITHUB_OUTPUT"
           elif [ $(( RANDOM % 100 )) -lt 40 ]; then
             echo "抽中（40% 概率），本次执行"
@@ -130,12 +143,21 @@ jobs:
         run: |
           set -o pipefail
           ONLY="${{ github.event.inputs.only || 'all' }}"
+          SKIP="${{ steps.dice.outputs.skip }}"
+          RUN_ARGS=""
+          [ "$ONLY" != "all" ] && RUN_ARGS="$RUN_ARGS --only=$ONLY"
+          [ -n "$SKIP" ] && RUN_ARGS="$RUN_ARGS --skip=$SKIP"
+          echo ">>> 执行参数:$RUN_ARGS（skip=今日已成功工具，不重复提交）"
           : > checkin.log
           attempt=1; max=3; rc=1; range="$ONLY"
           while [ "$attempt" -le "$max" ]; do
             echo "" | tee -a checkin.log
             echo "===== 第 $attempt/$max 次执行（范围: $range）=====" | tee -a checkin.log
-            if [ "$range" = "all" ]; then
+            # 首次执行带 --skip（跳过当日已成功工具）；重试时 range 已只含失败项，
+            # --only 已足够精确，不再叠加 skip（skip 基于当日历史，重试中途历史未更新）
+            if [ "$attempt" -eq 1 ]; then
+              node run-all.js $RUN_ARGS 2>&1 | tee -a checkin.log; rc=${PIPESTATUS[0]}
+            elif [ "$range" = "all" ]; then
               node run-all.js 2>&1 | tee -a checkin.log; rc=${PIPESTATUS[0]}
             else
               node run-all.js --only="$range" 2>&1 | tee -a checkin.log; rc=${PIPESTATUS[0]}
