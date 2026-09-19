@@ -65,6 +65,10 @@ for (const t of activeTasks) {
     (ok ? '成功' : '失败（无输出）')
   ).slice(0, 200);
   const entry = { key: t.key, label: t.label, ok, message };
+  // 奖品信息：脚本成功时输出 PRIZES: 行（多个奖品以 | 分隔），解析后挂进记录，
+  // 控制台表格「奖品」列展示
+  const prizeLine = lines.filter((l) => /^PRIZES:/.test(l)).pop();
+  if (prizeLine) entry.prizes = prizeLine.slice('PRIZES:'.length).trim();
   // 失败时若脚本落了失败截图（screenshots/<北京日期>-<任务键>.png），把文件名挂到
   // 结果上——merge-history 原样透传进 checkin-history.json，控制台据此展示截图
   if (!ok) {
@@ -93,8 +97,8 @@ const result = {
   bjTime,
   runAt: now.toISOString(),
   allOk: !hasFail,
-  tools: results.map(({ key, label, ok, message, screenshot }) => ({
-    key, label, ok, message, ...(screenshot ? { screenshot } : {}),
+  tools: results.map(({ key, label, ok, message, screenshot, prizes }) => ({
+    key, label, ok, message, ...(screenshot ? { screenshot } : {}), ...(prizes ? { prizes } : {}),
   })),
 };
 try {

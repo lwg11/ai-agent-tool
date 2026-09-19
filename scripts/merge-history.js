@@ -49,6 +49,15 @@ if (fs.existsSync(histPath)) {
   }
 }
 
+// 滚动窗口（用户 2026-09-19 指定）：只保留最近 10 天的记录，更早的连同
+// 失败截图（workflow 侧 -mtime +10）一起清理，控制台只展示近 10 天数据
+const CUTOFF = new Date(Date.now() + 8 * 3600e3 - 10 * 86400e3).toISOString().slice(0, 10);
+const before = hist.length;
+hist = hist.filter((e) => e && (!e.date || e.date >= CUTOFF)); // 无 date 的异常数据保留兜底
+if (hist.length < before) {
+  console.log(`[merge-history] 已清理 ${before - hist.length} 条 ${CUTOFF} 之前的旧记录（滚动窗口：最近 10 天）`);
+}
+
 // 同一次运行（runAt 相同）不重复追加；旧格式记录（无 runAt，按日期一天一条）原样保留
 const dup = hist.some((e) => e && e.runAt && e.runAt === res.runAt);
 if (dup) {

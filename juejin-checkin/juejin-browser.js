@@ -172,22 +172,29 @@ function parseCookieString(str) {
       return null;
     };
 
-    // ---- 每日免费单抽（页面自身生成风控参数，免抓取） ----
-    // 安全前提：只有页面真实接口 lottery_config/get 返回 free_count > 0 才点击，
-    // 否则一律不点（点击无免费次数的单抽会扣 200 矿石）。
-    const doDraw = async () => {
+    // ---- 单抽（页面自身生成风控参数，免抓取） ----
+    // 自动路径（签到后顺路）：只有页面真实接口 free_count > 0 才点击，防误扣矿石；
+    // 手动路径（--draw-only，force=true）：无视免费次数强制执行——免费次数用完
+    // 将消耗 200 矿石（用户 2026-09-19 明确授权「不管今天免费是否用完，也执行单抽」）。
+    const doDraw = async (force) => {
       await gotoWithRetry(LOTTERY_URL);
       // 等待页面加载并发出 lottery_config/get（最多 10 秒）
       for (let i = 0; i < 10 && !lastLotteryConfig; i++) await page.waitForTimeout(1000);
       const bt = (await page.locator('body').innerText().catch(() => '')) || '';
       if (bt.includes('访问异常')) throw new Error('抽奖页触发掘金风控拦截页（"访问异常"）');
-      if (!lastLotteryConfig || typeof lastLotteryConfig.freeCount !== 'number' || lastLotteryConfig.errNo !== 0) {
-        throw new Error('未捕获到 lottery_config/get 的 free_count（安全起见不点击，防止误扣矿石）');
+      if (!force) {
+        if (!lastLotteryConfig || typeof lastLotteryConfig.freeCount !== 'number' || lastLotteryConfig.errNo !== 0) {
+          throw new Error('未捕获到 lottery_config/get 的 free_count（安全起见不点击，防止误扣矿石）');
+        }
+        if (lastLotteryConfig.freeCount <= 0) {
+          return '今日免费次数已用完（free_count=0），跳过单抽';
+        }
+        console.log(`[juejin-draw] 免费次数 ${lastLotteryConfig.freeCount} 次，点击单抽...`);
+      } else {
+        const fc = lastLotteryConfig && lastLotteryConfig.freeCount;
+        console.log(`[juejin-draw] 手动单抽模式：无视免费次数强制执行（当前免费次数: ${
+          typeof fc === 'number' ? fc : '未知'}，≤0 时本次消耗 200 矿石）`);
       }
-      if (lastLotteryConfig.freeCount <= 0) {
-        return '今日免费次数已用完（free_count=0），跳过单抽';
-      }
-      console.log(`[juejin-draw] 免费次数 ${lastLotteryConfig.freeCount} 次，点击单抽...`);
       // 免费次数>0 时按钮文案为「免费抽奖次数：N次」；用完后为「单抽」。正则覆盖两种状态
       const candidates = [
         { name: 'text=/免费抽奖/', label: '免费抽奖按钮' },
@@ -200,7 +207,10 @@ function parseCookieString(str) {
       await drawBtn.click({ timeout: 5000 }).catch(() => {});
       console.log('[api:juejin-draw] 已点击单抽，等待抽奖接口响应（转盘动画最长 15 秒）...');
       for (let i = 0; i < 15 && !lastDraw; i++) await page.waitForTimeout(1000);
-      if (lastDraw && lastDraw.errNo === 0) return `单抽成功: ${lastDraw.name || '(未知奖品)'}`;
+      if (lastDraw && lastDraw.errNo === 0) {
+        console.log(`PRIZES:${lastDraw.name || '(未知奖品)'}`); // 结构化奖品输出，run-all 解析后挂进记录
+        return `单抽成功: ${lastDraw.name || '(未知奖品)'}`;
+      }
       if (lastDraw && lastDraw.errNo !== 0) {
         if (/次数|用完|免费/.test(lastDraw.msg)) return `免费次数已用完（服务端返回: ${lastDraw.msg}）`;
         throw new Error(`draw err_no=${lastDraw.errNo}, err_msg=${lastDraw.msg}`);
@@ -208,7 +218,7 @@ function parseCookieString(str) {
       // 接口监听未命中时兜底看结果弹窗
       const t = (await page.locator('body').innerText().catch(() => '')) || '';
       const m = t.match(/恭喜[^。]{0,40}?获得\s*([^\s，。]{1,20})/);
-      if (m) return `单抽成功: ${m[1]}（弹窗确认）`;
+      if (m) { console.log(`PRIZES:${m[1]}`); return `单抽成功: ${m[1]}（弹窗确认）`; }
       throw new Error('点击后未见 draw 接口响应与结果弹窗，附失败截图 failure.debug.png');
     };
 
@@ -234,8 +244,9 @@ function parseCookieString(str) {
       console.log('[api:juejin-ten-draw] 已点击十连抽，等待 ten_draw 接口响应（动画最长 20 秒）...');
       for (let i = 0; i < 20 && !lastTenDraw; i++) await page.waitForTimeout(1000);
       if (lastTenDraw && lastTenDraw.errNo === 0) {
-        const names = Array.isArray(lastTenDraw.names) ? lastTenDraw.names.join('、') : '(未解析到奖品列表)';
-        return `十连抽成功: ${names}`;
+        const list = Array.isArray(lastTenDraw.names) ? lastTenDraw.names : null;
+        if (list && list.length) console.log('PRIZES:' + list.join('|')); // 结构化奖品输出
+        return `十连抽成功: ${list ? list.join('、') : '(未解析到奖品列表)'}`;
       }
       if (lastTenDraw && lastTenDraw.errNo !== 0) {
         if (/矿石|不足|余额/.test(lastTenDraw.msg)) return `矿石余额不足，未执行（服务端返回: ${lastTenDraw.msg}）`;
@@ -248,7 +259,7 @@ function parseCookieString(str) {
       console.log(`[juejin-browser] ✅ ${msg}`);
       if (!DRAW_ONLY && !TEN_DRAW_ONLY) {
         try {
-          const drawMsg = await doDraw();
+          const drawMsg = await doDraw(false); // 自动路径：仅在有免费次数时抽
           console.log(`[juejin-draw] ${drawMsg.startsWith('单抽成功') ? '✅' : 'ℹ️'} ${drawMsg}`);
         } catch (e) {
           console.log(`[juejin-draw] ⚠️ 单抽未完成（不影响签到结果）: ${e.message}`);
@@ -266,7 +277,7 @@ function parseCookieString(str) {
     }
 
     if (DRAW_ONLY) {
-      const r = await doDraw();
+      const r = await doDraw(true); // 手动模式：无条件执行
       await finishSigned(r);
     }
 
