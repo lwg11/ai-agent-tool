@@ -906,5 +906,33 @@
     ],
     "id": "2026-09-19T08:56:16.644Z-bsl8",
     "trigger": "workflow_dispatch"
+  },
+  {
+    "date": "2026-09-19",
+    "bjTime": "17:12:13",
+    "runAt": "2026-09-19T09:12:13.658Z",
+    "allOk": false,
+    "tools": [
+      {
+        "key": "ikuuu",
+        "label": "ikuuu 签到",
+        "ok": true,
+        "message": "[ikuuu] 今日已签到，无需重复操作（服务端返回: 您似乎已经签到过了...）"
+      },
+      {
+        "key": "juejin",
+        "label": "掘金签到(浏览器)",
+        "ok": true,
+        "message": "[juejin-draw] ⚠️ 单抽未完成（不影响签到结果）: 未找到单抽按钮（页面结构可能变化），附失败截图 failure.debug.png"
+      },
+      {
+        "key": "juejin-draw",
+        "label": "掘金单抽",
+        "ok": false,
+        "message": "[juejin-browser] ❌ 失败: 未找到单抽按钮（页面结构可能变化），附失败截图 failure.debug.png"
+      }
+    ],
+    "id": "2026-09-19T09:12:13.658Z-22lk",
+    "trigger": "workflow_dispatch"
   }
 ]
