@@ -834,5 +834,33 @@
     ],
     "id": "2026-09-19T04:26:09.454Z-23lw",
     "trigger": "schedule"
+  },
+  {
+    "date": "2026-09-19",
+    "bjTime": "12:45:35",
+    "runAt": "2026-09-19T04:45:35.874Z",
+    "allOk": false,
+    "tools": [
+      {
+        "key": "ikuuu",
+        "label": "ikuuu 签到",
+        "ok": false,
+        "message": "[ikuuu] 失败: 返回内容不是 JSON（HTTP 200）。多半是 Cookie 失效/被重定向到登录页，请到 https://ikuuu.top 重新登录后更新 config.json 的 ikuuu.cookie。返回片段:  <!DOCTYPE html> <html lang=\"en\"> <head> <script> // polyfill for native atob, su"
+      },
+      {
+        "key": "juejin",
+        "label": "掘金签到(浏览器)",
+        "ok": true,
+        "message": "[juejin-draw] ⚠️ 单抽未完成（不影响签到结果）: 未找到单抽按钮（页面结构可能变化），附失败截图 failure.debug.png"
+      },
+      {
+        "key": "juejin-draw",
+        "label": "掘金单抽",
+        "ok": false,
+        "message": "[juejin-browser] ❌ 失败: 未找到单抽按钮（页面结构可能变化），附失败截图 failure.debug.png"
+      }
+    ],
+    "id": "2026-09-19T04:45:35.874Z-pzc1",
+    "trigger": "schedule"
   }
 ]
