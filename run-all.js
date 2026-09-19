@@ -64,23 +64,38 @@ for (const t of activeTasks) {
     lines[lines.length - 1] ||
     (ok ? '成功' : '失败（无输出）')
   ).slice(0, 200);
-  results.push({ key: t.key, label: t.label, ok, message });
+  const entry = { key: t.key, label: t.label, ok, message };
+  // 失败时若脚本落了失败截图（screenshots/<北京日期>-<任务键>.png），把文件名挂到
+  // 结果上——merge-history 原样透传进 checkin-history.json，控制台据此展示截图
+  if (!ok) {
+    const shotName = `${bjDateShot}-${t.key}.png`;
+    if (fs.existsSync(path.join(SHOT_DIR, shotName))) entry.screenshot = shotName;
+  }
+  results.push(entry);
 }
 
 console.log('\n========== 汇总 ==========');
 results.forEach((x) => console.log(`${x.ok ? '✅' : '❌'} ${x.label} ${x.message}`));
 
+// 清理已成功任务当日的失败截图：重试成功后旧失败截图已无对应记录，
+// 不删会被误提交成"无主截图"（服务器只跑一轮，本地调试残留同样清掉）
+for (const t of activeTasks) {
+  const r = results.find((x) => x.key === t.key);
+  if (r && r.ok) fs.rmSync(path.join(SHOT_DIR, `${bjDateShot}-${t.key}.png`), { force: true });
+}
+
 // 机器可读结果（日期与时间为北京时间）
 const now = new Date();
 const bj = new Date(now.getTime() + 8 * 3600 * 1000);
-const bjDate = bj.toISOString().slice(0, 10);
 const bjTime = bj.toISOString().slice(11, 19);
 const result = {
-  date: bjDate,
+  date: bjDateShot,
   bjTime,
   runAt: now.toISOString(),
   allOk: !hasFail,
-  tools: results.map(({ key, label, ok, message }) => ({ key, label, ok, message })),
+  tools: results.map(({ key, label, ok, message, screenshot }) => ({
+    key, label, ok, message, ...(screenshot ? { screenshot } : {}),
+  })),
 };
 try {
   fs.writeFileSync(path.join(__dirname, 'checkin-result.json'), JSON.stringify(result, null, 2) + '\n');

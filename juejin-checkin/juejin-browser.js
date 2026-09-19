@@ -38,6 +38,12 @@ const DRAW_ONLY = process.argv.includes('--draw-only');
 // 仅十连抽模式（手动触发专用：十连抽无免费次数概念，每次消耗 2000 矿石，
 // 余额不足由服务端拒绝（err_no != 0），不会扣成负数）
 const TEN_DRAW_ONLY = process.argv.includes('--ten-draw-only');
+// 任务键：失败截图文件名与 run-all 的任务 key 对齐（run-all 靠它关联截图）
+const TASK_KEY = TEN_DRAW_ONLY ? 'juejin-ten-draw' : DRAW_ONLY ? 'juejin-draw' : 'juejin';
+// 失败截图统一落仓库根 screenshots/（北京时间日期命名，workflow 随历史一起提交、
+// 控制台页面展示；run-all 重试成功后会清理对应截图，14 天滚动清理防膨胀）
+const SHOT_DIR = path.join(__dirname, '..', 'screenshots');
+const shotName = () => `${new Date(Date.now() + 8 * 3600 * 1000).toISOString().slice(0, 10)}-${TASK_KEY}.png`;
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 
 function parseCookieString(str) {
@@ -365,7 +371,7 @@ function parseCookieString(str) {
         }
       } catch { /* reload 失败按原失败路径处理 */ }
     }
-    if (!signed) throw new Error('连续 3 次点击后均未见签到结果（接口无响应、状态未变更、reload 复核仍未签到），附失败截图 failure.debug.png');
+    if (!signed) throw new Error('连续 3 次点击后均未见签到结果（接口无响应、状态未变更、reload 复核仍未签到）（见 screenshots/ 失败截图）');
 
     // 统计信息（尽力而为）
     const t3 = (await page.locator('body').innerText().catch(() => '')) || '';
@@ -377,11 +383,17 @@ function parseCookieString(str) {
     await finishSigned(reward);
   } catch (err) {
     console.error('[juejin-browser] ❌ 失败:', err.message);
-    // 失败截图便于排查
+    // 失败截图便于排查：统一落 screenshots/（文件名 <北京日期>-<任务键>.png，
+    // run-all 检测到后挂到结果上，workflow 随 checkin-history.json 一起提交，控制台展示）
     try {
       if (browser) {
         const pages = browser.contexts()[0].pages();
-        if (pages.length) await pages[pages.length - 1].screenshot({ path: path.join(__dirname, 'failure.debug.png') });
+        if (pages.length) {
+          fs.mkdirSync(SHOT_DIR, { recursive: true });
+          const shot = path.join(SHOT_DIR, shotName());
+          await pages[pages.length - 1].screenshot({ path: shot });
+          console.log(`[juejin-browser] 📸 失败截图已保存: screenshots/${shotName()}`);
+        }
       }
     } catch { /* 截图失败忽略 */ }
     if (browser) await browser.close().catch(() => {});

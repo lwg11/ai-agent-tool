@@ -229,11 +229,14 @@ jobs:
           CHECKIN_TRIGGER: ${{ github.event_name }} # schedule / workflow_dispatch
         run: |
           node scripts/merge-history.js
+          # 失败截图滚动清理：删除 14 天前的旧截图，防仓库膨胀（当前失败截图保留供控制台展示）
+          if [ -d screenshots ]; then find screenshots -name '*.png' -mtime +14 -delete; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add checkin-history.json
+          if [ -d screenshots ]; then git add screenshots; fi
           if ! git diff --cached --quiet; then
-            git commit -m "chore(checkin): 更新签到历史 [skip ci]"
+            git commit -m "chore(checkin): 更新签到历史与失败截图 [skip ci]"
             git push
           else
             echo "历史无变化，跳过提交"
