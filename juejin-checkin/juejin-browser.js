@@ -112,7 +112,9 @@ function parseCookieString(str) {
           console.log(`[api:juejin-ten_draw] HTTP ${resp.status()} ${body.slice(0, 200)}`);
           try {
             const j = JSON.parse(body);
-            const list = j.data && Array.isArray(j.data.lottery_list) ? j.data.lottery_list.map((x) => (x && x.lottery_name) || '?') : null;
+            // 09-19 实测：ten_draw 返回 data.LotteryBases（大写 L 开头），不是 lottery_list
+            const raw = j.data && (Array.isArray(j.data.LotteryBases) ? j.data.LotteryBases : Array.isArray(j.data.lottery_list) ? j.data.lottery_list : null);
+            const list = raw ? raw.map((x) => (x && x.lottery_name) || '?') : null;
             lastTenDraw = { errNo: j.err_no, msg: j.err_msg || '', names: list };
           } catch { lastTenDraw = { errNo: -1, msg: '', names: null }; }
         }
@@ -145,6 +147,25 @@ function parseCookieString(str) {
     await context.addCookies(parseCookieString(COOKIE));
     console.log(`[api:juejin-browser] 已注入 ${parseCookieString(COOKIE).length} 条 cookie`);
 
+    // ---- 按钮查找公共逻辑 ----
+    // 教训（09-19 实测）：按钮文案随状态变化——免费次数>0 时是「免费抽奖次数：1次」，
+    // 用完后是「单抽」；精确 text= 匹配只命中单一状态。必须用正则模糊匹配 +
+    // waitFor 渲染等待（云端 runner 慢，config 接口返回时 DOM 可能还没渲染完）。
+    const findBtn = async (selectors, tag) => {
+      for (const s of selectors) {
+        const loc = page.locator(s.name).first();
+        try {
+          await loc.waitFor({ state: 'visible', timeout: 8000 });
+          console.log(`[${tag}] 找到${s.label}: "${((await loc.innerText().catch(() => '')) || '').trim().slice(0, 30)}"`);
+          return loc;
+        } catch { /* 该候选未命中，试下一个 */ }
+      }
+      // 全部未命中：输出页面可见文本片段辅助诊断（截图在失败出口统一落盘）
+      const body = (await page.locator('body').innerText().catch(() => '')) || '';
+      console.error(`[${tag}] ❌ 按钮未找到，页面可见文本片段: ${body.replace(/\s+/g, ' ').slice(0, 400)}`);
+      return null;
+    };
+
     // ---- 每日免费单抽（页面自身生成风控参数，免抓取） ----
     // 安全前提：只有页面真实接口 lottery_config/get 返回 free_count > 0 才点击，
     // 否则一律不点（点击无免费次数的单抽会扣 200 矿石）。
@@ -161,20 +182,14 @@ function parseCookieString(str) {
         return '今日免费次数已用完（free_count=0），跳过单抽';
       }
       console.log(`[juejin-draw] 免费次数 ${lastLotteryConfig.freeCount} 次，点击单抽...`);
+      // 免费次数>0 时按钮文案为「免费抽奖次数：N次」；用完后为「单抽」。正则覆盖两种状态
       const candidates = [
-        { name: 'text="免费抽奖"', label: '免费抽奖按钮' },
+        { name: 'text=/免费抽奖/', label: '免费抽奖按钮' },
         { name: 'text="单抽"', label: '单抽按钮' },
+        { name: 'text=/单抽/', label: '单抽按钮(正则)' },
       ];
-      let drawBtn = null;
-      for (const s of candidates) {
-        const loc = page.locator(s.name).first();
-        if ((await loc.count()) > 0 && (await loc.isVisible().catch(() => false))) {
-          drawBtn = loc;
-          console.log(`[juejin-draw] 找到${s.label}`);
-          break;
-        }
-      }
-      if (!drawBtn) throw new Error('未找到单抽按钮（页面结构可能变化），附失败截图 failure.debug.png');
+      const drawBtn = await findBtn(candidates, 'juejin-draw');
+      if (!drawBtn) throw new Error('未找到单抽按钮（免费抽奖/单抽均未命中）');
       lastDraw = null;
       await drawBtn.click({ timeout: 5000 }).catch(() => {});
       console.log('[api:juejin-draw] 已点击单抽，等待抽奖接口响应（转盘动画最长 15 秒）...');
@@ -206,16 +221,8 @@ function parseCookieString(str) {
         { name: 'text="十连抽"', label: '十连抽按钮' },
         { name: 'text=/十连抽/', label: '十连抽按钮(正则)' },
       ];
-      let tenBtn = null;
-      for (const s of candidates) {
-        const loc = page.locator(s.name).first();
-        if ((await loc.count()) > 0 && (await loc.isVisible().catch(() => false))) {
-          tenBtn = loc;
-          console.log(`[juejin-ten-draw] 找到${s.label}`);
-          break;
-        }
-      }
-      if (!tenBtn) throw new Error('未找到十连抽按钮（页面结构可能变化），附失败截图 failure.debug.png');
+      const tenBtn = await findBtn(candidates, 'juejin-ten-draw');
+      if (!tenBtn) throw new Error('未找到十连抽按钮');
       lastTenDraw = null;
       await tenBtn.click({ timeout: 5000 }).catch(() => {});
       console.log('[api:juejin-ten-draw] 已点击十连抽，等待 ten_draw 接口响应（动画最长 20 秒）...');
