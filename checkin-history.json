@@ -1,68 +1,5 @@
 [
   {
-    "date": "2026-09-06",
-    "runAt": "2026-09-06T05:12:19.952Z",
-    "allOk": true,
-    "tools": [
-      {
-        "key": "ikuuu",
-        "label": "ikuuu 签到",
-        "ok": true,
-        "message": "[ikuuu] 今日已签到，无需重复操作（服务端返回: 您似乎已经签到过了...）"
-      },
-      {
-        "key": "juejin",
-        "label": "掘金签到(浏览器)",
-        "ok": true,
-        "message": "[juejin-browser] ✅ 签到成功（状态已变更为\"今日已签到\"）"
-      }
-    ],
-    "bjTime": "13:12:19",
-    "__rid": "__r1"
-  },
-  {
-    "date": "2026-09-07",
-    "runAt": "2026-09-07T05:20:08.162Z",
-    "allOk": true,
-    "tools": [
-      {
-        "key": "ikuuu",
-        "label": "ikuuu 签到",
-        "ok": true,
-        "message": "[ikuuu] 今日已签到，无需重复操作（服务端返回: 您似乎已经签到过了...）"
-      },
-      {
-        "key": "juejin",
-        "label": "掘金签到(浏览器)",
-        "ok": true,
-        "message": "[juejin-browser] ✅ 签到成功（状态已变更为\"今日已签到\"）"
-      }
-    ],
-    "bjTime": "13:20:08",
-    "__rid": "__r2"
-  },
-  {
-    "date": "2026-09-08",
-    "runAt": "2026-09-08T05:23:52.476Z",
-    "allOk": true,
-    "tools": [
-      {
-        "key": "ikuuu",
-        "label": "ikuuu 签到",
-        "ok": true,
-        "message": "[ikuuu] 今日已签到，无需重复操作（服务端返回: 您似乎已经签到过了...）"
-      },
-      {
-        "key": "juejin",
-        "label": "掘金签到(浏览器)",
-        "ok": true,
-        "message": "[juejin-browser] ✅ 签到成功（状态已变更为\"今日已签到\"）"
-      }
-    ],
-    "bjTime": "13:23:52",
-    "__rid": "__r3"
-  },
-  {
     "date": "2026-09-09",
     "runAt": "2026-09-09T02:09:06.437Z",
     "allOk": true,
@@ -931,6 +868,23 @@
       }
     ],
     "id": "2026-09-19T11:14:20.648Z-o0z7",
+    "trigger": "workflow_dispatch"
+  },
+  {
+    "date": "2026-09-19",
+    "bjTime": "21:12:49",
+    "runAt": "2026-09-19T13:12:49.140Z",
+    "allOk": true,
+    "tools": [
+      {
+        "key": "juejin-draw",
+        "label": "掘金单抽",
+        "ok": true,
+        "message": "[juejin-browser] ✅ 单抽成功: 54矿石",
+        "prizes": "54矿石"
+      }
+    ],
+    "id": "2026-09-19T13:12:49.140Z-gfbs",
     "trigger": "workflow_dispatch"
   }
 ]
