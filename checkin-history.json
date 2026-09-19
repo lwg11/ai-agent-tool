@@ -1,70 +1,5 @@
 [
   {
-    "date": "2026-09-09",
-    "runAt": "2026-09-09T02:09:06.437Z",
-    "allOk": true,
-    "tools": [
-      {
-        "key": "ikuuu",
-        "label": "ikuuu 签到",
-        "ok": true,
-        "message": "[ikuuu] 签到成功: 你获得了 1492 MB流量"
-      },
-      {
-        "key": "juejin",
-        "label": "掘金签到(浏览器)",
-        "ok": true,
-        "message": "[juejin-browser] ✅ 签到成功（状态已变更为\"今日已签到\"）"
-      }
-    ],
-    "bjTime": "10:09:06",
-    "__rid": "__r4"
-  },
-  {
-    "date": "2026-09-09",
-    "bjTime": "12:03:36",
-    "runAt": "2026-09-09T04:03:36.452Z",
-    "allOk": true,
-    "tools": [
-      {
-        "key": "ikuuu",
-        "label": "ikuuu 签到",
-        "ok": true,
-        "message": "[ikuuu] 今日已签到，无需重复操作（服务端返回: 您似乎已经签到过了...）"
-      },
-      {
-        "key": "juejin",
-        "label": "掘金签到(浏览器)",
-        "ok": true,
-        "message": "[juejin-browser] ✅ 签到成功（状态已变更为\"今日已签到\"）"
-      }
-    ],
-    "id": "2026-09-09T04:03:36.452Z-rul9",
-    "trigger": "schedule"
-  },
-  {
-    "date": "2026-09-09",
-    "bjTime": "13:25:36",
-    "runAt": "2026-09-09T05:25:36.433Z",
-    "allOk": true,
-    "tools": [
-      {
-        "key": "ikuuu",
-        "label": "ikuuu 签到",
-        "ok": true,
-        "message": "[ikuuu] 今日已签到，无需重复操作（服务端返回: 您似乎已经签到过了...）"
-      },
-      {
-        "key": "juejin",
-        "label": "掘金签到(浏览器)",
-        "ok": true,
-        "message": "[juejin-browser] ✅ 签到成功（状态已变更为\"今日已签到\"）"
-      }
-    ],
-    "id": "2026-09-09T05:25:36.433Z-99lp",
-    "trigger": "schedule"
-  },
-  {
     "date": "2026-09-10",
     "bjTime": "08:45:15",
     "runAt": "2026-09-10T00:45:15.448Z",
@@ -903,5 +838,35 @@
     ],
     "id": "2026-09-19T14:12:02.178Z-j8q6",
     "trigger": "workflow_dispatch"
+  },
+  {
+    "date": "2026-09-20",
+    "bjTime": "02:31:12",
+    "runAt": "2026-09-19T18:31:12.264Z",
+    "allOk": false,
+    "tools": [
+      {
+        "key": "ikuuu",
+        "label": "ikuuu 签到",
+        "ok": true,
+        "message": "[ikuuu] 签到成功: 你获得了 98 MB流量"
+      },
+      {
+        "key": "juejin",
+        "label": "掘金签到(浏览器)",
+        "ok": false,
+        "message": "[juejin-browser] ❌ 失败: 连续 3 次点击后均未见签到结果（接口无响应、状态未变更、reload 复核仍未签到）（见 screenshots/ 失败截图）",
+        "screenshot": "2026-09-20-juejin.png"
+      },
+      {
+        "key": "juejin-draw",
+        "label": "掘金单抽",
+        "ok": true,
+        "message": "[juejin-browser] ✅ 单抽成功: 57矿石",
+        "prizes": "57矿石"
+      }
+    ],
+    "id": "2026-09-19T18:31:12.264Z-vsy7",
+    "trigger": "schedule"
   }
 ]
