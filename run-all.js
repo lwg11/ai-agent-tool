@@ -24,11 +24,17 @@ const tasks = [
   { key: 'juejin-ten-draw', label: '掘金十连抽(手动)', script: path.join(__dirname, 'juejin-checkin', 'juejin-browser.js'), args: ['--ten-draw-only'], manualOnly: true },
 ];
 
-// 支持单工具执行：--only=ikuuu / --only=juejin（控制台按钮触发用）
-// 支持跳过指定工具：--skip=ikuuu,juejin（当日已成功的工具，跳过且不发起任何请求，
-// 避免重复提交——ikuuu 重复提交有 cookie 失效风险）。跳过的工具记为成功。
-const onlyArg = process.argv.slice(2).map((a) => a.match(/^--only=([\w,]+)$/)).filter(Boolean)[0];
-const skipArg = process.argv.slice(2).map((a) => a.match(/^--skip=([\w,]*)$/)).filter(Boolean)[0];
+// 失败截图目录与北京日期（必须在任务循环之前定义——下方 entry.screenshot 与
+// 清理块都引用；此前的定义在编辑事故中丢失，导致所有 run 在收尾时
+// ReferenceError 崩溃、checkin-result.json 从未写出、控制台无记录）
+const SHOT_DIR = path.join(__dirname, 'screenshots');
+const bjDateShot = new Date(Date.now() + 8 * 3600 * 1000).toISOString().slice(0, 10);
+
+// 支持单工具执行：--only=ikuuu / --only=juejin-draw（控制台按钮触发用）。
+// 注意：任务 key 含连字符（juejin-draw / juejin-ten-draw），字符类必须含 '-'，
+// 否则正则不匹配 → onlyArg 为空 → 静默退化为跑全部任务（09-19 实测踩坑）
+const onlyArg = process.argv.slice(2).map((a) => a.match(/^--only=([\w,-]+)$/)).filter(Boolean)[0];
+const skipArg = process.argv.slice(2).map((a) => a.match(/^--skip=([\w,-]*)$/)).filter(Boolean)[0];
 const skipSet = new Set(skipArg ? skipArg[1].split(',').filter(Boolean) : []);
 const activeTasks = onlyArg
   ? tasks.filter((t) => onlyArg[1].split(',').includes(t.key))

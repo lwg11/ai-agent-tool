@@ -27,7 +27,7 @@ on:
   workflow_dispatch: # 支持在 Actions 页面手动触发（用于测试，必跑）
         inputs:
           only:
-            description: 执行范围（juejin-draw=免费单抽；juejin-ten-draw=十连抽，消耗 2000 矿石）
+            description: 执行范围（juejin-draw=手动单抽，强制执行；juejin-ten-draw=十连抽，消耗 2000 矿石）
         type: choice
         options:
           - all
@@ -78,7 +78,10 @@ jobs:
               const today = process.argv[1];
               const rec = Array.isArray(h) ? h.filter(r => r && r.date === today) : [];
               const okTools = {};
-              for (const r of rec) for (const t of (r.tools || [])) if (t && t.ok) okTools[t.key] = true;
+              for (const r of rec) for (const t of (r.tools || []))
+                // 掘金单抽/十连抽不进 skip：手动触发=用户明确要抽（单抽强制执行、
+                // 十连抽明确消耗 2000 矿石），当日已成功也照抽（09-19 用户确认）
+                if (t && t.ok && t.key !== "juejin-draw" && t.key !== "juejin-ten-draw") okTools[t.key] = true;
               const allOk = rec.some(r => r && r.allOk === true);
               console.log((allOk ? "yes" : "no") + " " + Object.keys(okTools).join(","));
             });
