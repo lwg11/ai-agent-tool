@@ -16,8 +16,10 @@ const path = require('path');
 const tasks = [
   { key: 'ikuuu', label: 'ikuuu 签到', script: path.join(__dirname, 'ikuuu-checkin', 'ikuuu-checkin.js') },
   { key: 'juejin', label: '掘金签到(浏览器)', script: path.join(__dirname, 'juejin-checkin', 'juejin-browser.js') },
-  // 每日免费单抽：复用无头浏览器脚本 --draw-only 模式（页面自身生成风控参数，免抓取），
-  // 独立任务、同样享受当日幂等（skip 已成功项）
+  // 每日免费单抽：复用无头浏览器脚本 --draw-only 模式（页面自身生成风控参数，免抓取）。
+  // 规则（2026-09-20 用户确认）：自动单抽必须签到成功才抽——自动流程（无 --only）里
+  // 若 juejin 签到任务未成功，此任务直接跳过（见任务循环内门卫）；免费守卫仍生效。
+  // 显式 --only=juejin-draw（控制台手动单抽）追加 --force-draw：不管扣不扣矿石都抽。
   { key: 'juejin-draw', label: '掘金单抽', script: path.join(__dirname, 'juejin-checkin', 'juejin-browser.js'), args: ['--draw-only'] },
   // 十连抽：每次消耗 2000 矿石，manualOnly——自动 all 流程永不执行，
   // 仅控制台「手动十连抽」显式 --only 才跑；同样享受当日幂等（防止同日误点双倍扣矿石）
@@ -36,6 +38,8 @@ const bjDateShot = new Date(Date.now() + 8 * 3600 * 1000).toISOString().slice(0,
 const onlyArg = process.argv.slice(2).map((a) => a.match(/^--only=([\w,-]+)$/)).filter(Boolean)[0];
 const skipArg = process.argv.slice(2).map((a) => a.match(/^--skip=([\w,-]*)$/)).filter(Boolean)[0];
 const skipSet = new Set(skipArg ? skipArg[1].split(',').filter(Boolean) : []);
+// 显式 --only 为 null 表示自动定时流程（签到门卫在此模式下生效）；有 --only 视为手动意图
+const explicitOnly = onlyArg ? onlyArg[1].split(',').filter(Boolean) : null;
 const activeTasks = onlyArg
   ? tasks.filter((t) => onlyArg[1].split(',').includes(t.key))
   : tasks.filter((t) => !t.manualOnly); // 自动流程（无 --only）跳过 manualOnly 任务（十连抽扣矿石）
@@ -49,12 +53,27 @@ let hasFail = false;
 
 for (const t of activeTasks) {
   console.log(`\n========== ${t.label} ==========`);
+  // 签到门卫：自动流程里掘金签到未成功（失败/未运行）→ 跳过自动单抽。
+  // 签到任务被当日幂等跳过（ok=true，今天已签过）不算失败，自动单抽照常走免费守卫。
+  if (!explicitOnly && t.key === 'juejin-draw') {
+    const signRes = results.find((x) => x.key === 'juejin');
+    if (!signRes || !signRes.ok) {
+      console.log('[run-all] 掘金签到未成功，自动单抽按规则跳过（手动单抽不受影响）');
+      results.push({ key: t.key, label: t.label, ok: true, message: '今日签到未成功，自动单抽按规则跳过（手动单抽不受影响）' });
+      continue;
+    }
+  }
   if (skipSet.has(t.key)) {
     console.log(`[run-all] ${t.key} 今日已成功签到，跳过本次执行（避免重复提交）`);
     results.push({ key: t.key, label: t.label, ok: true, message: '今日已成功签到，跳过本次执行（避免重复提交）' });
     continue;
   }
-  const r = spawnSync(process.execPath, [t.script].concat(t.args || []), { encoding: 'utf8' });
+  // 手动显式 --only=juejin-draw（控制台「手动单抽」）追加 --force-draw：
+  // 不管免费次数是否用完都执行，可能消耗 200 矿石（用户 09-19 明确授权）
+  const taskArgs = t.key === 'juejin-draw' && explicitOnly && explicitOnly.includes('juejin-draw')
+    ? (t.args || []).concat(['--force-draw'])
+    : (t.args || []);
+  const r = spawnSync(process.execPath, [t.script].concat(taskArgs), { encoding: 'utf8' });
   const out = ((r.stdout || '') + (r.stderr || '')).trim();
   if (out) console.log(out);
   const ok = r.status === 0;

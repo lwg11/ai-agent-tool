@@ -9,7 +9,8 @@
  *
  * 依赖：npm install playwright && npx playwright install chromium
  * 用法：node juejin-browser.js                # 签到 + 每日免费单抽
- *       node juejin-browser.js --draw-only    # 仅免费单抽（控制台「手动单抽」走这里）
+ *       node juejin-browser.js --draw-only    # 仅单抽，默认只在有免费次数时抽（免费守卫）
+ *       node juejin-browser.js --draw-only --force-draw  # 手动单抽：无视免费次数强制执行（可能消耗 200 矿石）
  *       node juejin-browser.js --ten-draw-only # 仅十连抽（手动触发专用，消耗 2000 矿石）
  */
 'use strict';
@@ -35,6 +36,10 @@ const SIGNIN_URL = 'https://juejin.cn/user/center/signin?from=main_page';
 const LOTTERY_URL = 'https://juejin.cn/user/center/lottery?from=lucky_lottery_menu_bar';
 // 仅单抽模式（跳过签到，直接进抽奖页）
 const DRAW_ONLY = process.argv.includes('--draw-only');
+// 强制单抽（与 --draw-only 组合使用）：无视免费次数强制执行——免费次数用完
+// 将消耗 200 矿石。仅限用户手动触发（run-all 收到显式 --only=juejin-draw 时追加）；
+// 自动定时流程绝不带此参数（自动单抽必须签到成功才抽，且只抽免费次数）
+const FORCE_DRAW = process.argv.includes('--force-draw');
 // 仅十连抽模式（手动触发专用：十连抽无免费次数概念，每次消耗 2000 矿石，
 // 余额不足由服务端拒绝（err_no != 0），不会扣成负数）
 const TEN_DRAW_ONLY = process.argv.includes('--ten-draw-only');
@@ -173,9 +178,9 @@ function parseCookieString(str) {
     };
 
     // ---- 单抽（页面自身生成风控参数，免抓取） ----
-    // 自动路径（签到后顺路）：只有页面真实接口 free_count > 0 才点击，防误扣矿石；
-    // 手动路径（--draw-only，force=true）：无视免费次数强制执行——免费次数用完
-    // 将消耗 200 矿石（用户 2026-09-19 明确授权「不管今天免费是否用完，也执行单抽」）。
+    // force 语义（2026-09-20 起）：只有显式 --force-draw（= run-all 收到显式 --only=juejin-draw，
+    // 即用户手动单抽）才无视免费次数强制执行；自动定时流程不带 --force-draw，
+    // 一律走免费守卫（free_count > 0 才点击），且 run-all 侧还会先校验签到成功才允许跑到这里。
     const doDraw = async (force) => {
       await gotoWithRetry(LOTTERY_URL);
       // 等待页面加载并发出 lottery_config/get（最多 10 秒）
@@ -277,7 +282,7 @@ function parseCookieString(str) {
     }
 
     if (DRAW_ONLY) {
-      const r = await doDraw(true); // 手动模式：无条件执行
+      const r = await doDraw(FORCE_DRAW); // 仅手动显式 --force-draw 才强制执行；默认走免费守卫
       await finishSigned(r);
     }
 
