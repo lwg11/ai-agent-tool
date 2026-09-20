@@ -868,5 +868,33 @@
     ],
     "id": "2026-09-19T18:31:12.264Z-vsy7",
     "trigger": "schedule"
+  },
+  {
+    "date": "2026-09-20",
+    "bjTime": "12:43:53",
+    "runAt": "2026-09-20T04:43:53.127Z",
+    "allOk": true,
+    "tools": [
+      {
+        "key": "ikuuu",
+        "label": "ikuuu 签到",
+        "ok": true,
+        "message": "今日已成功签到，跳过本次执行（避免重复提交）"
+      },
+      {
+        "key": "juejin",
+        "label": "掘金签到(浏览器)",
+        "ok": true,
+        "message": "[juejin-draw] ℹ️ 今日免费次数已用完（free_count=0），跳过单抽"
+      },
+      {
+        "key": "juejin-draw",
+        "label": "掘金单抽",
+        "ok": true,
+        "message": "[juejin-browser] ✅ 今日免费次数已用完（free_count=0），跳过单抽"
+      }
+    ],
+    "id": "2026-09-20T04:43:53.127Z-kpu7",
+    "trigger": "schedule"
   }
 ]
