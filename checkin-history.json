@@ -1144,5 +1144,33 @@
     ],
     "id": "2026-09-22T05:08:58.763Z-rq6u",
     "trigger": "schedule"
+  },
+  {
+    "date": "2026-09-22",
+    "bjTime": "13:21:35",
+    "runAt": "2026-09-22T05:21:35.905Z",
+    "allOk": false,
+    "tools": [
+      {
+        "key": "ikuuu",
+        "label": "ikuuu 签到",
+        "ok": false,
+        "message": "[ikuuu] 失败: 返回内容不是 JSON（HTTP 200）。多半是 Cookie 失效/被重定向到登录页，请到 https://ikuuu.top 重新登录后更新 config.json 的 ikuuu.cookie。返回片段:  <!DOCTYPE html> <html lang=\"en\"> <head> <script> // polyfill for native atob, su"
+      },
+      {
+        "key": "juejin",
+        "label": "掘金签到(浏览器)",
+        "ok": true,
+        "message": "今日已成功签到，跳过本次执行（避免重复提交）"
+      },
+      {
+        "key": "juejin-draw",
+        "label": "掘金单抽",
+        "ok": true,
+        "message": "[juejin-browser] ✅ 今日免费次数已用完（free_count=0），跳过单抽"
+      }
+    ],
+    "id": "2026-09-22T05:21:35.905Z-kh56",
+    "trigger": "schedule"
   }
 ]
