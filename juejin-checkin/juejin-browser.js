@@ -295,6 +295,11 @@ function parseCookieString(str) {
       console.log('[juejin-browser] 未等到"连续签到天数"文本，继续尝试（页面结构可能变化）');
     }
 
+    // 渲染稳定等待（2026-09-23 用户从失败截图定位：页面刚加载、JS 未挂载完就点击，
+    // 签到请求发不出来 → 表现为"连续 3 次点击无结果"。固定等 6 秒再操作）
+    console.log('[juejin-browser] 等待页面渲染 6 秒后执行签到...');
+    await page.waitForTimeout(6000);
+
     // 登录态检查
     const bodyText = (await page.locator('body').innerText().catch(() => '')) || '';
     if (bodyText.includes('访问异常')) {
