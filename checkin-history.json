@@ -1,119 +1,5 @@
 [
   {
-    "date": "2026-09-30",
-    "bjTime": "04:54:14",
-    "runAt": "2026-09-29T20:54:14.647Z",
-    "allOk": false,
-    "tools": [
-      {
-        "key": "ikuuu",
-        "label": "ikuuu 签到",
-        "ok": false,
-        "message": "[ikuuu] 失败: 返回内容不是 JSON（HTTP 200）。多半是 Cookie 失效/被重定向到登录页，请到 https://ikuuu.top 重新登录后更新 config.json 的 ikuuu.cookie。返回片段:  <!DOCTYPE html> <html lang=\"en\"> <head> <script> // polyfill for native atob, su"
-      },
-      {
-        "key": "juejin",
-        "label": "掘金签到(浏览器)",
-        "ok": false,
-        "message": "[juejin-browser] ❌ 失败: 连续 3 次点击后均未见签到结果（接口无响应、状态未变更、reload 复核仍未签到）（见 screenshots/ 失败截图）",
-        "screenshot": "2026-09-30-juejin.png"
-      },
-      {
-        "key": "juejin-draw",
-        "label": "掘金单抽",
-        "ok": true,
-        "message": "今日签到未成功，自动单抽按规则跳过（手动单抽不受影响）"
-      }
-    ],
-    "id": "2026-09-29T20:54:14.647Z-35gd",
-    "trigger": "schedule"
-  },
-  {
-    "date": "2026-09-30",
-    "bjTime": "13:22:21",
-    "runAt": "2026-09-30T05:22:21.139Z",
-    "allOk": false,
-    "tools": [
-      {
-        "key": "ikuuu",
-        "label": "ikuuu 签到",
-        "ok": false,
-        "message": "[ikuuu] 失败: 返回内容不是 JSON（HTTP 200）。多半是 Cookie 失效/被重定向到登录页，请到 https://ikuuu.top 重新登录后更新 config.json 的 ikuuu.cookie。返回片段:  <!DOCTYPE html> <html lang=\"en\"> <head> <script> // polyfill for native atob, su"
-      },
-      {
-        "key": "juejin",
-        "label": "掘金签到(浏览器)",
-        "ok": true,
-        "message": "[juejin-draw] ✅ 单抽成功: 38矿石",
-        "prizes": "38矿石"
-      },
-      {
-        "key": "juejin-draw",
-        "label": "掘金单抽",
-        "ok": true,
-        "message": "[juejin-browser] ✅ 今日免费次数已用完（free_count=0），跳过单抽"
-      }
-    ],
-    "id": "2026-09-30T05:22:21.139Z-gnps",
-    "trigger": "schedule"
-  },
-  {
-    "date": "2026-09-30",
-    "bjTime": "13:43:08",
-    "runAt": "2026-09-30T05:43:08.923Z",
-    "allOk": false,
-    "tools": [
-      {
-        "key": "ikuuu",
-        "label": "ikuuu 签到",
-        "ok": false,
-        "message": "[ikuuu] 失败: 返回内容不是 JSON（HTTP 200）。多半是 Cookie 失效/被重定向到登录页，请到 https://ikuuu.top 重新登录后更新 config.json 的 ikuuu.cookie。返回片段:  <!DOCTYPE html> <html lang=\"en\"> <head> <script> // polyfill for native atob, su"
-      },
-      {
-        "key": "juejin",
-        "label": "掘金签到(浏览器)",
-        "ok": true,
-        "message": "今日已成功签到，跳过本次执行（避免重复提交）"
-      },
-      {
-        "key": "juejin-draw",
-        "label": "掘金单抽",
-        "ok": true,
-        "message": "[juejin-browser] ✅ 今日免费次数已用完（free_count=0），跳过单抽"
-      }
-    ],
-    "id": "2026-09-30T05:43:08.923Z-ix5c",
-    "trigger": "schedule"
-  },
-  {
-    "date": "2026-09-30",
-    "bjTime": "13:57:22",
-    "runAt": "2026-09-30T05:57:22.606Z",
-    "allOk": false,
-    "tools": [
-      {
-        "key": "ikuuu",
-        "label": "ikuuu 签到",
-        "ok": false,
-        "message": "[ikuuu] 失败: 返回内容不是 JSON（HTTP 200）。多半是 Cookie 失效/被重定向到登录页，请到 https://ikuuu.top 重新登录后更新 config.json 的 ikuuu.cookie。返回片段:  <!DOCTYPE html> <html lang=\"en\"> <head> <script> // polyfill for native atob, su"
-      },
-      {
-        "key": "juejin",
-        "label": "掘金签到(浏览器)",
-        "ok": true,
-        "message": "今日已成功签到，跳过本次执行（避免重复提交）"
-      },
-      {
-        "key": "juejin-draw",
-        "label": "掘金单抽",
-        "ok": true,
-        "message": "[juejin-browser] ✅ 今日免费次数已用完（free_count=0），跳过单抽"
-      }
-    ],
-    "id": "2026-09-30T05:57:22.606Z-tisz",
-    "trigger": "schedule"
-  },
-  {
     "date": "2026-10-01",
     "bjTime": "02:35:13",
     "runAt": "2026-09-30T18:35:13.716Z",
@@ -1779,6 +1665,35 @@
       }
     ],
     "id": "2026-10-10T06:02:53.065Z-600w",
+    "trigger": "schedule"
+  },
+  {
+    "date": "2026-10-11",
+    "bjTime": "03:55:09",
+    "runAt": "2026-10-10T19:55:09.963Z",
+    "allOk": false,
+    "tools": [
+      {
+        "key": "ikuuu",
+        "label": "ikuuu 签到",
+        "ok": false,
+        "message": "[ikuuu] 失败: 返回内容不是 JSON（HTTP 200）。多半是 Cookie 失效/被重定向到登录页，请到 https://ikuuu.top 重新登录后更新 config.json 的 ikuuu.cookie。返回片段:  <!DOCTYPE html> <html lang=\"en\"> <head> <script> // polyfill for native atob, su"
+      },
+      {
+        "key": "juejin",
+        "label": "掘金签到(浏览器)",
+        "ok": false,
+        "message": "[juejin-browser] ❌ 失败: 连续 3 次点击后均未见签到结果（接口无响应、状态未变更、reload 复核仍未签到）（见 screenshots/ 失败截图）",
+        "screenshot": "2026-10-11-juejin.png"
+      },
+      {
+        "key": "juejin-draw",
+        "label": "掘金单抽",
+        "ok": true,
+        "message": "今日签到未成功，自动单抽按规则跳过（手动单抽不受影响）"
+      }
+    ],
+    "id": "2026-10-10T19:55:09.963Z-qwqq",
     "trigger": "schedule"
   }
 ]
