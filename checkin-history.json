@@ -2175,5 +2175,22 @@
     ],
     "id": "2026-10-16T02:15:56.111Z-lntw",
     "trigger": "workflow_dispatch"
+  },
+  {
+    "date": "2026-10-16",
+    "bjTime": "11:17:11",
+    "runAt": "2026-10-16T03:17:11.843Z",
+    "allOk": false,
+    "tools": [
+      {
+        "key": "juejin-ten-draw",
+        "label": "掘金十连抽(手动)",
+        "ok": false,
+        "message": "[juejin-browser] ❌ 失败: 点击后未见 ten_draw 接口响应（20 秒），附失败截图 failure.debug.png",
+        "screenshot": "2026-10-16-juejin-ten-draw.png"
+      }
+    ],
+    "id": "2026-10-16T03:17:11.843Z-ogzl",
+    "trigger": "workflow_dispatch"
   }
 ]
