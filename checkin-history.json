@@ -2532,5 +2532,35 @@
     ],
     "id": "2026-10-20T23:47:46.914Z-ofu8",
     "trigger": "schedule"
+  },
+  {
+    "date": "2026-10-21",
+    "bjTime": "08:41:49",
+    "runAt": "2026-10-21T00:41:49.099Z",
+    "allOk": false,
+    "tools": [
+      {
+        "key": "ikuuu",
+        "label": "ikuuu 签到",
+        "ok": false,
+        "message": "[ikuuu] 失败: 返回内容不是 JSON（HTTP 200）。多半是 Cookie 失效/被重定向到登录页，请到 https://ikuuu.top 重新登录后更新 config.json 的 ikuuu.cookie。返回片段:  <!DOCTYPE html> <html lang=\"en\"> <head> <script> // polyfill for native atob, su"
+      },
+      {
+        "key": "juejin",
+        "label": "掘金签到(浏览器)",
+        "ok": true,
+        "message": "[juejin-draw] ✅ 单抽成功: 39矿石",
+        "prizes": "39矿石"
+      },
+      {
+        "key": "juejin-draw",
+        "label": "掘金单抽",
+        "ok": false,
+        "message": "[juejin-browser] ❌ 失败: 抽奖页触发掘金风控拦截页（\"访问异常\"）",
+        "screenshot": "2026-10-21-juejin-draw.png"
+      }
+    ],
+    "id": "2026-10-21T00:41:49.099Z-qfv1",
+    "trigger": "schedule"
   }
 ]
