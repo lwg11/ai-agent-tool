@@ -2464,5 +2464,33 @@
     ],
     "id": "2026-11-06T01:37:43.962Z-0nqr",
     "trigger": "schedule"
+  },
+  {
+    "date": "2026-11-06",
+    "bjTime": "10:34:00",
+    "runAt": "2026-11-06T02:34:00.812Z",
+    "allOk": false,
+    "tools": [
+      {
+        "key": "ikuuu",
+        "label": "ikuuu 签到",
+        "ok": false,
+        "message": "[ikuuu] 失败: 请求异常: fetch failed"
+      },
+      {
+        "key": "juejin",
+        "label": "掘金签到(浏览器)",
+        "ok": true,
+        "message": "今日已成功签到，跳过本次执行（避免重复提交）"
+      },
+      {
+        "key": "juejin-draw",
+        "label": "掘金单抽",
+        "ok": true,
+        "message": "[juejin-browser] ✅ 今日免费次数已用完（free_count=0），跳过单抽"
+      }
+    ],
+    "id": "2026-11-06T02:34:00.812Z-j123",
+    "trigger": "schedule"
   }
 ]
