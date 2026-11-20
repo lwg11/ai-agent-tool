@@ -2339,5 +2339,33 @@
     ],
     "id": "2026-11-20T00:42:59.742Z-jlk1",
     "trigger": "schedule"
+  },
+  {
+    "date": "2026-11-20",
+    "bjTime": "09:28:53",
+    "runAt": "2026-11-20T01:28:53.065Z",
+    "allOk": false,
+    "tools": [
+      {
+        "key": "ikuuu",
+        "label": "ikuuu 签到",
+        "ok": false,
+        "message": "[ikuuu] 失败: 请求异常: fetch failed"
+      },
+      {
+        "key": "juejin",
+        "label": "掘金签到(浏览器)",
+        "ok": true,
+        "message": "[juejin-draw] ℹ️ 今日免费次数已用完（free_count=0），跳过单抽"
+      },
+      {
+        "key": "juejin-draw",
+        "label": "掘金单抽",
+        "ok": true,
+        "message": "[juejin-browser] ✅ 今日免费次数已用完（free_count=0），跳过单抽"
+      }
+    ],
+    "id": "2026-11-20T01:28:53.065Z-m7lj",
+    "trigger": "schedule"
   }
 ]
