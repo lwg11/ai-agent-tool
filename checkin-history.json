@@ -2398,5 +2398,34 @@
     ],
     "id": "2026-11-21T23:55:00.578Z-tpch",
     "trigger": "schedule"
+  },
+  {
+    "date": "2026-11-22",
+    "bjTime": "09:09:15",
+    "runAt": "2026-11-22T01:09:15.082Z",
+    "allOk": false,
+    "tools": [
+      {
+        "key": "ikuuu",
+        "label": "ikuuu 签到",
+        "ok": false,
+        "message": "[ikuuu] 失败: 请求异常: fetch failed"
+      },
+      {
+        "key": "juejin",
+        "label": "掘金签到(浏览器)",
+        "ok": true,
+        "message": "[juejin-draw] ✅ 单抽成功: 31矿石",
+        "prizes": "31矿石"
+      },
+      {
+        "key": "juejin-draw",
+        "label": "掘金单抽",
+        "ok": true,
+        "message": "[juejin-browser] ✅ 今日免费次数已用完（free_count=0），跳过单抽"
+      }
+    ],
+    "id": "2026-11-22T01:09:15.082Z-dg4t",
+    "trigger": "schedule"
   }
 ]
