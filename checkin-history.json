@@ -2321,5 +2321,34 @@
     ],
     "id": "2026-11-28T03:13:35.776Z-de2s",
     "trigger": "schedule"
+  },
+  {
+    "date": "2026-11-28",
+    "bjTime": "11:59:36",
+    "runAt": "2026-11-28T03:59:36.840Z",
+    "allOk": false,
+    "tools": [
+      {
+        "key": "ikuuu",
+        "label": "ikuuu 签到",
+        "ok": false,
+        "message": "[ikuuu] 失败: 返回内容不是 JSON（HTTP 200）。多半是 Cookie 失效/被重定向到登录页，请到 https://ikuuu.top 重新登录后更新 config.json 的 ikuuu.cookie。返回片段:  <!DOCTYPE html> <html lang=\"en\"> <head> <script> // polyfill for native atob, su"
+      },
+      {
+        "key": "juejin",
+        "label": "掘金签到(浏览器)",
+        "ok": true,
+        "message": "今日已成功签到，跳过本次执行（避免重复提交）"
+      },
+      {
+        "key": "juejin-draw",
+        "label": "掘金单抽",
+        "ok": false,
+        "message": "[juejin-browser] ❌ 失败: 抽奖页触发掘金风控拦截页（\"访问异常\"）",
+        "screenshot": "2026-11-28-juejin-draw.png"
+      }
+    ],
+    "id": "2026-11-28T03:59:36.840Z-dm9k",
+    "trigger": "schedule"
   }
 ]
